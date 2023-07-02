@@ -71,8 +71,20 @@ function init() {
 
 <div class="section-title">Wireguard</div>
 <div class="section">
-	Wireguard is included in this version/build of Freshtomato. A fully functional GUI is work in progress, in the meantime you can already set up your VPN tunnels via command line.
-	Please consult the <a href="https://wiki.freshtomato.org/doku.php/wireguard_on_freshtomato" class="new_window">HOWTO on the Wiki</a> for additional information. 
+	<script>
+		createFieldTable('', [
+			{ title: 'Enable on Start', name: 'f_wg_server_eas', type: 'checkbox', value: nvram.wg_server_eas == '1' },
+			{ title: 'Local IP Address/Netmask', multi: [
+				{ name: 'f_wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn, suffix: '&nbsp;-&nbsp;' },
+				{ name: 'f_wg_server_nm', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_nm, suffix: ' <i id="pptpd_count"><\/i>' }
+			] },
+			{ title: 'Remote IP Address Range', multi: [
+				{ name: 'f_wg_server_startip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_startip, suffix: '&nbsp;-&nbsp;' },
+				{ name: 'f_wg_server_endip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_endip, suffix: ' <i id="pptpd_count"><\/i>' }
+			] },
+		]);
+	</script>
+	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg_server_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
 </div>
 
 <!-- / / / -->
