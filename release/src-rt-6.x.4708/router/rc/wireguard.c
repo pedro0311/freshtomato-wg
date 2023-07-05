@@ -1,0 +1,85 @@
+#include "rc.h"
+
+/* needed by logmsg() */
+#define LOGMSG_DISABLE	DISABLE_SYSLOG_OSM
+#define LOGMSG_NVDEBUG	"wireguard_debug"
+
+#define BUF_SIZE		256
+#define IF_SIZE			8
+
+
+void start_wireguard(int unit)
+{
+    FILE *fp;
+    char iface[IF_SIZE];
+    char buffer[BUF_SIZE];
+
+    /* Determine interface */
+	memset(iface, 0, IF_SIZE);
+	snprintf(iface, IF_SIZE, "wg%d", unit);
+
+    /* create interface */
+	if (wg_create_iface(iface)) {
+		stop_wireguard(unit);
+		return;
+	}
+
+    /* set interface address and netmask */
+	if (wg_set_iface(iface, addr)) {
+		stop_wireguard(unit);
+		return;
+	}/* create interface */
+	if (wg_create_iface(iface)) {
+		stop_wireguard(unit);
+		return;
+	}
+
+    fp = fopen(buffer, "w");
+}
+
+void stop_wireguard(int unit)
+{
+    
+}
+
+static int wg_create_iface(char *iface)
+{
+    /* Make sure module is loaded */
+    modprobe("wireguard");
+    
+    /* Create wireguard interface */
+	if (eval("ip", "link", "add", "dev", iface, "type" "wireguard")) {
+		logmsg(LOG_WARNING, "unable to create wireguard interface %s!", iface);
+		return -1;
+	}
+
+    return 0;
+}
+
+static int wg_set_iface(char *iface, char *addr)
+{
+    /* Create wireguard interface */
+	if (eval("ip", "addr", "flush", "dev", iface)) {
+		logmsg(LOG_WARNING, "unable to flush wireguard interface %s!", iface);
+		return -1;
+	}
+
+    /* Set wireguard interface address/netmask */
+	if (eval("ip", "addr", "add", addr, "dev", iface)) {
+		logmsg(LOG_WARNING, "unable to set wireguard interface %s address to %s!", iface, addr);
+		return -1;
+	}
+
+    return 0;
+}
+
+static int wg_remove_iface(char *iface)
+{
+    /* Create wireguard interface */
+	if (eval("ip", "link", "delete", iface)) {
+		logmsg(LOG_WARNING, "unable to delete wireguard interface %s!", iface);
+		return -1;
+	}
+
+    return 0;
+}

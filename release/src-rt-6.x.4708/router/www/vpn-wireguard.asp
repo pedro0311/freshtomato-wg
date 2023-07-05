@@ -89,10 +89,36 @@ function init() {
 
 <!-- / / / -->
 
+<div class="section-title">Notes <small><i><a href='javascript:toggleVisibility(cprefix,"notes");'><span id="sesdiv_notes_showhide">(Show)</span></a></i></small></div>
+<div class="section" id="sesdiv_notes" style="display:none">
+	<ul>
+		<li><b>Local IP Address/Netmask</b> - Address to be used at the local end of the tunnelled PPP links between the server and the VPN clients.</li>
+		<li><b>Remote IP Address Range</b> - Remote IP addresses to be used on the tunnelled PPP links (max 6).</li>
+		<li><b>Broadcast Relay Mode</b> - Turns on broadcast relay between VPN clients and LAN interface.</li>
+		<li><b>Enable Encryption</b> - Enabling this option will turn on VPN channel encryption, but it might lead to reduced channel bandwidth.</li>
+		<li><b>DNS Servers</b> - Allows defining DNS servers manually (if none are set, the router/local IP address should be used by VPN clients).</li>
+		<li><b>WINS Servers</b> - Allows configuring extra WINS servers for VPN clients, in addition to the WINS server defined on <a href="advanced-dhcpdns.asp">Advanced: DHCP / DNS</a>.</li>
+		<li><b>MTU</b> - Maximum Transmission Unit. Max packet size the PPTP interface will be able to send without packet fragmentation.</li>
+		<li><b>MRU</b> - Maximum Receive Unit. Max packet size the PPTP interface will be able to receive without packet fragmentation.</li>
+	</ul>
+	<br>
+	<ul>
+		<li><b>Other relevant notes/hints:</b></li>
+		<li style="list-style:none">
+			<ul>
+				<li>Try to avoid any conflicts and/or overlaps between the address ranges configured/available for DHCP and VPN clients on your local networks.</li>
+				<li>You can add your own ip-up/ip-down scripts which are executed after those built by GUI - relevant NVRAM variables are "pptpd_ipup_script" / "pptpd_ipdown_script".</li>
+			</ul>
+		</li>
+	</ul>
+</div>
+
+<!-- / / / -->
+
 <div id="footer">
-<!--	<span id="footer-msg"></span>
+    <span id="footer-msg"></span>
 	<input type="button" value="Save" id="save-button" onclick="save()">
-	<input type="button" value="Cancel" id="cancel-button" onclick="reloadPage();"> -->
+	<input type="button" value="Cancel" id="cancel-button" onclick="reloadPage();">
 </div>
 
 </td></tr>

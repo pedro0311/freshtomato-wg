@@ -3694,7 +3694,7 @@ TOP:
 	if ((strcmp(service, "samba") == 0) || (strcmp(service, "smbd") == 0)) {
 		if (act_stop) stop_samba();
 		if (act_start) {
-			create_passwd();
+			create_passwd();OPENVPN
 			stop_dnsmasq();
 			start_dnsmasq();
 			start_samba(1); /* force (re)start */
@@ -3713,6 +3713,14 @@ TOP:
 	if (strncmp(service, "vpnserver", 9) == 0) {
 		if (act_stop) stop_ovpn_server(atoi(&service[9]));
 		if (act_start) start_ovpn_server(atoi(&service[9]));
+		goto CLEAR;
+	}
+#endif
+
+#ifdef TCONFIG_WIREGUARD
+	if (strncmp(service, "wireguard", 9) == 0) {
+		if (act_stop) stop_wireguard(1);
+		if (act_start) start_wireguard(1);
 		goto CLEAR;
 	}
 #endif
