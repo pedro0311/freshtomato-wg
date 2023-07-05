@@ -3694,7 +3694,7 @@ TOP:
 	if ((strcmp(service, "samba") == 0) || (strcmp(service, "smbd") == 0)) {
 		if (act_stop) stop_samba();
 		if (act_start) {
-			create_passwd();OPENVPN
+			create_passwd();
 			stop_dnsmasq();
 			start_dnsmasq();
 			start_samba(1); /* force (re)start */
