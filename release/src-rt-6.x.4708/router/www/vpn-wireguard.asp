@@ -22,6 +22,7 @@
 
 //	<% nvram("_http_id"); %>
 
+var cprefix = 'vpn_wireguard';
 var changed = 0;
 var serviceType = 'wireguard';
 
