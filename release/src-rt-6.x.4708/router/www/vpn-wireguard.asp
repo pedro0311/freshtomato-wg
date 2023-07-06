@@ -26,6 +26,7 @@ var changed = 0;
 var serviceType = 'wireguard';
 
 function verifyFields(focused, quiet) {
+	var ok = 1;
 	return ok;
 }
 
