@@ -51,6 +51,10 @@ function earlyInit() {
 
 function init() {
 	eventHandler();
+	var c;
+	if (((c = cookie.get(cprefix+'_notes_vis')) != null) && (c == '1'))
+		toggleVisibility(cprefix, 'notes');
+	eventHandler();
 	up.initPage(250, 5);
 }
 </script>
@@ -89,14 +93,9 @@ function init() {
 <div class="section-title">Notes <small><i><a href='javascript:toggleVisibility(cprefix,"notes");'><span id="sesdiv_notes_showhide">(Show)</span></a></i></small></div>
 <div class="section" id="sesdiv_notes" style="display:none">
 	<ul>
-		<li><b>Local IP Address/Netmask</b> - Address to be used at the local end of the tunnelled PPP links between the server and the VPN clients.</li>
-		<li><b>Remote IP Address Range</b> - Remote IP addresses to be used on the tunnelled PPP links (max 6).</li>
-		<li><b>Broadcast Relay Mode</b> - Turns on broadcast relay between VPN clients and LAN interface.</li>
-		<li><b>Enable Encryption</b> - Enabling this option will turn on VPN channel encryption, but it might lead to reduced channel bandwidth.</li>
-		<li><b>DNS Servers</b> - Allows defining DNS servers manually (if none are set, the router/local IP address should be used by VPN clients).</li>
-		<li><b>WINS Servers</b> - Allows configuring extra WINS servers for VPN clients, in addition to the WINS server defined on <a href="advanced-dhcpdns.asp">Advanced: DHCP / DNS</a>.</li>
-		<li><b>MTU</b> - Maximum Transmission Unit. Max packet size the PPTP interface will be able to send without packet fragmentation.</li>
-		<li><b>MRU</b> - Maximum Receive Unit. Max packet size the PPTP interface will be able to receive without packet fragmentation.</li>
+		<li><b>Enable on Start</b> - Enabling this will start the wireguard device when the router starts up.</li>
+		<li><b>Local IP Address</b> - Address to be used for the local wireguard device.</li>
+		<li><b>Subnet/Netmask</b> - Remote IP addresses to be used on the tunnelled PPP links (max 6).</li>
 	</ul>
 	<br>
 	<ul>
