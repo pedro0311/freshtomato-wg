@@ -24,8 +24,12 @@ void start_wireguard(int unit)
 		return;
 	}
 
+	/* generate wireguard device address/subnet */
+	memset(buffer, 0, BUF_SIZE);
+	snprintf(buffer, BUF_SIZE, "%s/%s", nvram_get("wg_server_localip"), nvram_get("wg_server_nm"));
+
     /* set interface address and netmask */
-	if (wg_set_iface(iface, addr)) {
+	if (wg_set_iface(iface, buffer)) {
 		stop_wireguard(unit);
 		return;
 	}/* create interface */
@@ -42,7 +46,7 @@ void stop_wireguard(int unit)
     
 }
 
-static int wg_create_iface(char *iface)
+int wg_create_iface(char *iface)
 {
     /* Make sure module is loaded */
     modprobe("wireguard");
@@ -56,7 +60,7 @@ static int wg_create_iface(char *iface)
     return 0;
 }
 
-static int wg_set_iface(char *iface, char *addr)
+int wg_set_iface(char *iface, char *addr)
 {
     /* Create wireguard interface */
 	if (eval("ip", "addr", "flush", "dev", iface)) {
@@ -73,7 +77,7 @@ static int wg_set_iface(char *iface, char *addr)
     return 0;
 }
 
-static int wg_remove_iface(char *iface)
+int wg_remove_iface(char *iface)
 {
     /* Create wireguard interface */
 	if (eval("ip", "link", "delete", iface)) {

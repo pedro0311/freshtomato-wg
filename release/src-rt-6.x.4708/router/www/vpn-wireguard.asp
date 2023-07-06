@@ -74,13 +74,10 @@ function init() {
 	<script>
 		createFieldTable('', [
 			{ title: 'Enable on Start', name: 'f_wg_server_eas', type: 'checkbox', value: nvram.wg_server_eas == '1' },
-			{ title: 'Local IP Address/Netmask', multi: [
-				{ name: 'f_wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn, suffix: '&nbsp;-&nbsp;' },
-				{ name: 'f_wg_server_nm', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_nm, suffix: ' <i id="pptpd_count"><\/i>' }
-			] },
-			{ title: 'Remote IP Address Range', multi: [
-				{ name: 'f_wg_server_startip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_startip, suffix: '&nbsp;-&nbsp;' },
-				{ name: 'f_wg_server_endip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_endip, suffix: ' <i id="pptpd_count"><\/i>' }
+			{ title: 'Local IP', name: 'f_wg_server_localip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_localip },
+			{ title: 'Subnet/Netmask', multi: [
+				{ name: 'f_wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn },
+				{ name: 'f_wg_server_nm', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_nm }
 			] },
 		]);
 	</script>

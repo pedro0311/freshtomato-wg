@@ -1717,11 +1717,11 @@ static const nvset_t nvset_list[] = {
 	{ "wg_eas",					V_01				},
 	{ "wg_server_key",			V_TEXT(0, 50)		},
 	{ "wg_server_port",			V_PORT				},
-	{ "wg_server_local",		V_IP				},
+	{ "wg_server_localip",		V_IP				},
 	{ "wg_server_sn",			V_IP				},
 	{ "wg_server_nm",			V_IP				},
-	{ "wg_server_startip",		V_IP				},
-	{ "wg_server_endip",		V_IP				},
+	//{ "wg_server_startip",		V_IP				},
+	//{ "wg_server_endip",		V_IP				},
 #endif
 
 	{ NULL }
