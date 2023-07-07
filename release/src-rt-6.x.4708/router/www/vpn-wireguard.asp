@@ -75,6 +75,10 @@ function init() {
 
 <!-- / / / -->
 
+<input type="hidden" name="_service" value="">
+
+<!-- / / / -->
+
 <div class="section-title">Wireguard</div>
 <div class="section">
 	<script>
