@@ -47,8 +47,8 @@ function save(nomsg) {
 }
 
 function earlyInit() {
-	//show();
-	//verifyFields(null, 1);
+	show();
+	verifyFields(null, 1);
 }
 
 function init() {
