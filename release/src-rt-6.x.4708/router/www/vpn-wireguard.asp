@@ -87,7 +87,7 @@ function init() {
 			] },
 		]);
 	</script>
-	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg_server_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
+	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
 </div>
 
 <!-- / / / -->
