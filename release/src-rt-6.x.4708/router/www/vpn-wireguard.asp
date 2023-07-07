@@ -40,7 +40,8 @@ function save_pre() {
 function save(nomsg) {
 	save_pre();
 	if (!nomsg) show(); /* update '_service' field first */
-
+	
+	var fom = E('t_fom');
 	form.submit(fom, 1);
 
 	changed = 0;
