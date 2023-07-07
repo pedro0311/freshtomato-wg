@@ -20,7 +20,7 @@
 
 <script>
 
-//	<% nvram("_http_id"); %>
+//	<% nvram("f_wg_server_eas,f_wg_server_localip,f_wg_server_sn,f_wg_server_nm"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
@@ -40,7 +40,7 @@ function save_pre() {
 function save(nomsg) {
 	save_pre();
 	if (!nomsg) show(); /* update '_service' field first */
-	
+
 	var fom = E('t_fom');
 	form.submit(fom, 1);
 
