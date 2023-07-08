@@ -57,7 +57,7 @@ int wg_create_iface(char *iface)
     modprobe("wireguard");
     
     /* Create wireguard interface */
-	if (eval("ip", "link", "add", "dev", iface, "type", "wireguard")) {
+	if (eval("/usr/sbin/ip", "link", "add", "dev", iface, "type", "wireguard")) {
 		logmsg(LOG_WARNING, "unable to create wireguard interface %s!", iface);
 		return -1;
 	}
@@ -68,13 +68,13 @@ int wg_create_iface(char *iface)
 int wg_set_iface(char *iface, char *addr)
 {
     /* Create wireguard interface */
-	if (eval("ip", "addr", "flush", "dev", iface)) {
+	if (eval("/usr/sbin/ip", "addr", "flush", "dev", iface)) {
 		logmsg(LOG_WARNING, "unable to flush wireguard interface %s!", iface);
 		return -1;
 	}
 
     /* Set wireguard interface address/netmask */
-	if (eval("ip", "addr", "add", addr, "dev", iface)) {
+	if (eval("/usr/sbin/ip", "addr", "add", addr, "dev", iface)) {
 		logmsg(LOG_WARNING, "unable to set wireguard interface %s address to %s!", iface, addr);
 		return -1;
 	}
@@ -85,7 +85,7 @@ int wg_set_iface(char *iface, char *addr)
 int wg_remove_iface(char *iface)
 {
     /* Create wireguard interface */
-	if (eval("ip", "link", "delete", iface)) {
+	if (eval("/usr/sbin/ip", "link", "delete", iface)) {
 		logmsg(LOG_WARNING, "unable to delete wireguard interface %s!", iface);
 		return -1;
 	}
