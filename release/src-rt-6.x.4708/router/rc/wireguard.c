@@ -52,7 +52,7 @@ int wg_create_iface(char *iface)
     modprobe("wireguard");
     
     /* Create wireguard interface */
-	if (eval("ip", "link", "add", "dev", iface, "type" "wireguard")) {
+	if (eval("ip", "link", "add", "dev", iface, "type", "wireguard")) {
 		logmsg(LOG_WARNING, "unable to create wireguard interface %s!", iface);
 		return -1;
 	}
