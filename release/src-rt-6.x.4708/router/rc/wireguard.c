@@ -36,7 +36,6 @@ void start_wireguard(int unit)
 		stop_wireguard(unit);
 		return;
 	}
-
 }
 
 void stop_wireguard(int unit)
