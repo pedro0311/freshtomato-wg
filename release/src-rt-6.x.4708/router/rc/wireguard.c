@@ -10,7 +10,6 @@
 
 void start_wireguard(int unit)
 {
-    FILE *fp;
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
 
@@ -38,12 +37,19 @@ void start_wireguard(int unit)
 		return;
 	}
 
-    fp = fopen(buffer, "w");
 }
 
 void stop_wireguard(int unit)
 {
-    
+	char iface[IF_SIZE];
+    char buffer[BUF_SIZE];
+
+    /* Determine interface */
+	memset(iface, 0, IF_SIZE);
+	snprintf(iface, IF_SIZE, "wg%d", unit);
+
+	/* Remove interface */
+    wg_remove_iface(iface);
 }
 
 int wg_create_iface(char *iface)
