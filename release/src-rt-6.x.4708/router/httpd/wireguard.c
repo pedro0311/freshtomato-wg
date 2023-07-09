@@ -4,7 +4,7 @@
 #define IF_SIZE			8
 
 
-int asp_wg_status(int argc, char **argv)
+void asp_wg_status(int argc, char **argv)
 {
 	if (argc == 1)
 	{
@@ -13,6 +13,6 @@ int asp_wg_status(int argc, char **argv)
 		memset(buffer, 0, BUF_SIZE);
 		snprintf(buffer, BUF_SIZE, "grep -Fxq 'up' /sys/class/net/%s/operstate", argv[0]);
 		
-		return eval(buffer);
+		web_puts(eval(buffer));
 	}
 }
