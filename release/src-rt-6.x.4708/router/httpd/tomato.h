@@ -121,8 +121,8 @@ extern void wo_pptpdcmd(char *url);
 
 /* wireguard.c */
 #ifdef TCONFIG_WIREGUARD
-extern int wg_status(char *iface)
-extern int asp_wg_status(int argc, char **argv)
+extern int wg_status(char *iface);
+extern int asp_wg_status(int argc, char **argv);
 #endif
 
 /* devlist.c */
