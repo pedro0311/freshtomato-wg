@@ -60,6 +60,7 @@ int wg_create_iface(char *iface)
 	}
 	else {
 		logmsg(LOG_DEBUG, "wireguard interface %s has been created", iface);
+
 	}
 
     return 0;
