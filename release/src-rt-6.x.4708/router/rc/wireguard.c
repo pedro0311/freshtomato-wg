@@ -103,7 +103,7 @@ int wg_remove_iface(char *iface)
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "wireguard interface %s has been deleted", iface, addr);
+		logmsg(LOG_DEBUG, "wireguard interface %s has been deleted", iface);
 		return -1;
 	}
 
