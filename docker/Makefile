@@ -15,7 +15,7 @@ build.%: .freshtomato.docker_built
 	$(DOCKER) run -v $(abspath ../):/ws -it --user $(shell id -u):$(shell id -g) $(IMG_NAME):$(VERSION) make -C /ws/release/src-rt-6.x.4708 $(subst build.,,$@)
 
 build.noit.%: .freshtomato.docker_built
-	$(DOCKER) run -v $(abspath ../):/ws --user $(shell id -u):$(shell id -g) $(IMG_NAME):$(VERSION) make -C /ws/release/src-rt-6.x.4708 $(subst build.,,$@)
+	$(DOCKER) run -v $(abspath ../):/ws --user $(shell id -u):$(shell id -g) $(IMG_NAME):$(VERSION) make -C /ws/release/src-rt-6.x.4708 $(subst build.noit.,,$@)
 
 clean:
 	rm -f .freshtomato.docker_built
