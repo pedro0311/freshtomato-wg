@@ -12,7 +12,7 @@ void asp_wg_status(int argc, char **argv)
 
 		memset(buffer, 0, BUF_SIZE);
 		snprintf(buffer, BUF_SIZE, "grep -Fxq 'up' /sys/class/net/%s/operstate", argv[0]);
-		
-		web_puts(eval(buffer));
+
+		web_printf("%d", eval(buffer) == 0);
 	}
 }
