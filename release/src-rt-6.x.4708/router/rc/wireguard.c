@@ -31,10 +31,6 @@ void start_wireguard(int unit)
 	if (wg_set_iface(iface, buffer)) {
 		stop_wireguard(unit);
 		return;
-	}/* create interface */
-	if (wg_create_iface(iface)) {
-		stop_wireguard(unit);
-		return;
 	}
 }
 
