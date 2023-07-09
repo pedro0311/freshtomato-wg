@@ -64,7 +64,6 @@ int wg_create_iface(char *iface)
 	}
 	else {
 		logmsg(LOG_DEBUG, "wireguard interface %s has been created", iface);
-		return -1;
 	}
 
     return 0;
@@ -79,7 +78,6 @@ int wg_set_iface(char *iface, char *addr)
 	}
 	else {
 		logmsg(LOG_DEBUG, "successfully flushed wireguard interface %s!", iface);
-		return -1;
 	}
 
     /* Set wireguard interface address/netmask */
@@ -89,7 +87,6 @@ int wg_set_iface(char *iface, char *addr)
 	}
 	else {
 		logmsg(LOG_DEBUG, "wireguard interface %s has had it's address set to %s", iface, addr);
-		return -1;
 	}
 
     return 0;
@@ -104,7 +101,6 @@ int wg_remove_iface(char *iface)
 	}
 	else {
 		logmsg(LOG_DEBUG, "wireguard interface %s has been deleted", iface);
-		return -1;
 	}
 
     return 0;
