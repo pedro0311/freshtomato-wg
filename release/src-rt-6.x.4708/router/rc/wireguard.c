@@ -55,6 +55,7 @@ int wg_create_iface(char *iface)
 {
     /* Make sure module is loaded */
     modprobe("wireguard");
+	f_wait_exists("/sys/module/wireguard", 5);
     
     /* Create wireguard interface */
 	if (eval("/usr/sbin/ip", "link", "add", "dev", iface, "type", "wireguard")) {
