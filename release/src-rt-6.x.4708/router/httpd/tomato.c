@@ -127,6 +127,9 @@ const aspapi_t aspapi[] = {
 #ifdef TCONFIG_PPTPD
 	{ "pptpd_userol",		asp_pptpd_userol		},
 #endif
+#ifdef TCONFIG_WIREGUARD
+	{ "wg_status",			asp_wg_status			},
+#endif
 	{ "wlstats",			asp_wlstats			},
 	{ "wlclient",			asp_wlclient			},
 	{ "wlnoise",			asp_wlnoise			},

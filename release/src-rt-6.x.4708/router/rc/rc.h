@@ -575,6 +575,17 @@ extern void write_ovpn_dnsmasq_config(FILE*);
 extern int write_ovpn_resolv(FILE*);
 #endif
 
+/* wireguard.c */
+#ifdef TCONFIG_WIREGUARD
+extern void start_wireguard(int unit);
+extern void stop_wireguard(int unit);
+extern int wg_create_iface(char *iface);
+extern int wg_set_iface(char *iface, char *addr);
+extern int wg_remove_iface(char *iface);
+extern int wg_status(char *iface);
+extern int asp_wg_status(int argc, char **argv);
+#endif
+
 /* tinc.c */
 #ifdef TCONFIG_TINC
 extern void start_tinc(int force);
