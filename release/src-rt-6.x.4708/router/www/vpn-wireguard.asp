@@ -42,6 +42,9 @@ function save(nomsg) {
 	if (!nomsg) show(); /* update '_service' field first */
 
 	var fom = E('t_fom');
+
+	fom.wg_server_eas.value = fom._wg_server_eas.checked ? 1 : 0;
+
 	form.submit(fom, 1);
 
 	changed = 0;
