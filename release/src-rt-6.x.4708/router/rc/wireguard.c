@@ -130,7 +130,7 @@ int wg_set_iface_privkey(char *iface, char* privkey)
 	chmod(buffer, (S_IRUSR | S_IWUSR));
 	
 	/* set interface private key */
-	if (eval("/usr/sbin/wg", "set", "private-key", buffer)){
+	if (eval("/usr/sbin/wg", "set", iface, "private-key", buffer)){
 		logmsg(LOG_WARNING, "unable to set wireguard interface %s private key!", iface);
 		return -1;
 	}
