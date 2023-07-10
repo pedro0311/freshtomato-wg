@@ -28,10 +28,17 @@ void start_wireguard(int unit)
 	snprintf(buffer, BUF_SIZE, "%s/%s", nvram_get("wg_server_localip"), nvram_get("wg_server_nm"));
 
     /* set interface address and netmask */
-	if (wg_set_iface(iface, buffer)) {
+	if (wg_set_iface_addr(iface, buffer)) {
 		stop_wireguard(unit);
 		return;
 	}
+
+	/* set interface port */
+	if (wg_set_iface_port(iface, atoi(nvram_get("wg_server_port")))) {
+		stop_wireguard(unit);
+		return;
+	}
+	
 }
 
 void stop_wireguard(int unit)
@@ -66,9 +73,9 @@ int wg_create_iface(char *iface)
     return 0;
 }
 
-int wg_set_iface(char *iface, char *addr)
+int wg_set_iface_addr(char *iface, char *addr)
 {
-    /* Create wireguard interface */
+    /* Flush wireguard interface */
 	if (eval("/usr/sbin/ip", "addr", "flush", "dev", iface)) {
 		logmsg(LOG_WARNING, "unable to flush wireguard interface %s!", iface);
 		return -1;
@@ -83,10 +90,22 @@ int wg_set_iface(char *iface, char *addr)
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "wireguard interface %s has had it's address set to %s", iface, addr);
+		logmsg(LOG_DEBUG, "wireguard interface %s has had its address set to %s", iface, addr);
 	}
 
     return 0;
+}
+
+int wg_set_iface_port(char *iface, int port)
+{
+	if (eval("/usr/sbin/wg", "set", "listen-port", port)){
+		logmsg(LOG_WARNING, "unable to set wireguard interface %s port to %d!", iface, port);
+	}
+	else {
+		logmsg(LOG_DEBUG, "wireguard interface %s has had its port set to %s", iface, port);
+	}
+
+	return 0;
 }
 
 int wg_remove_iface(char *iface)

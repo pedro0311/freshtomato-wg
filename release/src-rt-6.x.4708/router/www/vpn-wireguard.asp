@@ -20,7 +20,7 @@
 
 <script>
 
-//	<% nvram("wg_server_eas,wg_server_localip,wg_server_sn,wg_server_nm"); %>
+//	<% nvram("wg_server_eas,wg_server_localip,wg_server_sn,wg_server_nm,wg_server_port"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
@@ -85,6 +85,7 @@ function init() {
 	<script>
 		createFieldTable('', [
 			{ title: 'Enable on Start', name: 'wg_server_eas', type: 'checkbox', value: nvram.wg_server_eas == '1' },
+			{ title: 'Port', name: 'wg_server_port', type: 'text', maxlen: 5, size: 10, value: nvram.wg_server_port },
 			{ title: 'Local IP', name: 'wg_server_localip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_localip },
 			{ title: 'Subnet/Netmask', multi: [
 				{ name: 'wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn },
