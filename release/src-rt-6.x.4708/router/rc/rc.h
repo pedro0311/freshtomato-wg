@@ -580,8 +580,12 @@ extern int write_ovpn_resolv(FILE*);
 extern void start_wireguard(int unit);
 extern void stop_wireguard(int unit);
 extern int wg_create_iface(char *iface);
-extern int wg_set_iface(char *iface, char *addr);
+extern int wg_set_iface_addr(char *iface, char *addr);
+extern int wg_set_iface_port(char *iface, char *port);
+extern int wg_set_iface_privkey(char *iface, char* privkey);
+extern int wg_set_iface_up(char *iface);
 extern int wg_remove_iface(char *iface);
+extern void start_wg_eas();
 #endif
 
 /* tinc.c */

@@ -164,7 +164,6 @@ int wg_set_iface_up(char *iface)
 	return 0;
 }
 
-
 int wg_remove_iface(char *iface)
 {
     /* Create wireguard interface */
@@ -177,4 +176,12 @@ int wg_remove_iface(char *iface)
 	}
 
     return 0;
+}
+
+void start_wg_eas()
+{
+	if (nvram_safe_get("wg_server_eas"))
+	{
+		start_wireguard(1);
+	}
 }
