@@ -103,7 +103,7 @@ int wg_set_iface_addr(char *iface, char *addr)
 
 int wg_set_iface_port(char *iface, int port)
 {
-	if (eval("/usr/sbin/wg", "set", "listen-port", port)){
+	if (eval("/usr/sbin/wg", "set", iface, "listen-port", port)){
 		logmsg(LOG_WARNING, "unable to set wireguard interface %s port to %d!", iface, port);
 		return -1;
 	}
