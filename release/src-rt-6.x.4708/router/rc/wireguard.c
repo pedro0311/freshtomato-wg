@@ -44,6 +44,12 @@ void start_wireguard(int unit)
 		stop_wireguard(unit);
 		return;
 	}
+
+	/* bring up interface */
+	if (wg_set_iface_up(iface)) {
+		stop_wireguard(unit);
+		return;
+	}
 }
 
 void stop_wireguard(int unit)
@@ -81,13 +87,14 @@ int wg_create_iface(char *iface)
 int wg_set_iface_addr(char *iface, char *addr)
 {
     /* Flush wireguard interface */
+	/*
 	if (eval("/usr/sbin/ip", "addr", "flush", "dev", iface)) {
 		logmsg(LOG_WARNING, "unable to flush wireguard interface %s!", iface);
 		return -1;
 	}
 	else {
 		logmsg(LOG_DEBUG, "successfully flushed wireguard interface %s!", iface);
-	}
+	} */
 
     /* Set wireguard interface address/netmask */
 	if (eval("/usr/sbin/ip", "addr", "add", addr, "dev", iface)) {
@@ -138,8 +145,25 @@ int wg_set_iface_privkey(char *iface, char* privkey)
 		logmsg(LOG_DEBUG, "wireguard interface %s has had its private key set", iface);
 	}
 
+	/* remove file for security */
+	remove(buffer);
+
 	return 0;
 }
+
+int wg_set_iface_up(char *iface)
+{
+	if (eval("/usr/sbin/ip", "link", "set", "up", "dev", iface)){
+		logmsg(LOG_WARNING, "unable to bring up wireguard interface %s!", iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "wireguard interface %s has been brought up", iface);
+	}
+
+	return 0;
+}
+
 
 int wg_remove_iface(char *iface)
 {
