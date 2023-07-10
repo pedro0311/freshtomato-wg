@@ -80,6 +80,7 @@ function init() {
 <!-- / / / -->
 
 <input type="hidden" name="_service" value="">
+<input type="hidden" name="wg_server_eas">
 
 <!-- / / / -->
 

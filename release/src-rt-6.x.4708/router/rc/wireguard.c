@@ -180,7 +180,7 @@ int wg_remove_iface(char *iface)
 
 void start_wg_eas()
 {
-	if (atoi(nvram_safe_get("wg_server_eas")))
+	if (nvram_get_int("wg_server_eas"))
 	{
 		start_wireguard(1);
 	}
