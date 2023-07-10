@@ -34,7 +34,7 @@ void start_wireguard(int unit)
 	}
 
 	/* set interface port */
-	if (wg_set_iface_port(iface, atoi(nvram_get("wg_server_port")))) {
+	if (wg_set_iface_port(iface, nvram_get("wg_server_port"))) {
 		stop_wireguard(unit);
 		return;
 	}
@@ -101,14 +101,14 @@ int wg_set_iface_addr(char *iface, char *addr)
     return 0;
 }
 
-int wg_set_iface_port(char *iface, int port)
+int wg_set_iface_port(char *iface, char *port)
 {
 	if (eval("/usr/sbin/wg", "set", iface, "listen-port", port)){
-		logmsg(LOG_WARNING, "unable to set wireguard interface %s port to %d!", iface, port);
+		logmsg(LOG_WARNING, "unable to set wireguard interface %s port to %s!", iface, port);
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "wireguard interface %s has had its port set to %d", iface, port);
+		logmsg(LOG_DEBUG, "wireguard interface %s has had its port set to %s", iface, port);
 	}
 
 	return 0;
