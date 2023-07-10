@@ -38,7 +38,12 @@ void start_wireguard(int unit)
 		stop_wireguard(unit);
 		return;
 	}
-	
+
+	/* set interface private key */
+	if (wg_set_iface_privkey(iface, nvram_get("wg_server_privkey"))) {
+		stop_wireguard(unit);
+		return;
+	}
 }
 
 void stop_wireguard(int unit)
@@ -100,9 +105,37 @@ int wg_set_iface_port(char *iface, int port)
 {
 	if (eval("/usr/sbin/wg", "set", "listen-port", port)){
 		logmsg(LOG_WARNING, "unable to set wireguard interface %s port to %d!", iface, port);
+		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "wireguard interface %s has had its port set to %s", iface, port);
+		logmsg(LOG_DEBUG, "wireguard interface %s has had its port set to %d", iface, port);
+	}
+
+	return 0;
+}
+
+int wg_set_iface_privkey(char *iface, char* privkey)
+{
+	FILE *fp;
+	char buffer[BUF_SIZE];
+
+	/* write private key to file */
+	memset(buffer, 0, BUF_SIZE);
+	snprintf(buffer, BUF_SIZE, "/tmp/%s.privkey", iface);
+
+	fp = fopen(buffer, "w");
+	fprintf(fp, privkey);
+	fclose(fp);
+
+	chmod(buffer, (S_IRUSR | S_IWUSR));
+	
+	/* set interface private key */
+	if (eval("/usr/sbin/wg", "set", "private-key", buffer)){
+		logmsg(LOG_WARNING, "unable to set wireguard interface %s private key!", iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "wireguard interface %s has had its private key set", iface);
 	}
 
 	return 0;
