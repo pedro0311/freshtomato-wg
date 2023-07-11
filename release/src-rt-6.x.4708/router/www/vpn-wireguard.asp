@@ -43,7 +43,7 @@ function save(nomsg) {
 
 	var fom = E('t_fom');
 
-	fom.wg_server_eas.value = fom._wg_server_eas.checked ? 1 : 0;
+	fom.wg_server_eas.value = fom._f_wg_server_eas.checked ? 1 : 0;
 
 	form.submit(fom, 1);
 
@@ -88,7 +88,7 @@ function init() {
 <div class="section">
 	<script>
 		createFieldTable('', [
-			{ title: 'Enable on Start', name: 'wg_server_eas', type: 'checkbox', value: nvram.wg_server_eas == '1' },
+			{ title: 'Enable on Start', name: 'f_wg_server_eas', type: 'checkbox', value: nvram.wg_server_eas == '1' },
 			{ title: 'Port', name: 'wg_server_port', type: 'text', maxlen: 5, size: 10, value: nvram.wg_server_port },
 			{ title: 'Private Key', name: 'wg_server_privkey', type: 'text', maxlen: 50, size: 50, value: nvram.wg_server_privkey },
 			{ title: 'Local IP', name: 'wg_server_localip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_localip },
