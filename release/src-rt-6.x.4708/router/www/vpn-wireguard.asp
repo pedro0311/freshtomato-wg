@@ -102,8 +102,8 @@ function init() {
 			createFieldTable('', [
 			{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 50, size: 50, value: eval(`nvram.wg_server_peer${i}_key`) },
 			{ title: 'IP/Netmask', multi: [
-				{ name: `wg_server_peer${i}_ip`, type: 'text', maxlen: 15, size: 17, value: eval(`nvram.wg_server_peer${i}_ip`) },
-				{ name: `wg_server_peer${i}_ip`, type: 'text', maxlen: 2, size: 4, value: eval(`nvram.wg_server_peer${i}_nm`) }
+				{ name: 'wg_server_peer'+i+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_server_peer'+i+'_ip') },
+				{ name: 'wg_server_peer'+i+'_ip', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_server_peer'+i+'_nm') }
 			] },
 			]);
 		}
