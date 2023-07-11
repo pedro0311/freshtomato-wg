@@ -47,7 +47,8 @@ void start_wireguard(int unit)
 	}
 
 	/* add stored peers */
-	for(int i = 1; i <= PEER_COUNT; i++)
+	int i = 1;
+	while(i <= PEER_COUNT)
 	{
 		if (getNVRAMVar("wg_server_peer%d_key", i)[0] != '\0' &&
 			getNVRAMVar("wg_server_peer%d_ip", i)[0] != '\0' &&
@@ -57,6 +58,8 @@ void start_wireguard(int unit)
 			snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server_peer%d_ip", i), getNVRAMVar("wg_server_peer%d_nm", i));
 			wg_add_peer(iface, getNVRAMVar("wg_server_peer%d_key", i), buffer);
 		}
+		
+		i += 1;
 	}
 
 	/* bring up interface */
