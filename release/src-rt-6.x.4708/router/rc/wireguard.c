@@ -6,6 +6,7 @@
 
 #define BUF_SIZE		256
 #define IF_SIZE			8
+#define PEER_COUNT		3
 
 
 void start_wireguard(int unit)
@@ -43,6 +44,19 @@ void start_wireguard(int unit)
 	if (wg_set_iface_privkey(iface, nvram_get("wg_server_privkey"))) {
 		stop_wireguard(unit);
 		return;
+	}
+
+	/* add stored peers */
+	for(int i = 1; i <= PEER_COUNT; i++)
+	{
+		if (getNVRAMVar("wg_server_peer%d_key", i)[0] != '\0' &&
+			getNVRAMVar("wg_server_peer%d_ip", i)[0] != '\0' &&
+			getNVRAMVar("wg_server_peer%d_nm", i)[0] != '\0')
+		{
+			memset(buffer, 0, BUF_SIZE);
+			snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server_peer%d_ip", i), getNVRAMVar("wg_server_peer%d_nm", i));
+			wg_add_peer(iface, getNVRAMVar("wg_server_peer%d_key", i), buffer);
+		}
 	}
 
 	/* bring up interface */
@@ -159,6 +173,32 @@ int wg_set_iface_up(char *iface)
 	}
 	else {
 		logmsg(LOG_DEBUG, "wireguard interface %s has been brought up", iface);
+	}
+
+	return 0;
+}
+
+int wg_add_peer(char *iface, char *peer_pubkey, char *allowed_ips)
+{
+	if (eval("/usr/sbin/wg", "set", iface, "peer", peer_pubkey, "allowed-ips", allowed_ips)){
+		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", iface, peer_pubkey);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "peer %s has been added to wireguard interface %s", iface, peer_pubkey);
+	}
+
+	return 0;
+}
+
+int wg_remove_peer(char *iface, char *peer_pubkey)
+{
+	if (eval("/usr/sbin/wg", "set", iface, "peer", peer_pubkey, "remove")){
+		logmsg(LOG_WARNING, "unable to remove peer %s from wireguard interface %s!", iface, peer_pubkey);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "peer %s has been removed from wireguard interface %s", iface, peer_pubkey);
 	}
 
 	return 0;

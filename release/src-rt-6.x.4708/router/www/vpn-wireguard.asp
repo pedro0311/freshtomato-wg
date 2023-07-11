@@ -20,11 +20,12 @@
 
 <script>
 
-//	<% nvram("wg_server_eas,wg_server_localip,wg_server_sn,wg_server_nm,wg_server_port,wg_server_privkey"); %>
+//	<% nvram("wg_server_eas,wg_server_localip,wg_server_sn,wg_server_nm,wg_server_port,wg_server_privkey,wg_server_peer1_key,wg_server_peer1_ip,wg_server_peer1_nm,wg_server_peer2_key,wg_server_peer2_ip,wg_server_peer2_nm,wg_server_peer3_key,wg_server_peer3_ip,wg_server_peer3_nm"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
 var serviceType = 'wireguard';
+var peer_count = 3;
 
 function verifyFields(focused, quiet) {
 	var ok = 1;
@@ -94,9 +95,19 @@ function init() {
 			{ title: 'Local IP', name: 'wg_server_localip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_localip },
 			{ title: 'Subnet/Netmask', multi: [
 				{ name: 'wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn },
-				{ name: 'wg_server_nm', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_nm }
+				{ name: 'wg_server_nm', type: 'text', maxlen: 2, size: 4, value: nvram.wg_server_nm }
 			] },
 		]);
+		for (let i = 1; i <= peer_count; i++) {
+			createFieldTable('', [
+			{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 50, size: 50, value: eval(`nvram.wg_server_peer${i}_key`) },
+			{ title: 'IP/Netmask', multi: [
+				{ name: `wg_server_peer${i}_ip`, type: 'text', maxlen: 15, size: 17, value: eval(`nvram.wg_server_peer${i}_ip`) },
+				{ name: `wg_server_peer${i}_ip`, type: 'text', maxlen: 2, size: 4, value: eval(`nvram.wg_server_peer${i}_nm`) }
+			] },
+			]);
+		}
+
 	</script>
 	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
 </div>
