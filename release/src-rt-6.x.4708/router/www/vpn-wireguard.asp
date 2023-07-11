@@ -43,7 +43,7 @@ function save(nomsg) {
 
 	var fom = E('t_fom');
 
-	fom.wg_server_eas.value = fom._f_wg_server_eas.checked ? 1 : 0;
+	fom._wg_server_eas.value = fom._f_wg_server_eas.checked ? 1 : 0;
 
 	form.submit(fom, 1);
 
@@ -80,7 +80,7 @@ function init() {
 <!-- / / / -->
 
 <input type="hidden" name="_service" value="">
-<input type="hidden" name="wg_server_eas">
+<input type="hidden" name="_wg_server_eas">
 
 <!-- / / / -->
 
