@@ -17,7 +17,7 @@ void asp_wg_status(int argc, char **argv)
 
 		int return_code = 0;
 
-		int err = stat(buffer, st);
+		int err = stat(buffer, &st);
 
 		if(err != -1) {
 
