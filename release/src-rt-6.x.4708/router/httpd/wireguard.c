@@ -22,7 +22,7 @@ void asp_wg_status(int argc, char **argv)
 		if(err != -1) {
 
 			fp = fopen(buffer, "r");
-			getline(&buffer, BUF_SIZE, fp);
+			fgets(buffer, BUF_SIZE, fp);
 			
 			if(strcmp(buffer, 'unknown') == 0 || strcmp(buffer, 'up') == 0)
 			{
