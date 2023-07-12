@@ -31,11 +31,10 @@ void asp_wg_status(int argc, char **argv)
 			{
 				return_code = 1;
 			}
-			logmsg(LOG_INFO, "***WG*** closing wireguard operstate at %s", buffer);
 			fclose(fp);
-
 		}
-
+		logmsg(LOG_INFO, "***WG*** return code is %d", return_code);
 		web_printf("%d", return_code);
+		logmsg(LOG_INFO, "***WG*** We got to the end!");
 	}
 }
