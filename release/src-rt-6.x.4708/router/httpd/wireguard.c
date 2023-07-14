@@ -9,32 +9,35 @@
 void asp_wgstat(int argc, char **argv)
 {
 	if (argc == 1)
-	{
-		FILE *fp;
-		char buffer[BUF_SIZE];
-		struct stat *st;
+		web_printf("%d", wg_status(argv[0]));
+}
 
-		memset(buffer, 0, BUF_SIZE);
-		snprintf(buffer, BUF_SIZE, "/sys/class/net/%s/operstate", argv[0]);
+int wg_status(char *iface)
+{
+	FILE *fp;
+	char buffer[BUF_SIZE];
+	struct stat *st;
 
-		int status = 0;
+	memset(buffer, 0, BUF_SIZE);
+	snprintf(buffer, BUF_SIZE, "/sys/class/net/%s/operstate", iface);
 
-		int err = stat(buffer, &st);
+	int status = 0;
 
-		if(err != -1) {
-			logmsg(LOG_INFO, "***WG*** opening wireguard operstate at %s", buffer);
-			fp = fopen(buffer, "r");
-			fgets(buffer, BUF_SIZE, fp);
-			buffer[strcspn(buffer, "\n")] = 0;
-			logmsg(LOG_INFO, "***WG*** found wireguard operstate: %s", buffer);
-			if(strcmp(&buffer, "unknown") == 0 || strcmp(&buffer, "up") == 0)
-			{
-				status = 1;
-			}
-			fclose(fp);
+	int err = stat(buffer, &st);
+
+	if(err != -1) {
+		logmsg(LOG_INFO, "***WG*** opening wireguard operstate at %s", buffer);
+		fp = fopen(buffer, "r");
+		fgets(buffer, BUF_SIZE, fp);
+		buffer[strcspn(buffer, "\n")] = 0;
+		logmsg(LOG_INFO, "***WG*** found wireguard operstate: %s", buffer);
+		if(strcmp(&buffer, "unknown") == 0 || strcmp(&buffer, "up") == 0)
+		{
+			status = 1;
 		}
-		logmsg(LOG_INFO, "***WG*** return code is %d", status);
-		web_printf("%d", pidof(argv[0]) > 0);
-		logmsg(LOG_INFO, "***WG*** We got to the end!");
+		fclose(fp);
 	}
+	logmsg(LOG_INFO, "***WG*** return code is %d", status);
+	return status;
+	logmsg(LOG_INFO, "***WG*** We got to the end!");
 }
