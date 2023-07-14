@@ -9,26 +9,21 @@
 void asp_wgstat(int argc, char **argv)
 {
 	if (argc == 1)
-		//web_printf("%d", wg_status(argv[0]));
-		logmsg(LOG_INFO, "wireguard device %s is status: %d", argv[0], wg_status(argv[0]) == 1);
-		web_printf("%d", 1);
+		web_printf("%d", wg_status(argv[0]));
 }
 
 int wg_status(char *iface)
 {
 	FILE *fp;
 	char buffer[BUF_SIZE];
-	struct stat *st;
 
 	memset(buffer, 0, BUF_SIZE);
 	snprintf(buffer, BUF_SIZE, "/sys/class/net/%s/operstate", iface);
 
 	int status = 0;
 
-	int err = stat(buffer, &st);
-
-	if(err != -1) {
-		fp = fopen(buffer, "r");
+	if(fp = fopen(buffer, "r")) {
+		
 		fgets(buffer, BUF_SIZE, fp);
 		buffer[strcspn(buffer, "\n")] = 0;
 		if(strcmp(&buffer, "unknown") == 0 || strcmp(&buffer, "up") == 0)
@@ -37,5 +32,6 @@ int wg_status(char *iface)
 		}
 		fclose(fp);
 	}
+
 	return status;
 }
