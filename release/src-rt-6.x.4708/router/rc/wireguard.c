@@ -93,7 +93,7 @@ int wg_create_iface(char *iface)
 	/* enable IPv6 forwarding */
 	if(fp = fopen("/proc/sys/net/ipv6/conf/all/forwarding", "w"))
 	{
-		fprintf("%d", 1)
+		fprintf("%d", 1);
 		logmsg(LOG_DEBUG, "Enabled forwarding for IPv6");
 	}
 	else
