@@ -121,7 +121,7 @@ extern void wo_pptpdcmd(char *url);
 
 /* wireguard.c */
 #ifdef TCONFIG_WIREGUARD
-extern void asp_wg_status(int argc, char **argv);
+extern void asp_wgstat(int argc, char **argv);
 #endif
 
 /* devlist.c */

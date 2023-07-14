@@ -4,10 +4,9 @@
 #define LOGMSG_NVDEBUG	"wg_debug"
 
 #define BUF_SIZE		64
-#define IF_SIZE			8
 
 
-void asp_wg_status(int argc, char **argv)
+void asp_wgstat(int argc, char **argv)
 {
 	if (argc == 1)
 	{
@@ -18,7 +17,7 @@ void asp_wg_status(int argc, char **argv)
 		memset(buffer, 0, BUF_SIZE);
 		snprintf(buffer, BUF_SIZE, "/sys/class/net/%s/operstate", argv[0]);
 
-		int return_code = 0;
+		int status = 0;
 
 		int err = stat(buffer, &st);
 
@@ -30,12 +29,12 @@ void asp_wg_status(int argc, char **argv)
 			logmsg(LOG_INFO, "***WG*** found wireguard operstate: %s", buffer);
 			if(strcmp(&buffer, "unknown") == 0 || strcmp(&buffer, "up") == 0)
 			{
-				return_code = 1;
+				status = 1;
 			}
 			fclose(fp);
 		}
-		logmsg(LOG_INFO, "***WG*** return code is %d", return_code);
-		web_printf("%d", return_code);
+		logmsg(LOG_INFO, "***WG*** return code is %d", status);
+		web_printf("%d", pidof(argv[0]) > 0);
 		logmsg(LOG_INFO, "***WG*** We got to the end!");
 	}
 }
