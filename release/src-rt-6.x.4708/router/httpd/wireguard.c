@@ -10,7 +10,8 @@ void asp_wgstat(int argc, char **argv)
 {
 	if (argc == 1)
 		//web_printf("%d", wg_status(argv[0]));
-		web_printf("%d", TRUE);
+		logmsg(LOG_INFO, "wireguard device %s is status: %s", argv[0], wg_status(argv[0]));
+		web_printf("%d", 1);
 }
 
 int wg_status(char *iface)
