@@ -26,18 +26,14 @@ int wg_status(char *iface)
 	int err = stat(buffer, &st);
 
 	if(err != -1) {
-		logmsg(LOG_INFO, "***WG*** opening wireguard operstate at %s", buffer);
 		fp = fopen(buffer, "r");
 		fgets(buffer, BUF_SIZE, fp);
 		buffer[strcspn(buffer, "\n")] = 0;
-		logmsg(LOG_INFO, "***WG*** found wireguard operstate: %s", buffer);
 		if(strcmp(&buffer, "unknown") == 0 || strcmp(&buffer, "up") == 0)
 		{
 			status = 1;
 		}
 		fclose(fp);
 	}
-	logmsg(LOG_INFO, "***WG*** return code is %d", status);
 	return status;
-	logmsg(LOG_INFO, "***WG*** We got to the end!");
 }
