@@ -84,9 +84,22 @@ void stop_wireguard(int unit)
 
 int wg_create_iface(char *iface)
 {
+	FILE *fp;
+
     /* Make sure module is loaded */
     modprobe("wireguard");
 	f_wait_exists("/sys/module/wireguard", 5);
+	
+	/* enable IPv6 forwarding */
+	if(fp = fopen("/proc/sys/net/ipv6/conf/all/forwarding", "w"))
+	{
+		fprintf("%d", 1)
+		logmsg(LOG_DEBUG, "Enabled forwarding for IPv6");
+	}
+	else
+	{
+		logmsg(LOG_WARNING, "Unable to enable forwarding for IPv6!");
+	}
     
     /* Create wireguard interface */
 	if (eval("/usr/sbin/ip", "link", "add", "dev", iface, "type", "wireguard")) {
@@ -95,7 +108,6 @@ int wg_create_iface(char *iface)
 	}
 	else {
 		logmsg(LOG_DEBUG, "wireguard interface %s has been created", iface);
-
 	}
 
     return 0;
