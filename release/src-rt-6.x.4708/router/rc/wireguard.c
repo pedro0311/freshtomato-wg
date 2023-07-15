@@ -67,6 +67,12 @@ void start_wireguard(int unit)
 		stop_wireguard(unit);
 		return;
 	}
+
+	/* set iptables rules */
+	if (wg_set_iptables(iface, nvram_get("wg_server_port"))) {
+		stop_wireguard(unit);
+		return;
+	}
 }
 
 void stop_wireguard(int unit)
@@ -80,6 +86,9 @@ void stop_wireguard(int unit)
 
 	/* Remove interface */
     wg_remove_iface(iface);
+
+	/* remove iptables rules */
+	wg_remove_iptables(iface, nvram_get("wg_server_port"));
 }
 
 int wg_create_iface(char *iface)
@@ -204,6 +213,84 @@ int wg_add_peer(char *iface, char *peer_pubkey, char *allowed_ips)
 	}
 
 	return 0;
+}
+
+int wg_set_iptables(char *iface, char *port)
+{
+	char buffer[64];
+
+	/* open specified port for device */
+	memset(buffer, 0, sizeof(buffer));
+	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*udp.dpt.%s$\"", port);
+
+	if (eval("/usr/sbin/iptables", "-nvL", "INPUT", "|", "grep", "-q", buffer)){
+		if(eval("/usr/sbin/iptables", "-A", "INPUT", "-p", "udp", "--dport", port, "-j", "ACCEPT")) {
+			logmsg(LOG_WARNING, "unable to open port %s for wireguard interface %s using iptables!", port, iface);
+			return -1;
+		}
+	}
+
+	/* accept incoming traffic on device */
+	memset(buffer, 0, sizeof(buffer));
+	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*all.*%s\"", port);
+
+	if (eval("/usr/sbin/iptables", "-nvL", "INPUT", "|", "grep", "-q", buffer)){
+		if(eval("/usr/sbin/iptables", "-A", "INPUT", "-i", iface, "-j", "ACCEPT")) {
+			logmsg(LOG_WARNING, "unable to accept incoming traffic on wireguard interface %s!", iface);
+			return -1;
+		}
+	}
+
+	/* accept forward traffic on device */
+	memset(buffer, 0, sizeof(buffer));
+	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*all.*%s\"", port);
+
+	if (eval("/usr/sbin/iptables", "-nvL", "FORWARD", "|", "grep", "-q", buffer)){
+		if(eval("/usr/sbin/iptables", "-A", "FORWARD", "-i", iface, "-j", "ACCEPT")) {
+			logmsg(LOG_WARNING, "unable to accept forward traffic on wireguard interface %s!", iface);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+int wg_remove_iptables(char *iface, char *port)
+{
+	char buffer[64];
+
+	/* drop rule for specified port for device */
+	memset(buffer, 0, sizeof(buffer));
+	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*udp.dpt.%s$\"", port);
+
+	if (eval("/usr/sbin/iptables", "-nvL", "INPUT", "|", "grep", "-q", buffer)){
+		if(eval("/usr/sbin/iptables", "-D", "INPUT", "-p", "udp", "--dport", port, "-j", "ACCEPT")) {
+			logmsg(LOG_WARNING, "unable to drop rule for port %s for wireguard interface %s using iptables!", port, iface);
+			return -1;
+		}
+	}
+
+	/* drop rule for incoming traffic on device */
+	memset(buffer, 0, sizeof(buffer));
+	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*all.*%s\"", port);
+
+	if (eval("/usr/sbin/iptables", "-nvL", "INPUT", "|", "grep", "-q", buffer)){
+		if(eval("/usr/sbin/iptables", "-D", "INPUT", "-i", iface, "-j", "ACCEPT")) {
+			logmsg(LOG_WARNING, "unable to drop rule for incoming traffic on wireguard interface %s!", iface);
+			return -1;
+		}
+	}
+
+	/* Accept forward traffic on device */
+	memset(buffer, 0, sizeof(buffer));
+	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*all.*%s\"", port);
+
+	if (eval("/usr/sbin/iptables", "-nvL", "FORWARD", "|", "grep", "-q", buffer)){
+		if(eval("/usr/sbin/iptables", "-D", "FORWARD", "-i", iface, "-j", "ACCEPT")) {
+			logmsg(LOG_WARNING, "unable to drop rule for forward traffic on wireguard interface %s!", iface);
+			return -1;
+		}
+	}
 }
 
 int wg_remove_peer(char *iface, char *peer_pubkey)
