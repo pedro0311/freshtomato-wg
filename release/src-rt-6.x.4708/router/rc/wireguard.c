@@ -1,4 +1,7 @@
 #include "rc.h"
+#include <curve25519.h>
+#include <encoding.h>
+#include <wireguard.h>
 
 /* needed by logmsg() */
 #define LOGMSG_DISABLE	DISABLE_SYSLOG_OSM
@@ -56,7 +59,7 @@ void start_wireguard(int unit)
 		{
 			memset(buffer, 0, BUF_SIZE);
 			snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server_peer%d_ip", i), getNVRAMVar("wg_server_peer%d_nm", i));
-			wg_add_peer(iface, getNVRAMVar("wg_server_peer%d_key", i), buffer);
+			wg_add_peer_privkey(iface, getNVRAMVar("wg_server_peer%d_key", i), buffer);
 		}
 		
 		i += 1;
@@ -202,17 +205,28 @@ int wg_set_iface_up(char *iface)
 	return 0;
 }
 
-int wg_add_peer(char *iface, char *peer_pubkey, char *allowed_ips)
+int wg_add_peer(char *iface, char *pubkey, char *allowed_ips)
 {
-	if (eval("/usr/sbin/wg", "set", iface, "peer", peer_pubkey, "allowed-ips", allowed_ips)){
-		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", iface, peer_pubkey);
+
+	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
+		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", iface, pubkey);
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "peer %s has been added to wireguard interface %s", iface, peer_pubkey);
+		logmsg(LOG_DEBUG, "peer %s has been added to wireguard interface %s", iface, pubkey);
 	}
 
 	return 0;
+}
+
+int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips)
+{
+	char pubkey[WG_KEY_LEN_BASE64];
+	memset(pubkey, 0, WG_KEY_LEN_BASE64);
+
+	wg_pubkey(privkey, pubkey);
+
+	return wg_add_peer(iface, pubkey, allowed_ips);
 }
 
 int wg_set_iptables(char *iface, char *port)
@@ -293,17 +307,27 @@ int wg_remove_iptables(char *iface, char *port)
 	}
 }
 
-int wg_remove_peer(char *iface, char *peer_pubkey)
+int wg_remove_peer(char *iface, char *pubkey)
 {
-	if (eval("/usr/sbin/wg", "set", iface, "peer", peer_pubkey, "remove")){
-		logmsg(LOG_WARNING, "unable to remove peer %s from wireguard interface %s!", iface, peer_pubkey);
+	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "remove")){
+		logmsg(LOG_WARNING, "unable to remove peer %s from wireguard interface %s!", iface, pubkey);
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "peer %s has been removed from wireguard interface %s", iface, peer_pubkey);
+		logmsg(LOG_DEBUG, "peer %s has been removed from wireguard interface %s", iface, pubkey);
 	}
 
 	return 0;
+}
+
+int wg_remove_peer_privkey(char *iface, char *privkey)
+{
+	char pubkey[WG_KEY_LEN_BASE64];
+	memset(pubkey, 0, WG_KEY_LEN_BASE64);
+
+	wg_pubkey(privkey, pubkey);
+
+	return wg_remove_peer(iface, pubkey);
 }
 
 int wg_remove_iface(char *iface)
@@ -326,4 +350,14 @@ void start_wg_eas()
 	{
 		start_wireguard(1);
 	}
+}
+
+int wg_pubkey(char *privkey, char *pubkey)
+{
+	uint8_t pubkey_raw[WG_KEY_LEN] __attribute__((aligned(sizeof(uintptr_t))));
+
+	curve25519_generate_public(pubkey_raw, privkey);
+	key_to_base64(pubkey, pubkey_raw);
+
+	return 0
 }
