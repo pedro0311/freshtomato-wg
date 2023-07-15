@@ -100,7 +100,7 @@ int wg_create_iface(char *iface)
 	f_wait_exists("/sys/module/wireguard", 5);
 	
 	/* enable IPv6 forwarding */
-	if((fp = fopen("/proc/sys/net/ipv6/conf/all/forwarding", "w") != NULL))
+	if((fp = fopen("/proc/sys/net/ipv6/conf/all/forwarding", "w")) != NULL)
 	{
 		fprintf(fp, "1");
 		logmsg(LOG_DEBUG, "Enabled forwarding for IPv6");
@@ -109,6 +109,13 @@ int wg_create_iface(char *iface)
 	{
 		logmsg(LOG_WARNING, "Unable to enable forwarding for IPv6!");
 	}
+	//if(eval("/bin/echo", "1", ">", "/proc/sys/net/ipv6/conf/all/forwarding"))
+	//{
+	//	logmsg(LOG_WARNING, "unable to enable forwarding for IPv6!");
+	//}
+	//else {
+	//	logmsg(LOG_DEBUG, "IPv6 forwarding has been enabled");
+	//}
     
     /* Create wireguard interface */
 	if (eval("/usr/sbin/ip", "link", "add", "dev", iface, "type", "wireguard")) {
@@ -360,7 +367,7 @@ int wg_pubkey(char *privkey, char *pubkey)
 		return -1;
 	}
 	
-	if((fp = fopen("/tmp/wgclient.pub", "r") != NULL)) {
+	if((fp = fopen("/tmp/wgclient.pub", "r")) != NULL) {
 		fgets(pubkey, sizeof(pubkey), fp);
 		pubkey[strcspn(pubkey, "\n")] = 0;
 		logmsg(LOG_INFO, "Pubkey before file is closed is %s", pubkey);
@@ -368,5 +375,5 @@ int wg_pubkey(char *privkey, char *pubkey)
 	}
 
 	logmsg(LOG_INFO, "Pubkey after file is closed is %s", pubkey);
-	remove("/tmp/wgclient.pub");
+	//remove("/tmp/wgclient.pub");
 }
