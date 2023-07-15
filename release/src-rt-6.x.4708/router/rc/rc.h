@@ -584,6 +584,9 @@ extern int wg_set_iface_addr(char *iface, char *addr);
 extern int wg_set_iface_port(char *iface, char *port);
 extern int wg_set_iface_privkey(char *iface, char* privkey);
 extern int wg_set_iface_up(char *iface);
+extern int wg_add_peer(char *iface, char *peer_pubkey, char *allowed_ips);
+extern int wg_set_iptables(char *iface, char *port);
+extern int wg_remove_iptables(char *iface, char *port);
 extern int wg_remove_iface(char *iface);
 extern void start_wg_eas();
 #endif
