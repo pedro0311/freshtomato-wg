@@ -206,11 +206,11 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips)
 {
 	FILE *fp;
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
-		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", iface, pubkey);
+		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "peer %s has been added to wireguard interface %s", iface, pubkey);
+		logmsg(LOG_DEBUG, "peer %s has been added to wireguard interface %s", pubkey, iface);
 	}
 
 	return 0;
@@ -222,6 +222,8 @@ int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips)
 
 	memset(pubkey, 0, sizeof(pubkey));
 	wg_pubkey(privkey, pubkey);
+
+	logmsg(LOG_INFO, "Pubkey in add peer is %s", pubkey);
 
 	return wg_add_peer(iface, pubkey, allowed_ips);
 }
@@ -354,16 +356,16 @@ int wg_pubkey(char *privkey, char *pubkey)
 	FILE *fp;
 
 	if(eval("/bin/echo", privkey, "|", "/usr/sbin/wg", "pubkey", ">", "/tmp/wgclient.pub")) {
-		logmsg(LOG_WARNING, "unable to remove peer %s from wireguard interface %s!", pubkey);
+		logmsg(LOG_WARNING, "Unable to generate public key for wireguard!");
 		return -1;
 	}
 	
 	if(fp = fopen("/tmp/wgclient.pub", "r")) {
-		
-		fgets(pubkey, BUF_SIZE, fp);
+		fgets(pubkey, sizeof(pubkey), fp);
 		pubkey[strcspn(pubkey, "\n")] = 0;
+		logmsg(LOG_INFO, "Pubkey before file is closed is %s", pubkey);
 		fclose(fp);
 	}
-
+	logmsg(LOG_INFO, "Pubkey after file is closed is %s", pubkey);
 	remove("/tmp/wgclient.pub");
 }
