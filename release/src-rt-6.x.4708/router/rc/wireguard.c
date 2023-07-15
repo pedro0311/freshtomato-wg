@@ -1,7 +1,4 @@
 #include "rc.h"
-#include "curve25519.h"
-#include "encoding.h"
-#include "wireguard.h"
 
 /* needed by logmsg() */
 #define LOGMSG_DISABLE	DISABLE_SYSLOG_OSM
@@ -207,7 +204,7 @@ int wg_set_iface_up(char *iface)
 
 int wg_add_peer(char *iface, char *pubkey, char *allowed_ips)
 {
-
+	FILE *fp;
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
 		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", iface, pubkey);
 		return -1;
@@ -221,9 +218,9 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips)
 
 int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips)
 {
-	char pubkey[WG_KEY_LEN_BASE64];
-	memset(pubkey, 0, WG_KEY_LEN_BASE64);
+	char pubkey[64];
 
+	memset(pubkey, 0, sizeof(pubkey));
 	wg_pubkey(privkey, pubkey);
 
 	return wg_add_peer(iface, pubkey, allowed_ips);
@@ -322,8 +319,8 @@ int wg_remove_peer(char *iface, char *pubkey)
 
 int wg_remove_peer_privkey(char *iface, char *privkey)
 {
-	char pubkey[WG_KEY_LEN_BASE64];
-	memset(pubkey, 0, WG_KEY_LEN_BASE64);
+	char pubkey[64];
+	memset(pubkey, 0, sizeof(pubkey));
 
 	wg_pubkey(privkey, pubkey);
 
@@ -354,10 +351,19 @@ void start_wg_eas()
 
 int wg_pubkey(char *privkey, char *pubkey)
 {
-	uint8_t pubkey_raw[WG_KEY_LEN] __attribute__((aligned(sizeof(uintptr_t))));
+	FILE *fp;
 
-	curve25519_generate_public(pubkey_raw, privkey);
-	key_to_base64(pubkey, pubkey_raw);
+	if(eval("/bin/echo", privkey, "|", "/usr/sbin/wg", "pubkey", ">", "/tmp/wgclient.pub")) {
+		logmsg(LOG_WARNING, "unable to remove peer %s from wireguard interface %s!", pubkey);
+		return -1;
+	}
+	
+	if(fp = fopen("/tmp/wgclient.pub", "r")) {
+		
+		fgets(pubkey, BUF_SIZE, fp);
+		pubkey[strcspn(pubkey, "\n")] = 0;
+		fclose(fp);
+	}
 
-	return 0
+	remove("/tmp/wgclient.pub");
 }
