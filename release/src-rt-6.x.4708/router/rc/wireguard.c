@@ -1,7 +1,4 @@
 #include "rc.h"
-#include <curve25519.h>
-#include <encoding.h>
-#include <wireguard.h>
 
 /* needed by logmsg() */
 #define LOGMSG_DISABLE	DISABLE_SYSLOG_OSM
