@@ -96,7 +96,7 @@ void stop_wireguard(int unit)
 	wg_remove_iptables(iface, nvram_get("wg_server_port"));
 }
 
-static void wg_setup_dirs() {
+void wg_setup_dirs() {
 
 	FILE *fp;
 	char buffer[64];
@@ -162,7 +162,7 @@ static void wg_setup_dirs() {
 
 }
 
-static void wg_cleanup_dirs() {
+void wg_cleanup_dirs() {
 	eval("rm", "-rf", WG_DIR);
 }
 
