@@ -179,6 +179,10 @@
 				publicKey: keyToBase64(publicKey),
 				privateKey: keyToBase64(privateKey)
 			};
+		},
+		generatePublicKey: function(privateKey) {
+			var publicKey = generatePublicKey(privateKey);
+			return keyToBase64(publicKey);
 		}
 	};
 })();
