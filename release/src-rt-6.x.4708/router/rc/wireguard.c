@@ -4,6 +4,8 @@
 #define LOGMSG_DISABLE	DISABLE_SYSLOG_OSM
 #define LOGMSG_NVDEBUG	"wireguard_debug"
 
+#define WG_DIR		"/var/lib/wg"
+
 #define BUF_SIZE		256
 #define IF_SIZE			8
 #define PEER_COUNT		3
@@ -13,6 +15,9 @@ void start_wireguard(int unit)
 {
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
+
+	/* set up directories for later use */
+	wg_setup_dirs();
 
     /* Determine interface */
 	memset(iface, 0, IF_SIZE);
@@ -91,6 +96,76 @@ void stop_wireguard(int unit)
 	wg_remove_iptables(iface, nvram_get("wg_server_port"));
 }
 
+static void wg_setup_dirs() {
+
+	FILE *fp;
+	char buffer[64];
+
+	/* main dir */
+	if(mkdir_if_none(WG_DIR)) {
+		chmod(WG_DIR, (S_IRUSR | S_IWUSR | S_IXUSR));
+	}
+
+	/* script dir */
+	if(mkdir_if_none(WG_DIR"/scripts")) {
+		chmod(WG_DIR"/scripts", (S_IRUSR | S_IWUSR | S_IXUSR));
+	}
+
+	/* keys dir */
+	if(mkdir_if_none(WG_DIR"/keys")) {
+		chmod(WG_DIR"/keys", (S_IRUSR | S_IWUSR | S_IXUSR));
+	}
+
+	/* script to enable IPv6 forwarding */
+	if(!(f_exists(WG_DIR"/scripts/ipv6-forward.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/ipv6-forward.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"/bin/echo 1 > /proc/sys/net/ipv6/conf/all/forwarding\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/ipv6-forward.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+	
+	/* script to generate public keys from private keys */
+	if(!(f_exists(WG_DIR"/scripts/pubkey.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/pubkey.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"/bin/echo \"$1\" | /usr/sbin/wg pubkey > \"$2\"\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/pubkey.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
+	/* script to add iptable rules for wireguard device */
+	if(!(f_exists(WG_DIR"/scripts/fw-add.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/fw-add.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"/usr/sbin/iptables -nvL INPUT | grep -q \".*ACCEPT.*udp.dpt.$1$\" || /usr/sbin/iptables -A INPUT -p udp --dport \"$1\" -j ACCEPT\n"
+						"/usr/sbin/iptables -nvL INPUT | grep -q \".*ACCEPT.*all.*$2\" || /usr/sbin/iptables -A INPUT -i \"$2\" -j ACCEPT\n"
+						"/usr/sbin/iptables -nvL FORWARD | grep -q \".*ACCEPT.*all.*$2\" || /usr/sbin/iptables -A FORWARD -i \"$2\" -j ACCEPT\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/fw-add.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
+	/* script to remove iptable rules for wireguard device */
+	if(!(f_exists(WG_DIR"/scripts/fw-del.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/fw-del.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"/usr/sbin/iptables -nvL INPUT | grep -q \".*ACCEPT.*udp.dpt.$1$\" && /usr/sbin/iptables -D INPUT -p udp --dport \"$1\" -j ACCEPT\n"
+						"/usr/sbin/iptables -nvL INPUT | grep -q \".*ACCEPT.*all.*$2\" && /usr/sbin/iptables -D INPUT -i \"$2\" -j ACCEPT\n"
+						"/usr/sbin/iptables -nvL FORWARD | grep -q \".*ACCEPT.*all.*$2\" && /usr/sbin/iptables -D FORWARD -i \"$2\" -j ACCEPT\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/fw-del.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
+}
+
+static void wg_cleanup_dirs() {
+	eval("rm", "-rf", WG_DIR);
+}
+
 int wg_create_iface(char *iface)
 {
 	FILE *fp;
@@ -100,22 +175,9 @@ int wg_create_iface(char *iface)
 	f_wait_exists("/sys/module/wireguard", 5);
 	
 	/* enable IPv6 forwarding */
-	if((fp = fopen("/proc/sys/net/ipv6/conf/all/forwarding", "w")) != NULL)
-	{
-		fprintf(fp, "1");
-		logmsg(LOG_DEBUG, "Enabled forwarding for IPv6");
-	}
-	else
-	{
+	if(eval("/bin/sh", WG_DIR"/scripts/ipv6-forward.sh")) {
 		logmsg(LOG_WARNING, "Unable to enable forwarding for IPv6!");
 	}
-	//if(eval("/bin/echo", "1", ">", "/proc/sys/net/ipv6/conf/all/forwarding"))
-	//{
-	//	logmsg(LOG_WARNING, "unable to enable forwarding for IPv6!");
-	//}
-	//else {
-	//	logmsg(LOG_DEBUG, "IPv6 forwarding has been enabled");
-	//}
     
     /* Create wireguard interface */
 	if (eval("/usr/sbin/ip", "link", "add", "dev", iface, "type", "wireguard")) {
@@ -173,7 +235,7 @@ int wg_set_iface_privkey(char *iface, char* privkey)
 
 	/* write private key to file */
 	memset(buffer, 0, BUF_SIZE);
-	snprintf(buffer, BUF_SIZE, "/tmp/%s.privkey", iface);
+	snprintf(buffer, BUF_SIZE, WG_DIR"/keys/%s", iface);
 
 	fp = fopen(buffer, "w");
 	fprintf(fp, privkey);
@@ -237,39 +299,11 @@ int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips)
 
 int wg_set_iptables(char *iface, char *port)
 {
-	char buffer[64];
-
-	/* open specified port for device */
-	memset(buffer, 0, sizeof(buffer));
-	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*udp.dpt.%s$\"", port);
-
-	if (eval("/usr/sbin/iptables", "-nvL", "INPUT", "|", "grep", "-q", buffer)){
-		if(eval("/usr/sbin/iptables", "-A", "INPUT", "-p", "udp", "--dport", port, "-j", "ACCEPT")) {
-			logmsg(LOG_WARNING, "unable to open port %s for wireguard interface %s using iptables!", port, iface);
-			return -1;
-		}
+	if(eval("/bin/sh", WG_DIR"/scripts/fw-add.sh", port, iface)){
+		logmsg(LOG_WARNING, "Unable to add iptable rules for wireguard interface %s on port %s!", iface, port);
 	}
-
-	/* accept incoming traffic on device */
-	memset(buffer, 0, sizeof(buffer));
-	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*all.*%s\"", port);
-
-	if (eval("/usr/sbin/iptables", "-nvL", "INPUT", "|", "grep", "-q", buffer)){
-		if(eval("/usr/sbin/iptables", "-A", "INPUT", "-i", iface, "-j", "ACCEPT")) {
-			logmsg(LOG_WARNING, "unable to accept incoming traffic on wireguard interface %s!", iface);
-			return -1;
-		}
-	}
-
-	/* accept forward traffic on device */
-	memset(buffer, 0, sizeof(buffer));
-	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*all.*%s\"", port);
-
-	if (eval("/usr/sbin/iptables", "-nvL", "FORWARD", "|", "grep", "-q", buffer)){
-		if(eval("/usr/sbin/iptables", "-A", "FORWARD", "-i", iface, "-j", "ACCEPT")) {
-			logmsg(LOG_WARNING, "unable to accept forward traffic on wireguard interface %s!", iface);
-			return -1;
-		}
+	else{
+		logmsg(LOG_DEBUG, "Iptable rules have been added for wireguard interface %s on port %s", iface, port);
 	}
 
 	return 0;
@@ -277,40 +311,14 @@ int wg_set_iptables(char *iface, char *port)
 
 int wg_remove_iptables(char *iface, char *port)
 {
-	char buffer[64];
-
-	/* drop rule for specified port for device */
-	memset(buffer, 0, sizeof(buffer));
-	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*udp.dpt.%s$\"", port);
-
-	if (eval("/usr/sbin/iptables", "-nvL", "INPUT", "|", "grep", "-q", buffer)){
-		if(eval("/usr/sbin/iptables", "-D", "INPUT", "-p", "udp", "--dport", port, "-j", "ACCEPT")) {
-			logmsg(LOG_WARNING, "unable to drop rule for port %s for wireguard interface %s using iptables!", port, iface);
-			return -1;
-		}
+	if(eval("/bin/sh", WG_DIR"/scripts/fw-del.sh", port, iface)){
+		logmsg(LOG_WARNING, "Unable to remove iptable rules for wireguard interface %s on port %s!", iface, port);
+	}
+	else{
+		logmsg(LOG_DEBUG, "Iptable rules have been removed for wireguard interface %s on port %s", iface, port);
 	}
 
-	/* drop rule for incoming traffic on device */
-	memset(buffer, 0, sizeof(buffer));
-	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*all.*%s\"", port);
-
-	if (eval("/usr/sbin/iptables", "-nvL", "INPUT", "|", "grep", "-q", buffer)){
-		if(eval("/usr/sbin/iptables", "-D", "INPUT", "-i", iface, "-j", "ACCEPT")) {
-			logmsg(LOG_WARNING, "unable to drop rule for incoming traffic on wireguard interface %s!", iface);
-			return -1;
-		}
-	}
-
-	/* Accept forward traffic on device */
-	memset(buffer, 0, sizeof(buffer));
-	snprintf(buffer, sizeof(buffer), "\".*ACCEPT.*all.*%s\"", port);
-
-	if (eval("/usr/sbin/iptables", "-nvL", "FORWARD", "|", "grep", "-q", buffer)){
-		if(eval("/usr/sbin/iptables", "-D", "FORWARD", "-i", iface, "-j", "ACCEPT")) {
-			logmsg(LOG_WARNING, "unable to drop rule for forward traffic on wireguard interface %s!", iface);
-			return -1;
-		}
-	}
+	return 0;
 }
 
 int wg_remove_peer(char *iface, char *pubkey)
@@ -362,31 +370,18 @@ int wg_pubkey(char *privkey, char *pubkey)
 {
 	FILE *fp;
 
-	if ((fp = fopen("/tmp/pubkey.sh", "w"))) {
-		fprintf(fp, "#!/bin/sh\n"
-					"/bin/echo %s | /usr/sbin/wg pubkey > /tmp/wgclient.pub\n",
-					privkey);
-		fclose(fp);
-		chmod("/tmp/pubkey.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
-	}
-
-	if(eval("/bin/sh", "/tmp/pubkey.sh")) {
+	if(eval("/bin/sh", WG_DIR"/scripts/pubkey.sh", WG_DIR"/keys/wgclient.pub")) {
 		logmsg(LOG_WARNING, "Unable to generate public key for wireguard!");
 	}
-	else {
-		//remove("/tmp/pubkey.sh");
-	}
 	
-	if((fp = fopen("/tmp/wgclient.pub", "r")) != NULL) {
+	if((fp = fopen(WG_DIR"/keys/wgclient.pub", "r")) != NULL) {
 		fgets(pubkey, 64, fp);
 		pubkey[strcspn(pubkey, "\n")] = 0;
-		logmsg(LOG_INFO, "Pubkey before file is closed is %s", pubkey);
 		fclose(fp);
 	}
 	else{
-		logmsg(LOG_WARNING, "Could not open /tmp/wgclient.pub!");
+		logmsg(LOG_WARNING, "Could not open public key file!");
 	}
 
-	logmsg(LOG_INFO, "Pubkey after file is closed is %s", pubkey);
-	//remove("/tmp/wgclient.pub");
+	remove(WG_DIR"/keys/wgclient.pub");
 }
