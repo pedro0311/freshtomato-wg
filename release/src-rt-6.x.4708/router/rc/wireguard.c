@@ -362,9 +362,18 @@ int wg_pubkey(char *privkey, char *pubkey)
 {
 	FILE *fp;
 
-	if(eval("/bin/echo", privkey, "|", "/usr/sbin/wg", "pubkey", ">/tmp/wgclient.pub")) {
+	if ((fp = fopen("/tmp/pubkey.sh", "w"))) {
+		fprintf(fp, "#!/bin/sh\n"
+					"/bin/echo %s | /usr/sbin/wg pubkey > /tmp/wgclient.pub\n",
+					privkey);
+		fclose(fp);
+		chmod("/tmp/pubkey.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+
+	if(eval("/bin/sh", "/tmp/pubkey.sh")) {
 		logmsg(LOG_WARNING, "Unable to generate public key for wireguard!");
-		return -1;
+	}
+	else {
+		//remove("/tmp/pubkey.sh");
 	}
 	
 	if((fp = fopen("/tmp/wgclient.pub", "r")) != NULL) {
@@ -372,6 +381,9 @@ int wg_pubkey(char *privkey, char *pubkey)
 		pubkey[strcspn(pubkey, "\n")] = 0;
 		logmsg(LOG_INFO, "Pubkey before file is closed is %s", pubkey);
 		fclose(fp);
+	}
+	else{
+		logmsg(LOG_WARNING, "Could not open /tmp/wgclient.pub!");
 	}
 
 	logmsg(LOG_INFO, "Pubkey after file is closed is %s", pubkey);
