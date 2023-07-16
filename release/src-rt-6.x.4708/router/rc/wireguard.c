@@ -370,7 +370,7 @@ int wg_pubkey(char *privkey, char *pubkey)
 {
 	FILE *fp;
 
-	if(eval("/bin/sh", WG_DIR"/scripts/pubkey.sh", WG_DIR"/keys/wgclient.pub")) {
+	if(eval("/bin/sh", WG_DIR"/scripts/pubkey.sh", privkey, WG_DIR"/keys/wgclient.pub")) {
 		logmsg(LOG_WARNING, "Unable to generate public key for wireguard!");
 	}
 	
