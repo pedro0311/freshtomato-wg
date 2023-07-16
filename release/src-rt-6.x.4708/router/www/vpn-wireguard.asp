@@ -33,7 +33,8 @@ function verifyFields(focused, quiet) {
 	var ok = 1;
 	var wireguard = wireguard;
 	for (let i = 1; i <= peer_count; i++) {
-		E(`_wg_server_peer${i}_key`).value = window.wireguard.generatePublicKey(E(`_wg_server_peer${i}_key`).value);
+		E(`_wg_server_peer${i}_pubkey`).disabled = true;
+		E(`_wg_server_peer${i}_pubkey`).value = window.wireguard.generatePublicKey(E(`_wg_server_peer${i}_key`).value);
 	}
 	return ok;
 }
@@ -107,7 +108,7 @@ function init() {
 		for (let i = 1; i <= peer_count; i++) {
 			createFieldTable('', [
 			{ title: `Peer ${i} Private Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 50, size: 50, value: eval(`nvram.wg_server_peer${i}_key`) },
-			{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_pubkey`, type: 'text', maxlen: 50, size: 50, disabled: 1},
+			{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_pubkey`, type: 'text', maxlen: 50, size: 50, disabled: ""},
 			{ title: 'IP/Netmask', multi: [
 				{ name: 'wg_server_peer'+i+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_server_peer'+i+'_ip') },
 				{ name: 'wg_server_peer'+i+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_server_peer'+i+'_nm') }
