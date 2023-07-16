@@ -181,6 +181,7 @@
 			};
 		},
 		generatePublicKey: function(privateKey) {
+			privateKey = atob(privateKey)
 			var publicKey = generatePublicKey(privateKey);
 			return keyToBase64(publicKey);
 		}
