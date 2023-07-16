@@ -378,7 +378,8 @@ int wg_pubkey(char *privkey, char *pubkey)
 	}
 	
 	if((fp = fopen("/tmp/wgclient.pub", "r")) != NULL) {
-		fgets(pubkey, sizeof(pubkey), fp);
+		fgets(pubkey, 64, fp);
+		pubkey[strcspn(pubkey, "\n")] = 0;
 		logmsg(LOG_INFO, "Pubkey before file is closed is %s", pubkey);
 		fclose(fp);
 	}
