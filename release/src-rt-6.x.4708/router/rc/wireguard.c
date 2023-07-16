@@ -170,14 +170,14 @@ int wg_create_iface(char *iface)
 {
 	FILE *fp;
 
-    /* Make sure module is loaded */
-    modprobe("wireguard");
-	f_wait_exists("/sys/module/wireguard", 5);
-	
 	/* enable IPv6 forwarding */
 	if(eval("/bin/sh", WG_DIR"/scripts/ipv6-forward.sh")) {
 		logmsg(LOG_WARNING, "Unable to enable forwarding for IPv6!");
 	}
+
+    /* Make sure module is loaded */
+    modprobe("wireguard");
+	f_wait_exists("/sys/module/wireguard", 5);
     
     /* Create wireguard interface */
 	if (eval("/usr/sbin/ip", "link", "add", "dev", iface, "type", "wireguard")) {
@@ -292,8 +292,6 @@ int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips)
 	memset(pubkey, 0, sizeof(pubkey));
 	wg_pubkey(privkey, pubkey);
 
-	logmsg(LOG_INFO, "Pubkey in add peer is %s", pubkey);
-
 	return wg_add_peer(iface, pubkey, allowed_ips);
 }
 
@@ -311,12 +309,8 @@ int wg_set_iptables(char *iface, char *port)
 
 int wg_remove_iptables(char *iface, char *port)
 {
-	if(eval("/bin/sh", WG_DIR"/scripts/fw-del.sh", port, iface)){
-		logmsg(LOG_WARNING, "Unable to remove iptable rules for wireguard interface %s on port %s!", iface, port);
-	}
-	else{
-		logmsg(LOG_DEBUG, "Iptable rules have been removed for wireguard interface %s on port %s", iface, port);
-	}
+	eval("/bin/sh", WG_DIR"/scripts/fw-del.sh", port, iface);
+	logmsg(LOG_DEBUG, "Iptable rules have been removed for wireguard interface %s on port %s", iface, port);
 
 	return 0;
 }
