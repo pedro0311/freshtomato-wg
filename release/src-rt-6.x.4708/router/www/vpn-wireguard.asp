@@ -33,7 +33,7 @@ function verifyFields(focused, quiet) {
 	var ok = 1;
 	var wireguard = wireguard;
 	for (let i = 1; i <= peer_count; i++) {
-		E(`_wg_server_peer${i}_key`).value = generatePublicKey(E(`_wg_server_peer${i}_key`).value);
+		E(`_wg_server_peer${i}_key`).value = window.wireguard.generatePublicKey(E(`_wg_server_peer${i}_key`).value);
 	}
 	return ok;
 }
