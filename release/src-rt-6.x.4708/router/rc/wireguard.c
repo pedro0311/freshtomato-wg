@@ -368,6 +368,7 @@ int wg_pubkey(char *privkey, char *pubkey)
 					privkey);
 		fclose(fp);
 		chmod("/tmp/pubkey.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+	}
 
 	if(eval("/bin/sh", "/tmp/pubkey.sh")) {
 		logmsg(LOG_WARNING, "Unable to generate public key for wireguard!");
