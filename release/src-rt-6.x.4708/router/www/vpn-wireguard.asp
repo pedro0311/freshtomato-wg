@@ -34,7 +34,11 @@ function verifyFields(focused, quiet) {
 	var wireguard = wireguard;
 	for (let i = 1; i <= peer_count; i++) {
 		E(`_wg_server_peer${i}_pubkey`).disabled = true;
-		E(`_wg_server_peer${i}_pubkey`).value = window.wireguard.generatePublicKey(E(`_wg_server_peer${i}_key`).value);
+		var pubkey = window.wireguard.generatePublicKey(E(`_wg_server_peer${i}_key`).value);
+		if(pubkey == false) {
+			pubkey = "";
+		}
+		E(`_wg_server_peer${i}_pubkey`).value = pubkey);
 	}
 	return ok;
 }
@@ -92,7 +96,7 @@ function init() {
 
 <!-- / / / -->
 
-<div class="section-title">Wireguard</div>
+<div class="section-title">Wireguard Server</div>
 <div class="section">
 	<script>
 		createFieldTable('', [

@@ -223,9 +223,15 @@
 		},
 		generatePublicKey: function(privateKey) {
 			var key = new Uint8Array(32);
-			keyFromBase64(key, privateKey);
-			var publicKey = generatePublicKey(key);
-			return keyToBase64(publicKey);
+			if(keyFromBase64(key, privateKey))
+			{
+				var publicKey = generatePublicKey(key);
+				return keyToBase64(publicKey);
+			}
+			else
+			{
+				return false;
+			}
 		}
 	};
 })();
