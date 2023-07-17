@@ -155,7 +155,7 @@ function init() {
 					{ name: 'wg_server_peer'+i+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_server_peer'+i+'_ip') },
 					{ name: 'wg_server_peer'+i+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_server_peer'+i+'_nm') }
 				] },
-				{ title: 'Subnet/Netmask', multi: [
+				{ title: '', multi: [
 					{ title: '', custom: '<input type="button" value="Generate Key" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' },
 					{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+(i)+')" id="wg_config_peer'+i+'_button">' }
 				] },
