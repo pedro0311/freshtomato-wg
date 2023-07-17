@@ -109,6 +109,12 @@ function init() {
 				{ name: 'wg_server_nm', type: 'text', maxlen: 2, size: 4, value: nvram.wg_server_nm }
 			] },
 		]);
+	</script>
+	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
+</div>
+<div class="section-title">Wireguard Clients</div>
+<div class="section">
+	<script>
 		for (let i = 1; i <= peer_count; i++) {
 			createFieldTable('', [
 			{ title: `Peer ${i} Private Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 50, size: 50, value: eval(`nvram.wg_server_peer${i}_key`) },
@@ -119,9 +125,7 @@ function init() {
 			] },
 			]);
 		}
-
 	</script>
-	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
 </div>
 
 <!-- / / / -->
