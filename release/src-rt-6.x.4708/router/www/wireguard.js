@@ -219,7 +219,7 @@
 			};
 		},
 		generatePublicKey: function(privateKey) {
-			var key = Uint8Array(32);
+			var key = new Uint8Array(32);
 			keyFromBase64(key, privateKey);
 			var publicKey = generatePublicKey(key);
 			return keyToBase64(publicKey);
