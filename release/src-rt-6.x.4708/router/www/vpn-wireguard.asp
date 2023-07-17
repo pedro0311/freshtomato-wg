@@ -30,7 +30,7 @@ var peer_count = 3;
 
 function updatePeerKey(num) {
 	var keys = window.wireguard.generateKeypair();
-	E('wg_server_peer'+num+'_key').value = keys.privateKey;
+	E('_wg_server_peer'+num+'_key').value = keys.privateKey;
 	E('_wg_server_peer'+num+'_pubkey').value = keys.publicKey;
 }
 
