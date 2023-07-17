@@ -38,7 +38,7 @@ function verifyFields(focused, quiet) {
 		if(pubkey == false) {
 			pubkey = "";
 		}
-		E(`_wg_server_peer${i}_pubkey`).value = pubkey);
+		E(`_wg_server_peer${i}_pubkey`).value = pubkey;
 	}
 	return ok;
 }
