@@ -34,6 +34,33 @@ function updatePeerKey(num) {
 	E('_wg_server_peer'+num+'_pubkey').value = keys.publicKey;
 }
 
+function generatePeerConfig(num) {
+	var privatekey_peer = E('_wg_server_peer'+num+'_key').value;
+	var publickey_server = window.wireguard.generatePublicKey(E(`_wg_server_privkey`).value);
+
+	var address = E('_wg_server_peer'+num+'_ip').value + '/' + E('_wg_server_peer'+num+'nm').value;
+	var port = E('_wg_server_port').value;
+	var endpoint = ":" + port;
+	var allowed_ips = E('wg_server_localip').value + "/32";
+
+	const link = document.createElement("a");
+	const file = new Blob([
+		"[Interface]\n",
+		`Address = ${address}\n`,
+		`ListenPort = ${port}\n`,
+		`PrivateKey = ${privatekey_peer}\n`,
+		"\n",
+		"[Peer]\n",
+		`PublicKey = ${publickey_server}\n`,
+		`AllowedIPs = ${allowed_ips}\n`,
+		`Endpoint = ${endpoint}\n`,
+	], { type: 'text/plain' });
+	link.href = URL.createObjectURL(file);
+	link.download = `client${num}.conf`;
+	link.click();
+	URL.revokeObjectURL(link.href);
+}
+
 function verifyFields(focused, quiet) {
 	var ok = 1;
 	var wireguard = wireguard;
