@@ -186,21 +186,23 @@
 		return val;
 	}
 
-	function keyFromBase64(base64)
+	function keyFromBase64(key, base64)
 	{
-		var key = Uint8Array(32);
 		var ret = 0;
 		var val;
 
+		if (strlen(base64) != 43 || base64[42] != '=') 
+			return false;
+
 		for (var i = 0; i < 32/3; ++i) {
 			val = decodeBase64(base64[i * 4]);
-			ret |= (uint32_t)val >> 31;
+			ret |= val >> 31;
 			key[i * 3 + 0] = (val >> 16) & 0xff;
 			key[i * 3 + 1] = (val >> 8) & 0xff;
 			key[i * 3 + 2] = val & 0xff;
 		}
-		val = decodeBase64((const char[]){ base64[i * 4 + 0], base64[i * 4 + 1], base64[i * 4 + 2], 'A' });
-		ret |= ((uint32_t)val >> 31) | (val & 0xff);
+		val = decodeBase64([base64[i * 4 + 0], base64[i * 4 + 1], base64[i * 4 + 2], 'A']);
+		ret |= (val >> 31) | (val & 0xff);
 		key[i * 3 + 0] = (val >> 16) & 0xff;
 		key[i * 3 + 1] = (val >> 8) & 0xff;
 
@@ -217,8 +219,9 @@
 			};
 		},
 		generatePublicKey: function(privateKey) {
-			privateKey = atob(privateKey)
-			var publicKey = generatePublicKey(privateKey);
+			var key = Uint8Array(32);
+			keyFromBase64(key, privateKey);
+			var publicKey = generatePublicKey(key);
 			return keyToBase64(publicKey);
 		}
 	};
