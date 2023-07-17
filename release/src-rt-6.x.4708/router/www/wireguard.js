@@ -171,6 +171,42 @@
 		return String.fromCharCode.apply(null, base64);
 	}
 
+	function decodeBase64(src)
+	{
+		var val = 0;
+
+		for (var i = 0; i < 4; ++i)
+			val |= (-1
+					+ ((((('A' - 1) - src[i]) & (src[i] - ('Z' + 1))) >> 8) & (src[i] - 64))
+					+ ((((('a' - 1) - src[i]) & (src[i] - ('z' + 1))) >> 8) & (src[i] - 70))
+					+ ((((('0' - 1) - src[i]) & (src[i] - ('9' + 1))) >> 8) & (src[i] + 5))
+					+ ((((('+' - 1) - src[i]) & (src[i] - ('+' + 1))) >> 8) & 63)
+					+ ((((('/' - 1) - src[i]) & (src[i] - ('/' + 1))) >> 8) & 64)
+				) << (18 - 6 * i);
+		return val;
+	}
+
+	function keyFromBase64(base64)
+	{
+		var key = Uint8Array(32);
+		var ret = 0;
+		var val;
+
+		for (var i = 0; i < 32/3; ++i) {
+			val = decodeBase64(base64[i * 4]);
+			ret |= (uint32_t)val >> 31;
+			key[i * 3 + 0] = (val >> 16) & 0xff;
+			key[i * 3 + 1] = (val >> 8) & 0xff;
+			key[i * 3 + 2] = val & 0xff;
+		}
+		val = decodeBase64((const char[]){ base64[i * 4 + 0], base64[i * 4 + 1], base64[i * 4 + 2], 'A' });
+		ret |= ((uint32_t)val >> 31) | (val & 0xff);
+		key[i * 3 + 0] = (val >> 16) & 0xff;
+		key[i * 3 + 1] = (val >> 8) & 0xff;
+
+		return 1 & ((ret - 1) >> 8);
+	}
+
 	window.wireguard = {
 		generateKeypair: function() {
 			var privateKey = generatePrivateKey();
