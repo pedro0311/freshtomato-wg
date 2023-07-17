@@ -28,6 +28,11 @@ var changed = 0;
 var serviceType = 'wireguard';
 var peer_count = 3;
 
+function updatePeerKey(num) {
+	var keys = window.wireguard.generateKeypair();
+	E('wg_server_peer'+num+'_key').value = keys.publicKey;
+	E('_wg_server_peer'+num+'_pubkey').value = keys.privateKey;
+}
 
 function verifyFields(focused, quiet) {
 	var ok = 1;
@@ -102,7 +107,7 @@ function init() {
 		createFieldTable('', [
 			{ title: 'Enable on Start', name: 'f_wg_server_eas', type: 'checkbox', value: nvram.wg_server_eas == '1' },
 			{ title: 'Port', name: 'wg_server_port', type: 'text', maxlen: 5, size: 10, value: nvram.wg_server_port },
-			{ title: 'Private Key', name: 'wg_server_privkey', type: 'text', maxlen: 50, size: 50, value: nvram.wg_server_privkey },
+			{ title: 'Private Key', name: 'wg_server_privkey', type: 'text', maxlen: 44, size: 44, value: nvram.wg_server_privkey },
 			{ title: 'Local IP', name: 'wg_server_localip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_localip },
 			{ title: 'Subnet/Netmask', multi: [
 				{ name: 'wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn },
@@ -112,17 +117,18 @@ function init() {
 	</script>
 	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
 </div>
-<div class="section-title">Wireguard Clients</div>
+<div class="section-title">Wireguard Peers</div>
 <div class="section">
 	<script>
 		for (let i = 1; i <= peer_count; i++) {
 			createFieldTable('', [
-			{ title: `Peer ${i} Private Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 50, size: 50, value: eval(`nvram.wg_server_peer${i}_key`) },
-			{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_pubkey`, type: 'text', maxlen: 50, size: 50, disabled: ""},
+			{ title: `Peer ${i} Private Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server_peer${i}_key`) },
+			{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_pubkey`, type: 'text', maxlen: 44, size: 44, disabled: ""},
 			{ title: 'IP/Netmask', multi: [
 				{ name: 'wg_server_peer'+i+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_server_peer'+i+'_ip') },
 				{ name: 'wg_server_peer'+i+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_server_peer'+i+'_nm') }
 			] },
+			{ title: '', custom: '<input type="button" value="Generate Peer Key" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' }
 			]);
 		}
 	</script>
