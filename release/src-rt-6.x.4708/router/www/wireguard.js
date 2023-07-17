@@ -162,6 +162,23 @@
 			(((62 - input[i]) >> 8) & 3);
 	}
 
+	function decodeBase64(src)
+	{
+		var val = 0;
+
+		for (var i = 0; i < 4; ++i) {
+			var char_code = src.charCodeAt(i)
+			val |= (-1 +
+					((((64 - char_code) & (char_code - 91)) >> 8) & (char_code - 64)) +
+					((((96 - char_code) & (char_code - 123)) >> 8) & (char_code - 70)) +
+					((((47 - char_code) & (char_code - 58)) >> 8) & (char_code + 5)) +
+					((((42 - char_code) & (char_code - 44)) >> 8) & 63) +
+					((((46 - char_code) & (char_code - 48)) >> 8) & 64)
+				) << (18 - 6 * i);
+		}
+		return val;
+	}
+
 	function keyToBase64(key) {
 		var i, base64 = new Uint8Array(44);
 		for (i = 0; i < 32 / 3; ++i)
@@ -171,37 +188,23 @@
 		return String.fromCharCode.apply(null, base64);
 	}
 
-	function decodeBase64(src)
-	{
-		var val = 0;
-
-		for (var i = 0; i < 4; ++i)
-			val |= (-1
-					+ ((((('A' - 1) - src[i]) & (src[i] - ('Z' + 1))) >> 8) & (src[i] - 64))
-					+ ((((('a' - 1) - src[i]) & (src[i] - ('z' + 1))) >> 8) & (src[i] - 70))
-					+ ((((('0' - 1) - src[i]) & (src[i] - ('9' + 1))) >> 8) & (src[i] + 5))
-					+ ((((('+' - 1) - src[i]) & (src[i] - ('+' + 1))) >> 8) & 63)
-					+ ((((('/' - 1) - src[i]) & (src[i] - ('/' + 1))) >> 8) & 64)
-				) << (18 - 6 * i);
-		return val;
-	}
-
 	function keyFromBase64(key, base64)
 	{
 		var ret = 0;
 		var val;
 
-		if (strlen(base64) != 43 || base64[42] != '=') 
+		if (base64.length != 44 || base64[43] != '=') 
 			return false;
 
 		for (var i = 0; i < 32/3; ++i) {
-			val = decodeBase64(base64[i * 4]);
+			val = decodeBase64(base64.substring(i * 4, i * 4 + 4));
 			ret |= val >> 31;
 			key[i * 3 + 0] = (val >> 16) & 0xff;
 			key[i * 3 + 1] = (val >> 8) & 0xff;
 			key[i * 3 + 2] = val & 0xff;
 		}
-		val = decodeBase64([base64[i * 4 + 0], base64[i * 4 + 1], base64[i * 4 + 2], 'A']);
+		i--;
+		val = decodeBase64(base64[i * 4 + 0] +base64[i * 4 + 1] + base64[i * 4 + 2] + 'A');
 		ret |= (val >> 31) | (val & 0xff);
 		key[i * 3 + 0] = (val >> 16) & 0xff;
 		key[i * 3 + 1] = (val >> 8) & 0xff;
