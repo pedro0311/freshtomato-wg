@@ -149,13 +149,16 @@ function init() {
 	<script>
 		for (let i = 1; i <= peer_count; i++) {
 			createFieldTable('', [
-			{ title: `Peer ${i} Private Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server_peer${i}_key`) },
-			{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_pubkey`, type: 'text', maxlen: 44, size: 44, disabled: ""},
-			{ title: 'IP/Netmask', multi: [
-				{ name: 'wg_server_peer'+i+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_server_peer'+i+'_ip') },
-				{ name: 'wg_server_peer'+i+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_server_peer'+i+'_nm') }
-			] },
-			{ title: '', custom: '<input type="button" value="Generate Peer Key" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' }
+				{ title: `Peer ${i} Private Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server_peer${i}_key`) },
+				{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_pubkey`, type: 'text', maxlen: 44, size: 44, disabled: ""},
+				{ title: 'IP/Netmask', multi: [
+					{ name: 'wg_server_peer'+i+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_server_peer'+i+'_ip') },
+					{ name: 'wg_server_peer'+i+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_server_peer'+i+'_nm') }
+				] },
+				{ title: 'Subnet/Netmask', multi: [
+					{ title: '', custom: '<input type="button" value="Generate Key" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' },
+					{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+(i)+')" id="wg_config_peer'+i+'_button">' }
+				] },
 			]);
 		}
 	</script>
