@@ -21,7 +21,7 @@ void start_wg_server(int unit)
 
     /* Determine interface */
 	memset(iface, 0, IF_SIZE);
-	snprintf(iface, IF_SIZE, "wg%d", unit);
+	snprintf(iface, IF_SIZE, "wgs%d", unit);
 
     /* create interface */
 	if (wg_create_iface(iface)) {
