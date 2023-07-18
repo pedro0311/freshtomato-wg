@@ -262,13 +262,14 @@ int wg_set_iface_up(char *iface)
 {
 	int retry = 0;
 
-	while (retry < 5) {
+	while (retry < 3) {
 		if (!(eval("/usr/sbin/ip", "link", "set", "up", "dev", iface))) {
 			logmsg(LOG_DEBUG, "wireguard interface %s has been brought up", iface);
 			return 0;
 		}
-		else {
-			sleep(1);
+		else if (retry < 2) {
+			logmsg(LOG_WARNING, "unable to bring up wireguard interface %s, retrying...", iface);
+			sleep(3);
 			retry += 1;
 		}
 	}
