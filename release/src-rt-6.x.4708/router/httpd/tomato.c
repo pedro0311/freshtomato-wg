@@ -1717,12 +1717,14 @@ static const nvset_t nvset_list[] = {
 
 #ifdef TCONFIG_WIREGUARD
 /* wireguard-server */
-	{ "wg_server_eas",			V_01		},
+	{ "wg_server_eas",			V_01				},
 	{ "wg_server_privkey",		V_TEXT(0, 44)		},
+	{ "wg_server_endpoint",		V_TEXT(0, 64)		},
 	{ "wg_server_port",			V_PORT				},
 	{ "wg_server_localip",		V_IP				},
 	{ "wg_server_sn",			V_IP				},
 	{ "wg_server_nm",			V_RANGE(0, 32)		},
+	{ "wg_server_lan",			V_01				},
 	{ "wg_server_peer1_key",	V_TEXT(0, 44)		},
 	{ "wg_server_peer1_ip",		V_IP				},
 	{ "wg_server_peer1_nm",		V_RANGE(0, 32)		},

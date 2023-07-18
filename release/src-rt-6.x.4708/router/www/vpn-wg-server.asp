@@ -21,7 +21,7 @@
 
 <script>
 
-//	<% nvram("wan_ipaddr,wg_server_eas,wg_server_localip,wg_server_sn,wg_server_nm,wg_server_port,wg_server_privkey,wg_server_peer1_key,wg_server_peer1_ip,wg_server_peer1_nm,wg_server_peer2_key,wg_server_peer2_ip,wg_server_peer2_nm,wg_server_peer3_key,wg_server_peer3_ip,wg_server_peer3_nm"); %>
+//	<% nvram("wan_ipaddr,lan_ipaddr,lan_netmask,wg_server_eas,wg_server_localip,wg_server_sn,wg_server_nm,wg_server_port,wg_server_privkey,wg_server_endpoint,wg_server_lan,wg_server_peer1_key,wg_server_peer1_ip,wg_server_peer1_nm,wg_server_peer2_key,wg_server_peer2_ip,wg_server_peer2_nm,wg_server_peer3_key,wg_server_peer3_ip,wg_server_peer3_nm"); %>
 
 var cprefix = 'vpn_wg_server';
 var changed = 0;
@@ -46,8 +46,17 @@ function generatePeerConfig(num) {
 
 	var address = E('_wg_server_peer'+num+'_ip').value + '/' + E('_wg_server_peer'+num+'_nm').value;
 	var port = E('_wg_server_port').value;
-	var endpoint = nvram.wan_ipaddr + ":" + port;
+	var endpoint;
+	if (nvram.wg_server_endpoint != "") {
+		endpoint = nvram.wg_server_endpoint + ":" + port;
+	}
+	else {
+		endpoint = nvram.wan_ipaddr + ":" + port;
+	}
 	var allowed_ips = E('_wg_server_localip').value + "/32";
+	if (nvram.wg_server_lan) {
+		allowed_ips += `, ${nvram.lan_ipaddr}/${nvram.lan_netmask}`
+	}
 
 	const link = document.createElement("a");
 	const file = new Blob([
@@ -69,7 +78,6 @@ function generatePeerConfig(num) {
 
 function verifyFields(focused, quiet) {
 	var ok = 1;
-	var wireguard = wireguard;
 
 	E('_wg_server_pubkey').disabled = true;
 	var pubkey = window.wireguard.generatePublicKey(E('_wg_server_privkey').value);
@@ -86,6 +94,7 @@ function verifyFields(focused, quiet) {
 		}
 		E(`_wg_server_peer${i}_pubkey`).value = pubkey;
 	}
+
 	return ok;
 }
 
@@ -102,6 +111,7 @@ function save(nomsg) {
 	var fom = E('t_fom');
 
 	fom.wg_server_eas.value = fom._f_wg_server_eas.checked ? 1 : 0;
+	fom.wg_server_lan.value = fom._f_wg_server_lan.checked ? 1 : 0;
 
 	form.submit(fom, 1);
 
@@ -158,6 +168,8 @@ function init() {
 				{ name: 'wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn },
 				{ name: 'wg_server_nm', type: 'text', maxlen: 2, size: 4, value: nvram.wg_server_nm }
 			] },
+			{ title: `Custom Endpoint`, name: 'wg_server_endpoint', type: 'text', maxlen: 64, size: 64, value: nvram.wg_server_endpoint},
+			{ title: 'Allow peers access to LAN', name: 'f_wg_server_lan', type: 'checkbox', value: nvram.wg_server_lan == '1' },
 		]);
 	</script>
 	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wgserver_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
