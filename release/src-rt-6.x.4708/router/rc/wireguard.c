@@ -269,6 +269,7 @@ int wg_set_iface_up(char *iface)
 		}
 		else {
 			sleep(1);
+			retry += 1;
 		}
 	}
 
