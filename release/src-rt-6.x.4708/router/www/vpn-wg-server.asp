@@ -48,6 +48,11 @@ function generatePeerConfig(num) {
 	var port = nvram.wg_server_port;
 	var endpoint;
 
+	if (changed) {
+		alert('Changes have been made. You need to save before continue!');
+		return;
+	}
+
 	if (nvram.wg_server_endpoint != "") {
 		endpoint = nvram.wg_server_endpoint + ":" + port;
 	}
