@@ -56,7 +56,7 @@ function generatePeerConfig(num) {
 	}
 	var allowed_ips = nvram.wg_server_localip + "/32";
 	if (nvram.wg_server_lan) {
-		allowed_ips += `, ${nvram.lan_ipaddr}/${nvram.lan_netmask}`
+		allowed_ips += `, ${nvram.lan_ipaddr}/${netmaskToCIDR(nvram.lan_netmask)}`
 	}
 
 	const link = document.createElement("a");
@@ -75,6 +75,15 @@ function generatePeerConfig(num) {
 	link.download = `client${num}.conf`;
 	link.click();
 	URL.revokeObjectURL(link.href);
+}
+
+function netmaskToCIDR(mask) {
+	var maskNodes = mask.match(/(\d+)/g);
+	var cidr = 0;
+	for(var i in maskNodes) {
+		cidr += (((maskNodes[i] >>> 0).toString(2)).match(/1/g) || []).length;
+	}
+	return cidr;
 }
 
 function verifyFields(focused, quiet) {
