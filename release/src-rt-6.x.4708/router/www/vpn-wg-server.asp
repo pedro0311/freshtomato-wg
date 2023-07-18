@@ -167,8 +167,8 @@ function init() {
 	<script>
 		for (let i = 1; i <= peer_count; i++) {
 			createFieldTable('', [
-				{ title: '', multi: [
-					{ title: `Peer ${i} Private Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server_peer${i}_key`) },
+				{ title: `Peer ${i} Private Key`, multi: [
+					{ title: '', name: `wg_server_peer${i}_key`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server_peer${i}_key`) },
 					{ title: '', custom: '<input type="button" value="Generate" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' },
 				] },
 				{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_pubkey`, type: 'text', maxlen: 44, size: 44, disabled: ""},
