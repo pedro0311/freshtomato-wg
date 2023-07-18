@@ -148,11 +148,11 @@ function init() {
 		createFieldTable('', [
 			{ title: 'Enable on Start', name: 'f_wg_server_eas', type: 'checkbox', value: nvram.wg_server_eas == '1' },
 			{ title: 'Port', name: 'wg_server_port', type: 'text', maxlen: 5, size: 10, value: nvram.wg_server_port },
-			{ title: '', multi: [
-				{ title: 'Private Key', name: 'wg_server_privkey', type: 'text', maxlen: 44, size: 44, value: nvram.wg_server_privkey },
+			{ title: 'Private Key', multi: [
+				{ title: '', name: 'wg_server_privkey', type: 'text', maxlen: 44, size: 44, value: nvram.wg_server_privkey },
 				{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey()" id="wg_server_keygen">' },
 			] },
-			{ title: `Public Key`, name: '_wg_server_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
+			{ title: `Public Key`, name: 'wg_server_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
 			{ title: 'Local IP', name: 'wg_server_localip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_localip },
 			{ title: 'Subnet/Netmask', multi: [
 				{ name: 'wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn },
