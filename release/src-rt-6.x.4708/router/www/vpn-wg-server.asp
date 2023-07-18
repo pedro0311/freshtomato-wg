@@ -71,7 +71,7 @@ function verifyFields(focused, quiet) {
 	var ok = 1;
 	var wireguard = wireguard;
 
-	E('_wg_server_pubkey').disable = true;
+	E('_wg_server_pubkey').disabled = true;
 	var pubkey = window.wireguard.generatePublicKey(E('_wg_server_privkey').value);
 	if(pubkey == false) {
 		pubkey = "";
