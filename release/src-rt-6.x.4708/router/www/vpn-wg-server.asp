@@ -41,19 +41,20 @@ function updateServerKey() {
 }
 
 function generatePeerConfig(num) {
-	var privatekey_peer = E('_wg_server_peer'+num+'_key').value;
-	var publickey_server = window.wireguard.generatePublicKey(E(`_wg_server_privkey`).value);
+	var privatekey_peer = eval(`nvram.wg_server_peer${num}_key`);
+	var publickey_server = window.wireguard.generatePublicKey(nvram.wg_server_privkey);
 
-	var address = E('_wg_server_peer'+num+'_ip').value + '/' + E('_wg_server_peer'+num+'_nm').value;
-	var port = E('_wg_server_port').value;
+	var address = eval(`nvram.wg_server_peer${num}_ip`) + '/' + eval(`nvram.wg_server_peer${num}_nm`);
+	var port = nvram.wg_server_port;
 	var endpoint;
+
 	if (nvram.wg_server_endpoint != "") {
 		endpoint = nvram.wg_server_endpoint + ":" + port;
 	}
 	else {
 		endpoint = nvram.wan_ipaddr + ":" + port;
 	}
-	var allowed_ips = E('_wg_server_localip').value + "/32";
+	var allowed_ips = nvram.wg_server_localip + "/32";
 	if (nvram.wg_server_lan) {
 		allowed_ips += `, ${nvram.lan_ipaddr}/${nvram.lan_netmask}`
 	}
