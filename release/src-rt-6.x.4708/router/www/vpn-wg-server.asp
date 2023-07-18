@@ -34,6 +34,12 @@ function updatePeerKey(num) {
 	E('_wg_server_peer'+num+'_pubkey').value = keys.publicKey;
 }
 
+function updateServerKey() {
+	var keys = window.wireguard.generateKeypair();
+	E('_wg_server_privkey').value = keys.privateKey;
+	E('_wg_server_pubkey').value = keys.publicKey;
+}
+
 function generatePeerConfig(num) {
 	var privatekey_peer = E('_wg_server_peer'+num+'_key').value;
 	var publickey_server = window.wireguard.generatePublicKey(E(`_wg_server_privkey`).value);
@@ -64,9 +70,17 @@ function generatePeerConfig(num) {
 function verifyFields(focused, quiet) {
 	var ok = 1;
 	var wireguard = wireguard;
+
+	E('_wg_server_pubkey').disable = true;
+	var pubkey = window.wireguard.generatePublicKey(E('_wg_server_privkey').value);
+	if(pubkey == false) {
+		pubkey = "";
+	}
+	E(`_wg_server_pubkey`).value = pubkey;
+
 	for (let i = 1; i <= peer_count; i++) {
 		E(`_wg_server_peer${i}_pubkey`).disabled = true;
-		var pubkey = window.wireguard.generatePublicKey(E(`_wg_server_peer${i}_key`).value);
+		pubkey = window.wireguard.generatePublicKey(E(`_wg_server_peer${i}_key`).value);
 		if(pubkey == false) {
 			pubkey = "";
 		}
@@ -134,7 +148,11 @@ function init() {
 		createFieldTable('', [
 			{ title: 'Enable on Start', name: 'f_wg_server_eas', type: 'checkbox', value: nvram.wg_server_eas == '1' },
 			{ title: 'Port', name: 'wg_server_port', type: 'text', maxlen: 5, size: 10, value: nvram.wg_server_port },
-			{ title: 'Private Key', name: 'wg_server_privkey', type: 'text', maxlen: 44, size: 44, value: nvram.wg_server_privkey },
+			{ title: '', multi: [
+				{ title: 'Private Key', name: 'wg_server_privkey', type: 'text', maxlen: 44, size: 44, value: nvram.wg_server_privkey },
+				{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey()" id="wg_server_keygen">' },
+			] },
+			{ title: `Public Key`, name: '_wg_server_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
 			{ title: 'Local IP', name: 'wg_server_localip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_localip },
 			{ title: 'Subnet/Netmask', multi: [
 				{ name: 'wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn },
@@ -149,16 +167,17 @@ function init() {
 	<script>
 		for (let i = 1; i <= peer_count; i++) {
 			createFieldTable('', [
-				{ title: `Peer ${i} Private Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server_peer${i}_key`) },
+				{ title: '', multi: [
+					{ title: `Peer ${i} Private Key`, name: `wg_server_peer${i}_key`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server_peer${i}_key`) },
+					{ title: '', custom: '<input type="button" value="Generate" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' },
+				] },
 				{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_pubkey`, type: 'text', maxlen: 44, size: 44, disabled: ""},
 				{ title: 'IP/Netmask', multi: [
 					{ name: 'wg_server_peer'+i+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_server_peer'+i+'_ip') },
 					{ name: 'wg_server_peer'+i+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_server_peer'+i+'_nm') }
 				] },
-				{ title: '', multi: [
-					{ title: '', custom: '<input type="button" value="Generate Key" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' },
-					{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+(i)+')" id="wg_config_peer'+i+'_button">' }
-				] },
+				{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+(i)+')" id="wg_config_peer'+i+'_button">' }
+				
 			]);
 		}
 	</script>
