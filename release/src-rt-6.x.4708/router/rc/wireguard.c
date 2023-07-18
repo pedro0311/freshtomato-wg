@@ -260,15 +260,20 @@ int wg_set_iface_privkey(char *iface, char* privkey)
 
 int wg_set_iface_up(char *iface)
 {
-	if (eval("/usr/sbin/ip", "link", "set", "up", "dev", iface)){
-		logmsg(LOG_WARNING, "unable to bring up wireguard interface %s!", iface);
-		return -1;
-	}
-	else {
-		logmsg(LOG_DEBUG, "wireguard interface %s has been brought up", iface);
+	int retry = 0;
+
+	while (retry < 5) {
+		if (!(eval("/usr/sbin/ip", "link", "set", "up", "dev", iface))) {
+			logmsg(LOG_DEBUG, "wireguard interface %s has been brought up", iface);
+			return 0;
+		}
+		else {
+			sleep(1);
+		}
 	}
 
-	return 0;
+	logmsg(LOG_WARNING, "unable to bring up wireguard interface %s!", iface);
+	return -1;
 }
 
 int wg_add_peer(char *iface, char *pubkey, char *allowed_ips)
