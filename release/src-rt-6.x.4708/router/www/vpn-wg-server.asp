@@ -160,7 +160,7 @@ function init() {
 			] },
 		]);
 	</script>
-	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
+	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wgserver_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
 </div>
 <div class="section-title">Wireguard Peers</div>
 <div class="section">
