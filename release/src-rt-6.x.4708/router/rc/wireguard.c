@@ -11,7 +11,7 @@
 #define PEER_COUNT		3
 
 
-void start_wireguard(int unit)
+void start_wg_server(int unit)
 {
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
@@ -25,7 +25,7 @@ void start_wireguard(int unit)
 
     /* create interface */
 	if (wg_create_iface(iface)) {
-		stop_wireguard(unit);
+		stop_wg_server(unit);
 		return;
 	}
 
@@ -35,19 +35,19 @@ void start_wireguard(int unit)
 
     /* set interface address and netmask */
 	if (wg_set_iface_addr(iface, buffer)) {
-		stop_wireguard(unit);
+		stop_wg_server(unit);
 		return;
 	}
 
 	/* set interface port */
 	if (wg_set_iface_port(iface, nvram_get("wg_server_port"))) {
-		stop_wireguard(unit);
+		stop_wg_server(unit);
 		return;
 	}
 
 	/* set interface private key */
 	if (wg_set_iface_privkey(iface, nvram_get("wg_server_privkey"))) {
-		stop_wireguard(unit);
+		stop_wg_server(unit);
 		return;
 	}
 
@@ -69,18 +69,18 @@ void start_wireguard(int unit)
 
 	/* bring up interface */
 	if (wg_set_iface_up(iface)) {
-		stop_wireguard(unit);
+		stop_wg_server(unit);
 		return;
 	}
 
 	/* set iptables rules */
 	if (wg_set_iptables(iface, nvram_get("wg_server_port"))) {
-		stop_wireguard(unit);
+		stop_wg_server(unit);
 		return;
 	}
 }
 
-void stop_wireguard(int unit)
+void stop_wg_server(int unit)
 {
 	char iface[IF_SIZE];
     char buffer[BUF_SIZE];
@@ -356,7 +356,7 @@ void start_wg_eas()
 {
 	if (nvram_get_int("wg_server_eas"))
 	{
-		start_wireguard(1);
+		start_wg_server(1);
 	}
 }
 

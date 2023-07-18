@@ -23,9 +23,9 @@
 
 //	<% nvram("wan_ipaddr,wg_server_eas,wg_server_localip,wg_server_sn,wg_server_nm,wg_server_port,wg_server_privkey,wg_server_peer1_key,wg_server_peer1_ip,wg_server_peer1_nm,wg_server_peer2_key,wg_server_peer2_ip,wg_server_peer2_nm,wg_server_peer3_key,wg_server_peer3_ip,wg_server_peer3_nm"); %>
 
-var cprefix = 'vpn_wireguard';
+var cprefix = 'vpn_wg_server';
 var changed = 0;
-var serviceType = 'wireguard';
+var serviceType = 'wgserver';
 var peer_count = 3;
 
 function updatePeerKey(num) {
