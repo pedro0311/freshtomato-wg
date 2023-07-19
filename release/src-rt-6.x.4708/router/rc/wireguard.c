@@ -61,7 +61,7 @@ void start_wg_server(int unit)
 		{
 			memset(buffer, 0, BUF_SIZE);
 			snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server_peer%d_ip", i), getNVRAMVar("wg_server_peer%d_nm", i));
-			wg_add_peer_privkey(iface, getNVRAMVar("wg_server_peer%d_key", i), buffer);
+			wg_add_peer_privkey(iface, getNVRAMVar("wg_server_peer%d_key", i), buffer, getNVRAMVar("wg_server_peer%d_psk", i));
 		}
 		
 		i += 1;
@@ -324,7 +324,7 @@ int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *psk
 	memset(pubkey, 0, sizeof(pubkey));
 	wg_pubkey(privkey, pubkey);
 
-	return wg_add_peer(iface, pubkey, allowed_ips);
+	return wg_add_peer(iface, pubkey, allowed_ips, psk);
 }
 
 int wg_set_iptables(char *iface, char *port)
