@@ -278,13 +278,13 @@ int wg_set_iface_up(char *iface)
 	return -1;
 }
 
-int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *psk)
+int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey)
 {
 	FILE *fp;
 	char buffer[BUF_SIZE];
 
 	/* check if psk is empty */
-	if (psk[0] == '\0') {
+	if (presharedkey[0] == '\0') {
 		if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
 			logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
 			return -1;
@@ -299,7 +299,7 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *psk)
 		snprintf(buffer, BUF_SIZE, WG_DIR"/keys/%s.psk", iface);
 
 		fp = fopen(buffer, "w");
-		fprintf(fp, psk);
+		fprintf(fp, presharedkey);
 		fclose(fp);
 
 		if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips, "preshared-key", buffer)){
@@ -317,14 +317,14 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *psk)
 	return 0;
 }
 
-int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *psk)
+int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey)
 {
 	char pubkey[64];
 
 	memset(pubkey, 0, sizeof(pubkey));
 	wg_pubkey(privkey, pubkey);
 
-	return wg_add_peer(iface, pubkey, allowed_ips, psk);
+	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey);
 }
 
 int wg_set_iptables(char *iface, char *port)
