@@ -234,7 +234,7 @@
 			}
 		},
 		generatePresharedKey: function() {
-			return generatePresharedKey();
+			return keyToBase64(generatePresharedKey());
 		}
 	};
 })();
