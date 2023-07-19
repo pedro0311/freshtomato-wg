@@ -66,7 +66,7 @@ function generatePeerConfig(num) {
 	}
 
 	var allowed_ips;
-	if (nvram.wg_server_rgw) {
+	if (nvram.wg_server_rgw == "1") {
 		allowed_ips = "0.0.0.0/0"
 	}
 	else {
