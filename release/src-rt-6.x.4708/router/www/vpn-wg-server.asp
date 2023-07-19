@@ -72,7 +72,7 @@ function generatePeerConfig(num) {
 	else {
 		allowed_ips = nvram.wg_server_ip + "/32";
 		for(let i = 0; i <= 3; ++i){
-			if (eval(`nvram.wg_server_lan${i}`)) {
+			if (eval(`nvram.wg_server_lan${i}` != "")) {
 				t = (i == 0 ? '' : i);
 				allowed_ips += ', ';
 				allowed_ips += eval(`nvram.lan${t}_ipaddr`);
