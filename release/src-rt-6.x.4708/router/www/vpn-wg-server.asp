@@ -125,7 +125,7 @@ function verifyFields(focused, quiet) {
 
 	for (let i = 0; i <= 3; ++i) {
 		t = (i == 0 ? '' : i);
-		wg_server_eas
+
 		if (eval('nvram.lan'+t+'_ifname.length') < 1) {
 			E('_f_wg_server_lan'+t).checked = 0;
 			E('_f_wg_server_lan'+t).disabled = 1;
