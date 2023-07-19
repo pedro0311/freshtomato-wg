@@ -1727,6 +1727,7 @@ static const nvset_t nvset_list[] = {
 	{ "wg_server_lan1",			V_01				},
 	{ "wg_server_lan2",			V_01				},
 	{ "wg_server_lan3",			V_01				},
+	{ "wg_server_rgw",			V_01				},
 	{ "wg_server_peer1_key",	V_TEXT(0, 44)		},
 	{ "wg_server_peer1_ip",		V_IP				},
 	{ "wg_server_peer1_nm",		V_RANGE(0, 32)		},
