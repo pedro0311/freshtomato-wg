@@ -216,9 +216,9 @@ function init() {
 			] },
 			{ title: `Custom Endpoint`, name: 'wg_server_endpoint', type: 'text', maxlen: 64, size: 64, value: nvram.wg_server_endpoint},
 			{ title: 'Push LAN0 (br0) to clients', name: 'f_wg_server_lan0', type: 'checkbox', value: nvram.wg_server_lan0 == '1' },
-			{ title: 'Push LAN0 (br1) to clients', name: 'f_wg_server_lan1', type: 'checkbox', value: nvram.wg_server_lan1 == '1' },
-			{ title: 'Push LAN0 (br2) to clients', name: 'f_wg_server_lan2', type: 'checkbox', value: nvram.wg_server_lan2 == '1' },
-			{ title: 'Push LAN0 (br3) to clients', name: 'f_wg_server_lan3', type: 'checkbox', value: nvram.wg_server_lan3 == '1' },
+			{ title: 'Push LAN1 (br1) to clients', name: 'f_wg_server_lan1', type: 'checkbox', value: nvram.wg_server_lan1 == '1' },
+			{ title: 'Push LAN2 (br2) to clients', name: 'f_wg_server_lan2', type: 'checkbox', value: nvram.wg_server_lan2 == '1' },
+			{ title: 'Push LAN3 (br3) to clients', name: 'f_wg_server_lan3', type: 'checkbox', value: nvram.wg_server_lan3 == '1' },
 			{ title: 'Forward all client traffic', name: 'f_wg_server_rgw', type: 'checkbox', value: nvram.wg_server_rgw == '1' },
 		]);
 	</script>
