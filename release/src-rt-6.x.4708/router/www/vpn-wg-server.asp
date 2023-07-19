@@ -167,7 +167,6 @@ function save(nomsg) {
 	fom.wg_server_lan2.value = fom._f_wg_server_lan2.checked ? 1 : 0;
 	fom.wg_server_lan3.value = fom._f_wg_server_lan3.checked ? 1 : 0;
 	fom.wg_server_rgw.value = fom._f_wg_server_rgw.checked ? 1 : 0;
-	wg_server_rgw
 
 	form.submit(fom, 1);
 
