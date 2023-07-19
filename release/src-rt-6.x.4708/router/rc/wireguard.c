@@ -87,7 +87,7 @@ void stop_wg_server(int unit)
 
     /* Determine interface */
 	memset(iface, 0, IF_SIZE);
-	snprintf(iface, IF_SIZE, "wg%d", unit);
+	snprintf(iface, IF_SIZE, "wgs%d", unit);
 
 	/* Remove interface */
     wg_remove_iface(iface);
