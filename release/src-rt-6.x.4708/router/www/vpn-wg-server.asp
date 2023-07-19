@@ -21,7 +21,7 @@
 
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ipaddr,lan_netmask,wg_server_eas,wg_server_localip,wg_server_sn,wg_server_nm,wg_server_port,wg_server_privkey,wg_server_endpoint,wg_server_lan,wg_server_peer1_key,wg_server_peer1_ip,wg_server_peer1_nm,wg_server_peer2_key,wg_server_peer2_ip,wg_server_peer2_nm,wg_server_peer3_key,wg_server_peer3_ip,wg_server_peer3_nm"); %>
+//	<% nvram("wan_ipaddr,lan_ipaddr,lan_netmask,wg_server_eas,wg_server_ip,wg_server_nm,wg_server_port,wg_server_privkey,wg_server_endpoint,wg_server_lan0,wg_server_peer1_key,wg_server_peer1_ip,wg_server_peer1_nm,wg_server_peer2_key,wg_server_peer2_ip,wg_server_peer2_nm,wg_server_peer3_key,wg_server_peer3_ip,wg_server_peer3_nm"); %>
 
 var cprefix = 'vpn_wg_server';
 var changed = 0;
@@ -59,8 +59,8 @@ function generatePeerConfig(num) {
 	else {
 		endpoint = nvram.wan_ipaddr + ":" + port;
 	}
-	var allowed_ips = nvram.wg_server_localip + "/32";
-	if (nvram.wg_server_lan) {
+	var allowed_ips = nvram.wg_server_ip + "/32";
+	if (nvram.wg_server_lan0) {
 		allowed_ips += `, ${nvram.lan_ipaddr}/${netmaskToCIDR(nvram.lan_netmask)}`
 	}
 
@@ -126,7 +126,7 @@ function save(nomsg) {
 	var fom = E('t_fom');
 
 	fom.wg_server_eas.value = fom._f_wg_server_eas.checked ? 1 : 0;
-	fom.wg_server_lan.value = fom._f_wg_server_lan.checked ? 1 : 0;
+	fom.wg_server_lan0.value = fom._f_wg_server_lan0.checked ? 1 : 0;
 
 	form.submit(fom, 1);
 
@@ -164,7 +164,7 @@ function init() {
 
 <input type="hidden" name="_service" value="">
 <input type="hidden" name="wg_server_eas">
-<input type="hidden" name="wg_server_lan">
+<input type="hidden" name="wg_server_lan0">
 
 <!-- / / / -->
 
@@ -179,13 +179,12 @@ function init() {
 				{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey()" id="wg_server_keygen">' },
 			] },
 			{ title: `Public Key`, name: 'wg_server_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
-			{ title: 'Local IP', name: 'wg_server_localip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_localip },
-			{ title: 'Subnet/Netmask', multi: [
-				{ name: 'wg_server_sn', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_sn },
+			{ title: 'IP/Netmask', multi: [
+				{ name: 'wg_server_ip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server_ip },
 				{ name: 'wg_server_nm', type: 'text', maxlen: 2, size: 4, value: nvram.wg_server_nm }
 			] },
 			{ title: `Custom Endpoint`, name: 'wg_server_endpoint', type: 'text', maxlen: 64, size: 64, value: nvram.wg_server_endpoint},
-			{ title: 'Allow peers access to LAN', name: 'f_wg_server_lan', type: 'checkbox', value: nvram.wg_server_lan == '1' },
+			{ title: 'Push LAN0 (br0) to clients', name: 'f_wg_server_lan0', type: 'checkbox', value: nvram.wg_server_lan0 == '1' },
 		]);
 	</script>
 	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wgserver_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>

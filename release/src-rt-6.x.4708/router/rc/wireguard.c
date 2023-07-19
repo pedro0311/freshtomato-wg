@@ -31,7 +31,7 @@ void start_wg_server(int unit)
 
 	/* generate wireguard device address/subnet */
 	memset(buffer, 0, BUF_SIZE);
-	snprintf(buffer, BUF_SIZE, "%s/%s", nvram_get("wg_server_localip"), nvram_get("wg_server_nm"));
+	snprintf(buffer, BUF_SIZE, "%s/%s", nvram_get("wg_server_ip"), nvram_get("wg_server_nm"));
 
     /* set interface address and netmask */
 	if (wg_set_iface_addr(iface, buffer)) {
