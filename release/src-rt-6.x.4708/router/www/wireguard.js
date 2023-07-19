@@ -232,6 +232,9 @@
 			{
 				return false;
 			}
+		},
+		generatePresharedKey: function() {
+			return generatePresharedKey();
 		}
 	};
 })();

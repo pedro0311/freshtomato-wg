@@ -21,7 +21,7 @@
 
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server_eas,wg_server_ip,wg_server_nm,wg_server_port,wg_server_privkey,wg_server_endpoint,wg_server_lan0,wg_server_lan1,wg_server_lan2,wg_server_lan3,wg_server_rgw,wg_server_peer1_key,wg_server_peer1_ip,wg_server_peer1_nm,wg_server_peer2_key,wg_server_peer2_ip,wg_server_peer2_nm,wg_server_peer3_key,wg_server_peer3_ip,wg_server_peer3_nm"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server_eas,wg_server_ip,wg_server_nm,wg_server_port,wg_server_privkey,wg_server_endpoint,wg_server_lan0,wg_server_lan1,wg_server_lan2,wg_server_lan3,wg_server_rgw,wg_server_peer1_key,wg_server_peer1_psk,wg_server_peer1_ip,wg_server_peer1_nm,wg_server_peer2_key,wg_server_peer2_psk,wg_server_peer2_ip,wg_server_peer2_nm,wg_server_peer3_key,wg_server_peer3_psk,wg_server_peer3_ip,wg_server_peer3_nm"); %>
 
 var cprefix = 'vpn_wg_server';
 var changed = 0;
@@ -40,9 +40,14 @@ function updateServerKey() {
 	E('_wg_server_pubkey').value = keys.publicKey;
 }
 
+function updatePeerPSK(num) {
+	E('_wg_server_peer'+num+'_psk').value = window.wireguard.generatePresharedKey();
+}
+
 function generatePeerConfig(num) {
 	var privatekey_peer = eval(`nvram.wg_server_peer${num}_key`);
 	var publickey_server = window.wireguard.generatePublicKey(nvram.wg_server_privkey);
+	var presharedkey = eval(`nvram.wg_server_peer${num}_psk`);
 
 	var address = eval(`nvram.wg_server_peer${num}_ip`) + '/' + eval(`nvram.wg_server_peer${num}_nm`);
 	var port = nvram.wg_server_port;
@@ -77,18 +82,27 @@ function generatePeerConfig(num) {
 		}
 	}
 
-	const link = document.createElement("a");
-	const file = new Blob([
+	var content = [];
+	content.push(
 		"[Interface]\n",
 		`Address = ${address}\n`,
 		`ListenPort = ${port}\n`,
 		`PrivateKey = ${privatekey_peer}\n`,
 		"\n",
 		"[Peer]\n",
-		`PublicKey = ${publickey_server}\n`,
+		`PublicKey = ${publickey_server}\n`
+	);
+	if (presharedkey != "") {
+		content.push(`PresharedKey = ${presharedkey}\n`);
+	}
+	PresharedKey = 
+	content.push(
 		`AllowedIPs = ${allowed_ips}\n`,
-		`Endpoint = ${endpoint}\n`,
-	], { type: 'text/plain' });
+		`Endpoint = ${endpoint}\n`
+	);
+
+	const link = document.createElement("a");
+	const file = new Blob(content, { type: 'text/plain' });
 	link.href = URL.createObjectURL(file);
 	link.download = `client${num}.conf`;
 	link.click();
@@ -234,6 +248,10 @@ function init() {
 					{ title: '', custom: '<input type="button" value="Generate" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' },
 				] },
 				{ title: `Peer ${i} Public Key`, name: `wg_server_peer${i}_pubkey`, type: 'text', maxlen: 44, size: 44, disabled: ""},
+				{ title: `Peer ${i} Preshared Key`, multi: [
+					{ title: '', name: `wg_server_peer${i}_psk`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server_peer${i}_psk`) },
+					{ title: '', custom: '<input type="button" value="Generate" onclick="updatePeerPSK('+(i)+')" id="wg_keygen_peer'+i+'_psk_button">' },
+				] },
 				{ title: 'IP/Netmask', multi: [
 					{ name: 'wg_server_peer'+i+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_server_peer'+i+'_ip') },
 					{ name: 'wg_server_peer'+i+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_server_peer'+i+'_nm') }
