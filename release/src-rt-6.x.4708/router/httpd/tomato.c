@@ -127,6 +127,9 @@ const aspapi_t aspapi[] = {
 #ifdef TCONFIG_PPTPD
 	{ "pptpd_userol",		asp_pptpd_userol		},
 #endif
+#ifdef TCONFIG_WIREGUARD
+	{ "wgstat",				asp_wgstat				},
+#endif
 	{ "wlstats",			asp_wlstats			},
 	{ "wlclient",			asp_wlclient			},
 	{ "wlnoise",			asp_wlnoise			},
@@ -1710,6 +1713,34 @@ static const nvset_t nvset_list[] = {
 	{ "pptp_client_dfltroute",	V_01				},
 	{ "pptp_client_stateless",	V_01				},
 	{ "pptpd_chap",			V_RANGE(0, 2)			},
+#endif
+
+#ifdef TCONFIG_WIREGUARD
+/* wireguard-server */
+	{ "wg_server1_eas",			V_01				},
+	{ "wg_server1_key",			V_TEXT(0, 44)		},
+	{ "wg_server1_endpoint",	V_TEXT(0, 64)		},
+	{ "wg_server1_port",		V_PORT				},
+	{ "wg_server1_ip",			V_IP				},
+	{ "wg_server1_nm",			V_RANGE(0, 32)		},
+	{ "wg_server1_lan0",		V_01				},
+	{ "wg_server1_lan1",		V_01				},
+	{ "wg_server1_lan2",		V_01				},
+	{ "wg_server1_lan3",		V_01				},
+	{ "wg_server1_rgw",			V_01				},
+	{ "wg_server1_peer1_key",	V_TEXT(0, 44)		},
+	{ "wg_server1_peer1_psk",	V_TEXT(0, 44)		},
+	{ "wg_server1_peer1_ip",	V_IP				},
+	{ "wg_server1_peer1_nm",	V_RANGE(0, 32)		},
+	{ "wg_server1_peer2_key",	V_TEXT(0, 44)		},
+	{ "wg_server1_peer2_psk",	V_TEXT(0, 44)		},
+	{ "wg_server1_peer2_ip",	V_IP				},
+	{ "wg_server1_peer2_nm",	V_RANGE(0, 32)		},
+	{ "wg_server1_peer3_key",	V_TEXT(0, 44)		},
+	{ "wg_server1_peer3_psk",	V_TEXT(0, 44)		},
+	{ "wg_server1_peer3_ip",	V_IP				},
+	{ "wg_server1_peer3_nm",	V_RANGE(0, 32)		},
+	
 #endif
 
 	{ NULL }
