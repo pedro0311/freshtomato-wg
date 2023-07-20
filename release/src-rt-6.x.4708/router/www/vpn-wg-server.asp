@@ -21,7 +21,7 @@
 
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_ip,wg_server1_nm,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_ip,wg_server1_nm,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm"); %>
 
 var cprefix = 'vpn_wg_server';
 var changed = 0;
@@ -70,7 +70,14 @@ function generatePeerConfig(num) {
 		allowed_ips = "0.0.0.0/0"
 	}
 	else {
-		allowed_ips = nvram.wg_server1_ip + "/32";
+		var netmask;
+		if (nvram.wg_server1_lan == "1") {
+			netmask = `/${nvram.wg_server1_nm}`;
+		}
+		else {
+			netmask = "/32";
+		}
+		allowed_ips = nvram.wg_server1_ip + netmask;
 		for(let i = 0; i <= 3; ++i){
 			if (eval(`nvram.wg_server1_lan${i}` != "")) {
 				t = (i == 0 ? '' : i);
@@ -162,6 +169,7 @@ function save(nomsg) {
 	var fom = E('t_fom');
 
 	fom.wg_server1_eas.value = fom._f_wg_server1_eas.checked ? 1 : 0;
+	fom.wg_server1_lan.value = fom._f_wg_server1_lan.checked ? 1 : 0;
 	fom.wg_server1_lan0.value = fom._f_wg_server1_lan0.checked ? 1 : 0;
 	fom.wg_server1_lan1.value = fom._f_wg_server1_lan1.checked ? 1 : 0;
 	fom.wg_server1_lan2.value = fom._f_wg_server1_lan2.checked ? 1 : 0;
@@ -204,6 +212,7 @@ function init() {
 
 <input type="hidden" name="_service" value="">
 <input type="hidden" name="wg_server1_eas">
+<input type="hidden" name="wg_server1_lan">
 <input type="hidden" name="wg_server1_lan0">
 <input type="hidden" name="wg_server1_lan1">
 <input type="hidden" name="wg_server1_lan2">
@@ -227,12 +236,13 @@ function init() {
 				{ name: 'wg_server1_ip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server1_ip },
 				{ name: 'wg_server1_nm', type: 'text', maxlen: 2, size: 4, value: nvram.wg_server1_nm }
 			] },
-			{ title: `Custom Endpoint`, name: 'wg_server1_endpoint', type: 'text', maxlen: 64, size: 64, value: nvram.wg_server1_endpoint},
-			{ title: 'Push LAN0 (br0) to clients', name: 'f_wg_server1_lan0', type: 'checkbox', value: nvram.wg_server1_lan0 == '1' },
-			{ title: 'Push LAN1 (br1) to clients', name: 'f_wg_server1_lan1', type: 'checkbox', value: nvram.wg_server1_lan1 == '1' },
-			{ title: 'Push LAN2 (br2) to clients', name: 'f_wg_server1_lan2', type: 'checkbox', value: nvram.wg_server1_lan2 == '1' },
-			{ title: 'Push LAN3 (br3) to clients', name: 'f_wg_server1_lan3', type: 'checkbox', value: nvram.wg_server1_lan3 == '1' },
-			{ title: 'Forward all client traffic', name: 'f_wg_server1_rgw', type: 'checkbox', value: nvram.wg_server1_rgw == '1' },
+			{ title: 'Custom Endpoint', name: 'wg_server1_endpoint', type: 'text', maxlen: 64, size: 64, value: nvram.wg_server1_endpoint},
+			{ title: 'Allow peers to communicate', name: 'f_wg_server1_lan', type: 'checkbox', value: nvram.wg_server1_lan == '1'},
+			{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_server1_lan0', type: 'checkbox', value: nvram.wg_server1_lan0 == '1' },
+			{ title: 'Push LAN1 (br1) to peers', name: 'f_wg_server1_lan1', type: 'checkbox', value: nvram.wg_server1_lan1 == '1' },
+			{ title: 'Push LAN2 (br2) to peers', name: 'f_wg_server1_lan2', type: 'checkbox', value: nvram.wg_server1_lan2 == '1' },
+			{ title: 'Push LAN3 (br3) to peers', name: 'f_wg_server1_lan3', type: 'checkbox', value: nvram.wg_server1_lan3 == '1' },
+			{ title: 'Forward all peer traffic', name: 'f_wg_server1_rgw', type: 'checkbox', value: nvram.wg_server1_rgw == '1' },
 		]);
 	</script>
 	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wgserver_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
