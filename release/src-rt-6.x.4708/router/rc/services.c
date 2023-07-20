@@ -3718,9 +3718,9 @@ TOP:
 #endif
 
 #ifdef TCONFIG_WIREGUARD
-	if (strncmp(service, "wgserver", 9) == 0) {
-		if (act_stop) stop_wg_server(1);
-		if (act_start) start_wg_server(1);
+	if (strncmp(service, "wgserver", 8) == 0) {
+		if (act_stop) stop_wg_server(atoi(&service[8]));
+		if (act_start) start_wg_server(atoi(&service[8]));
 		goto CLEAR;
 	}
 #endif

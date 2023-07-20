@@ -38,7 +38,7 @@ isup.pptpd = parseInt('<% psup("pptpd"); %>');
 /* PPTPD-END */
 
 /* WIREGUARD-BEGIN */
-isup.wgserver = parseInt('<% wgstat("wgs1"); %>');
+isup.wgserver1 = parseInt('<% wgstat("wgs1"); %>');
 /* WIREGUARD-END */
 
 /* NGINX-BEGIN */
