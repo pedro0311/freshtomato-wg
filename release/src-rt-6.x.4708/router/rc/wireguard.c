@@ -31,7 +31,7 @@ void start_wg_server(int unit)
 
 	/* generate wireguard device address/subnet */
 	memset(buffer, 0, BUF_SIZE);
-	snprintf(buffer, BUF_SIZE, "%s/%s", nvram_get("wg_server_ip"), nvram_get("wg_server_nm"));
+	snprintf(buffer, BUF_SIZE, "%s/%s", nvram_get("wg_server1_ip"), nvram_get("wg_server1_nm"));
 
     /* set interface address and netmask */
 	if (wg_set_iface_addr(iface, buffer)) {
@@ -40,13 +40,13 @@ void start_wg_server(int unit)
 	}
 
 	/* set interface port */
-	if (wg_set_iface_port(iface, nvram_get("wg_server_port"))) {
+	if (wg_set_iface_port(iface, nvram_get("wg_server1_port"))) {
 		stop_wg_server(unit);
 		return;
 	}
 
 	/* set interface private key */
-	if (wg_set_iface_privkey(iface, nvram_get("wg_server_privkey"))) {
+	if (wg_set_iface_privkey(iface, nvram_get("wg_server1_key"))) {
 		stop_wg_server(unit);
 		return;
 	}
@@ -55,13 +55,13 @@ void start_wg_server(int unit)
 	int i = 1;
 	while(i <= PEER_COUNT)
 	{
-		if (getNVRAMVar("wg_server_peer%d_key", i)[0] != '\0' &&
-			getNVRAMVar("wg_server_peer%d_ip", i)[0] != '\0' &&
-			getNVRAMVar("wg_server_peer%d_nm", i)[0] != '\0')
+		if (getNVRAMVar("wg_server1_peer%d_key", i)[0] != '\0' &&
+			getNVRAMVar("wg_server1_peer%d_ip", i)[0] != '\0' &&
+			getNVRAMVar("wg_server1_peer%d_nm", i)[0] != '\0')
 		{
 			memset(buffer, 0, BUF_SIZE);
-			snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server_peer%d_ip", i), getNVRAMVar("wg_server_peer%d_nm", i));
-			wg_add_peer_privkey(iface, getNVRAMVar("wg_server_peer%d_key", i), buffer, getNVRAMVar("wg_server_peer%d_psk", i));
+			snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server1_peer%d_ip", i), getNVRAMVar("wg_server1_peer%d_nm", i));
+			wg_add_peer_privkey(iface, getNVRAMVar("wg_server1_peer%d_key", i), buffer, getNVRAMVar("wg_server1_peer%d_psk", i));
 		}
 		
 		i += 1;
@@ -74,7 +74,7 @@ void start_wg_server(int unit)
 	}
 
 	/* set iptables rules */
-	if (wg_set_iptables(iface, nvram_get("wg_server_port"))) {
+	if (wg_set_iptables(iface, nvram_get("wg_server1_port"))) {
 		stop_wg_server(unit);
 		return;
 	}
@@ -93,7 +93,7 @@ void stop_wg_server(int unit)
     wg_remove_iface(iface);
 
 	/* remove iptables rules */
-	wg_remove_iptables(iface, nvram_get("wg_server_port"));
+	wg_remove_iptables(iface, nvram_get("wg_server1_port"));
 }
 
 void wg_setup_dirs() {
@@ -386,7 +386,7 @@ int wg_remove_iface(char *iface)
 
 void start_wg_eas()
 {
-	if (nvram_get_int("wg_server_eas"))
+	if (nvram_get_int("wg_server1_eas"))
 	{
 		start_wg_server(1);
 	}
