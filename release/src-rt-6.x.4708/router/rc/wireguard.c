@@ -304,8 +304,8 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey
 		wg_set_peer_psk(iface, pubkey, presharedkey);
 	}
 
-	/* check if keepalive is not empty */
-	if (keepalive[0] != '\0') {
+	/* check if keepalive is not zero */
+	if (keepalive[0] != '0') {
 		wg_set_peer_keepalive(iface, pubkey, keepalive);
 	}
 
