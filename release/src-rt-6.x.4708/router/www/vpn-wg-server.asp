@@ -52,6 +52,7 @@ function generatePeerConfig(num) {
 	var address = eval(`nvram.wg_server1_peer${num}_ip`) + '/' + eval(`nvram.wg_server1_peer${num}_nm`);
 	var port = nvram.wg_server1_port;
 	var endpoint;
+	var keepalive_server = nvram.wg_server1_ka;
 
 	if (changed) {
 		alert('Changes have been made. You need to save before continue!');
@@ -107,6 +108,10 @@ function generatePeerConfig(num) {
 		`AllowedIPs = ${allowed_ips}\n`,
 		`Endpoint = ${endpoint}\n`
 	);
+	if (keepalive_server != "") {
+		content.push(`PersistentKeepalive = ${keepalive_server}\n`);
+	}
+
 
 	const link = document.createElement("a");
 	const file = new Blob(content, { type: 'text/plain' });
