@@ -61,7 +61,13 @@ void start_wg_server(int unit)
 		{
 			memset(buffer, 0, BUF_SIZE);
 			snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server1_peer%d_ip", i), getNVRAMVar("wg_server1_peer%d_nm", i));
-			wg_add_peer_privkey(iface, getNVRAMVar("wg_server1_peer%d_key", i), buffer, getNVRAMVar("wg_server1_peer%d_psk", i));
+			wg_add_peer_privkey(
+				iface,
+				getNVRAMVar("wg_server1_peer%d_key", i),
+				buffer,
+				getNVRAMVar("wg_server1_peer%d_psk", i),
+				getNVRAMVar("wg_server1_peer%d_ka", i)
+			);
 		}
 		
 		i += 1;
@@ -283,53 +289,71 @@ int wg_set_iface_up(char *iface)
 	return -1;
 }
 
-int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey)
+int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive)
 {
-	FILE *fp;
-	char buffer[BUF_SIZE];
-
-	/* check if psk is empty */
-	if (presharedkey[0] == '\0') {
-		if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
-			logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
-			return -1;
-		}
-		else {
-			logmsg(LOG_DEBUG, "peer %s has been added to wireguard interface %s", pubkey, iface);
-		}
+	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
+		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
+		return -1;
 	}
 	else {
-		/* write preshared key to file */
-		memset(buffer, 0, BUF_SIZE);
-		snprintf(buffer, BUF_SIZE, WG_DIR"/keys/%s.psk", iface);
+		logmsg(LOG_DEBUG, "peer %s has been added to wireguard interface %s", pubkey, iface);
+	}
 
-		fp = fopen(buffer, "w");
-		fprintf(fp, presharedkey);
-		fclose(fp);
+	/* check if psk is not empty */
+	if (presharedkey[0] != '\0') {
+		wg_set_peer_psk(iface, pubkey, presharedkey);
+	}
 
-		if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips, "preshared-key", buffer)){
-			logmsg(LOG_WARNING, "unable to add peer %s using psk to wireguard interface %s!", pubkey, iface);
-			return -1;
-		}
-		else {
-			logmsg(LOG_DEBUG, "peer %s using psk has been added to wireguard interface %s", pubkey, iface);
-		}
-
-		/* remove file for security */
-		remove(buffer);
+	/* check if keepalive is not empty */
+	if (presharedkey[0] != '\0') {
+		wg_set_peer_keepalive(iface, pubkey, keepalive);
 	}
 
 	return 0;
 }
 
-int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey)
+int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey)
+{
+	FILE *fp;
+	char buffer[BUF_SIZE];
+
+	/* write preshared key to file */
+	memset(buffer, 0, BUF_SIZE);
+	snprintf(buffer, BUF_SIZE, WG_DIR"/keys/%s.psk", iface);
+
+	fp = fopen(buffer, "w");
+	fprintf(fp, presharedkey);
+	fclose(fp);
+
+	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "preshared-key", buffer)){
+		logmsg(LOG_WARNING, "unable to add preshared key to peer %s on wireguard interface %s!", pubkey, iface);
+	}
+	else {
+		logmsg(LOG_DEBUG, "preshared key has been added to peer %s on wireguard interface %s", pubkey, iface);
+	}
+
+	/* remove file for security */
+	remove(buffer);
+}
+
+int wg_set_peer_keepalive(char *iface, char *pubkey, char *keepalive)
+{
+	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "persistent-keepalive", keepalive)){
+		logmsg(LOG_WARNING, "unable to add persistent-keepalive of %s to peer %s on wireguard interface %s!", keepalive, pubkey, iface);
+	}
+	else {
+		logmsg(LOG_DEBUG, "persistent-keepalive of %s has been added to peer %s on wireguard interface %s", keepalive, pubkey, iface);
+	}
+}
+
+int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey, char *keepalive)
 {
 	char pubkey[64];
 
 	memset(pubkey, 0, sizeof(pubkey));
 	wg_pubkey(privkey, pubkey);
 
-	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey);
+	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey, keepalive);
 }
 
 int wg_set_iptables(char *iface, char *port)
