@@ -316,6 +316,7 @@ int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey)
 {
 	FILE *fp;
 	char buffer[BUF_SIZE];
+	int err = 0;
 
 	/* write preshared key to file */
 	memset(buffer, 0, BUF_SIZE);
@@ -327,6 +328,7 @@ int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey)
 
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "preshared-key", buffer)){
 		logmsg(LOG_WARNING, "unable to add preshared key to peer %s on wireguard interface %s!", pubkey, iface);
+		err = -1;
 	}
 	else {
 		logmsg(LOG_DEBUG, "preshared key has been added to peer %s on wireguard interface %s", pubkey, iface);
@@ -334,16 +336,20 @@ int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey)
 
 	/* remove file for security */
 	remove(buffer);
+	return err;
 }
 
 int wg_set_peer_keepalive(char *iface, char *pubkey, char *keepalive)
 {
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "persistent-keepalive", keepalive)){
 		logmsg(LOG_WARNING, "unable to add persistent-keepalive of %s to peer %s on wireguard interface %s!", keepalive, pubkey, iface);
+		return -1;
 	}
 	else {
 		logmsg(LOG_DEBUG, "persistent-keepalive of %s has been added to peer %s on wireguard interface %s", keepalive, pubkey, iface);
 	}
+
+	return 0;
 }
 
 int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey, char *keepalive)
