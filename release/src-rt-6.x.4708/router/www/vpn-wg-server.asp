@@ -21,7 +21,7 @@
 
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_ip,wg_server1_nm,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer1_ka,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer2_ka,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm,wg_server1_peer3_ka"); %>
 
 var cprefix = 'vpn_wg_server1';
 var changed = 0;
@@ -231,11 +231,12 @@ function init() {
 				{ title: '', name: 'wg_server1_key', type: 'text', maxlen: 44, size: 44, value: nvram.wg_server1_key },
 				{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey()" id="wg_server1_keygen">' },
 			] },
-			{ title: `Public Key`, name: 'wg_server1_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
+			{ title: 'Public Key', name: 'wg_server1_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
 			{ title: 'IP/Netmask', multi: [
 				{ name: 'wg_server1_ip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server1_ip },
 				{ name: 'wg_server1_nm', type: 'text', maxlen: 2, size: 4, value: nvram.wg_server1_nm }
 			] },
+			{ title: 'Keepalive to Server', name: 'wg_server1_ka', type: 'text', maxlen: 2, size: 4, value: nvram.wg_server1_ka},
 			{ title: 'Custom Endpoint', name: 'wg_server1_endpoint', type: 'text', maxlen: 64, size: 64, value: nvram.wg_server1_endpoint},
 			{ title: 'Allow peers to communicate', name: 'f_wg_server1_lan', type: 'checkbox', value: nvram.wg_server1_lan == '1'},
 			{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_server1_lan0', type: 'checkbox', value: nvram.wg_server1_lan0 == '1' },
@@ -262,10 +263,11 @@ function init() {
 					{ title: '', custom: '<input type="button" value="Generate" onclick="updatePeerPSK('+(i)+')" id="wg_keygen_peer'+i+'_psk_button">' },
 				] },
 				{ title: 'IP/Netmask', multi: [
-					{ name: 'wg_server1_peer'+i+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_server1_peer'+i+'_ip') },
-					{ name: 'wg_server1_peer'+i+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_server1_peer'+i+'_nm') }
+					{ name: `wg_server1_peer${i}_ip`, type: 'text', maxlen: 15, size: 17, value: eval(`nvram.wg_server1_peer${i}_ip`) },
+					{ name: `wg_server1_peer${i}_nm`, type: 'text', maxlen: 2, size: 4, value: eval(`nvram.wg_server1_peer${i}_nm`) }
 				] },
-				{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+(i)+')" id="wg_config_peer'+i+'_button">' }
+				{ title: `Keepalive to Peer ${i}`, name: `wg_server1_peer${i}_ka`, type: 'text', maxlen: 2, size: 4, value: eval(`nvram.wg_server1_peer${i}_ka`)},
+				{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+i+')" id="wg_config_peer'+i+'_button">' }
 				
 			]);
 		}

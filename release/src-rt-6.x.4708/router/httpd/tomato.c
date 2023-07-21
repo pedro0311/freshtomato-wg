@@ -1723,6 +1723,7 @@ static const nvset_t nvset_list[] = {
 	{ "wg_server1_port",		V_PORT				},
 	{ "wg_server1_ip",			V_IP				},
 	{ "wg_server1_nm",			V_RANGE(0, 32)		},
+	{ "wg_server1_ka",			V_RANGE(0, 128)		},
 	{ "wg_server1_lan0",		V_01				},
 	{ "wg_server1_lan1",		V_01				},
 	{ "wg_server1_lan2",		V_01				},
@@ -1732,14 +1733,17 @@ static const nvset_t nvset_list[] = {
 	{ "wg_server1_peer1_psk",	V_TEXT(0, 44)		},
 	{ "wg_server1_peer1_ip",	V_IP				},
 	{ "wg_server1_peer1_nm",	V_RANGE(0, 32)		},
+	{ "wg_server1_peer1_ka",	V_RANGE(0, 128)		},
 	{ "wg_server1_peer2_key",	V_TEXT(0, 44)		},
 	{ "wg_server1_peer2_psk",	V_TEXT(0, 44)		},
 	{ "wg_server1_peer2_ip",	V_IP				},
 	{ "wg_server1_peer2_nm",	V_RANGE(0, 32)		},
+	{ "wg_server1_peer2_ka",	V_RANGE(0, 128)		},
 	{ "wg_server1_peer3_key",	V_TEXT(0, 44)		},
 	{ "wg_server1_peer3_psk",	V_TEXT(0, 44)		},
 	{ "wg_server1_peer3_ip",	V_IP				},
 	{ "wg_server1_peer3_nm",	V_RANGE(0, 32)		},
+	{ "wg_server1_peer3_ka",	V_RANGE(0, 128)		},
 	
 #endif
 
