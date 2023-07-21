@@ -108,7 +108,7 @@ function generatePeerConfig(num) {
 		`AllowedIPs = ${allowed_ips}\n`,
 		`Endpoint = ${endpoint}\n`
 	);
-	if (keepalive_server != "") {
+	if (keepalive_server != "0") {
 		content.push(`PersistentKeepalive = ${keepalive_server}\n`);
 	}
 
