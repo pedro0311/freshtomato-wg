@@ -86,7 +86,7 @@ void start_wg_server(int unit)
 	}
 
 	/* save iface MAKE SURE YOU REMOVE THIS */
-	wg_save_iface(iface, WG_DIR"wgs1.conf");
+	wg_save_iface(iface, WG_DIR"/wgs1.conf");
 }
 
 void stop_wg_server(int unit)
@@ -176,7 +176,7 @@ void wg_setup_dirs() {
 
 	/* script to dump wireguard interface to file */
 	if(!(f_exists(WG_DIR"/scripts/wg-save.sh"))){
-		if((fp = fopen(WG_DIR"/scripts/fw-del.sh", "w"))) {
+		if((fp = fopen(WG_DIR"/scripts/wg-save.sh", "w"))) {
 			fprintf(fp, "#!/bin/sh\n"
 						"/usr/sbin/wg showconf $1 > $2\n"
 						"IPandNM=$(/usr/sbin/ip addr show $1 | grep inet | awk '{ print $2 }')\n"
