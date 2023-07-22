@@ -186,6 +186,22 @@ void wg_setup_dirs() {
 		}
 	}
 
+	/* script to load wireguard interface from file */
+	if(!(f_exists(WG_DIR"/scripts/wg-load.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/wg-load.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"TEMPFILE=WG_DIR/$1-temp.conf\n"
+						"IPandNM=$(/bin/grep \"Address = \" \"$2\")\n"
+						"ip link add $1 type wireguard\n"
+                        "ip addr add $IPandNM dev $1\n"
+                        "/bin/sed '/Address = .*/d' $2 > $TEMPFILE\n"
+                        "/usr/sbin/wg setconf $1 $2\n"
+                        "rm $TEMPFILE\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/wg-load.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
 }
 
 void wg_cleanup_dirs() {
@@ -478,5 +494,14 @@ int wg_save_iface(char *iface, char *file)
 
 int wg_load_iface(char *iface, char *file)
 {
+	/* write wg config to file*/
+	if(eval("/bin/sh", WG_DIR"/scripts/wg-load.sh", iface, file)) {
+		logmsg(LOG_WARNING, "Unable to load wireguard interface %s from file %s!", iface, file);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "Loaded wireguard interface %s from file %s", iface, file);
+	}
 
+	return 0;
 }
