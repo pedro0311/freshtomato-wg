@@ -161,13 +161,23 @@ void wg_setup_dirs() {
 	if(!(f_exists(WG_DIR"/scripts/fw-del.sh"))){
 		if((fp = fopen(WG_DIR"/scripts/fw-del.sh", "w"))) {
 			fprintf(fp, "#!/bin/sh\n"
-						"iptables -t mangle -nvL PREROUTING | grep -q '.*MARK.*all.*$2.*0x1/0x7' && iptables -t mangle -D PREROUTING -i $2 -j MARK --set-mark 0x01/0x7\n"
+						"/usr/sbin/iptables -t mangle -nvL PREROUTING | grep -q '.*MARK.*all.*$2.*0x1/0x7' && iptables -t mangle -D PREROUTING -i $2 -j MARK --set-mark 0x01/0x7\n"
 						"fi\n"
 						"/usr/sbin/iptables -nvL INPUT | grep -q \".*ACCEPT.*udp.dpt.$1$\" && /usr/sbin/iptables -D INPUT -p udp --dport \"$1\" -j ACCEPT\n"
 						"/usr/sbin/iptables -nvL INPUT | grep -q \".*ACCEPT.*all.*$2\" && /usr/sbin/iptables -D INPUT -i \"$2\" -j ACCEPT\n"
 						"/usr/sbin/iptables -nvL FORWARD | grep -q \".*ACCEPT.*all.*$2\" && /usr/sbin/iptables -D FORWARD -i \"$2\" -j ACCEPT\n");
 			fclose(fp);
 			chmod(WG_DIR"/scripts/fw-del.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
+	/* script to dump wireguard interface to file */
+	if(!(f_exists(WG_DIR"/scripts/wg-save.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/fw-del.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"/usr/sbin/wg showconf $1 > $2\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/wg-save.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
 		}
 	}
 
@@ -445,4 +455,67 @@ int wg_pubkey(char *privkey, char *pubkey)
 	}
 
 	remove(WG_DIR"/keys/wgclient.pub");
+}
+
+int wg_save(char *iface, char *file) // Might be a bit more involved than I thought
+{
+	FILE *config;
+	FILE *config_temp;
+	char temp_path[64];
+	char line[BUF_SIZE];
+
+	memset(temp_path, 0, 64);
+	snprintf(temp_path, 64, WG_DIR"/%s-temp.conf", iface);
+
+	/* write wg config to temp file*/
+	if(eval("/bin/sh", WG_DIR"/scripts/wg-save.sh", iface, temp_path)) {
+		logmsg(LOG_WARNING, "Unable to temporarily save wireguard interface %s to file %s!", iface, file);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "Temporarily saved wireguard interface %s to file %s", iface, file);
+	}
+
+	/* open temp file for reading */
+	if((config_temp = fopen(temp_path, "r")) == NULL) {
+		logmsg(LOG_WARNING, "Unable to open config file %s to append extra fields of wireguard interface %s!", file, iface);
+		return -1;
+	}
+
+	/* open target file for writing */
+	if((config = fopen(file, "w")) == NULL) {
+		logmsg(LOG_WARNING, "Unable to open config file %s to append extra fields of wireguard interface %s!", file, iface);
+		return -1;
+	}
+
+	/* copy [Interface] line in config */
+	memset(line, 0, BUF_SIZE);
+	fgets(line, BUF_SIZE, config_temp);
+	fputs(line, config);
+
+	/* insert address */
+	memset(line, 0, BUF_SIZE);
+	snprintf(line, BUF_SIZE, "Address = %s/%s\n", address, netmask); // TODO
+	fputs(line, config);
+
+	/* insert port */
+	memset(line, 0, BUF_SIZE);
+	snprintf(line, BUF_SIZE, "ListenPort = %s\n", port); // TODO
+	fputs(line, config);
+
+	/* copy rest of config */
+	while (fgets(line, BUF_SIZE, config_temp) != NULL) {
+		fputs(line, config);
+	}
+	fclose(config_temp);
+	fclose(config);
+
+	remove(temp_path);
+
+	return 0;
+}
+
+int wg_load(char *iface, char *file)
+{
+
 }
