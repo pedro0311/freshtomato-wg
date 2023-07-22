@@ -190,12 +190,12 @@ void wg_setup_dirs() {
 	if(!(f_exists(WG_DIR"/scripts/wg-load.sh"))){
 		if((fp = fopen(WG_DIR"/scripts/wg-load.sh", "w"))) {
 			fprintf(fp, "#!/bin/sh\n"
-						"TEMPFILE=WG_DIR/$1-temp.conf\n"
-						"IPandNM=$(/bin/grep \"Address = \" \"$2\")\n"
+						"TEMPFILE="WG_DIR"/$1-temp.conf\n"
+						"IPandNM=$(/bin/grep \"Address = \" \"$2\" | awk '{ print $3 }')\n"
 						"ip link add $1 type wireguard\n"
                         "ip addr add $IPandNM dev $1\n"
                         "/bin/sed '/Address = .*/d' $2 > $TEMPFILE\n"
-                        "/usr/sbin/wg setconf $1 $2\n"
+                        "/usr/sbin/wg setconf $1 $TEMPFILE\n"
                         "rm $TEMPFILE\n");
 			fclose(fp);
 			chmod(WG_DIR"/scripts/wg-load.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
