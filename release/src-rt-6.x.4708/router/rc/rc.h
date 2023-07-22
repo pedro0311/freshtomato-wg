@@ -594,6 +594,8 @@ extern int wg_remove_iptables(char *iface, char *port);
 extern int wg_remove_iface(char *iface);
 extern void start_wg_eas();
 extern int wg_pubkey(char *privkey, char *pubkey);
+extern int wg_save_iface(char *iface, char *file);
+extern int wg_load_iface(char *iface, char *file);
 #endif
 
 /* tinc.c */
