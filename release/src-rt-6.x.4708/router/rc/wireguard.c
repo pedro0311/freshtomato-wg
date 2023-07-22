@@ -309,7 +309,7 @@ int wg_set_iface_up(char *iface)
 			logmsg(LOG_DEBUG, "wireguard interface %s has been brought up", iface);
 			return 0;
 		}
-		else if (retry < 2) {
+		else if (retry < 4) {
 			logmsg(LOG_WARNING, "unable to bring up wireguard interface %s, retrying...", iface);
 			sleep(3);
 		}
