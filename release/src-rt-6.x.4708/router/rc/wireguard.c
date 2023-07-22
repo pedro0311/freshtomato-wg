@@ -304,7 +304,7 @@ int wg_set_iface_up(char *iface)
 {
 	int retry = 0;
 
-	while (retry < 3) {
+	while (retry < 5) {
 		if (!(eval("/usr/sbin/ip", "link", "set", "up", "dev", iface))) {
 			logmsg(LOG_DEBUG, "wireguard interface %s has been brought up", iface);
 			return 0;
@@ -312,8 +312,8 @@ int wg_set_iface_up(char *iface)
 		else if (retry < 2) {
 			logmsg(LOG_WARNING, "unable to bring up wireguard interface %s, retrying...", iface);
 			sleep(3);
-			retry += 1;
 		}
+		retry += 1;
 	}
 
 	logmsg(LOG_WARNING, "unable to bring up wireguard interface %s!", iface);
@@ -480,7 +480,7 @@ int wg_pubkey(char *privkey, char *pubkey)
 
 int wg_save_iface(char *iface, char *file)
 {
-	/* write wg config to file*/
+	/* write wg config to file */
 	if(eval("/bin/sh", WG_DIR"/scripts/wg-save.sh", iface, file)) {
 		logmsg(LOG_WARNING, "Unable to save wireguard interface %s to file %s!", iface, file);
 		return -1;
@@ -494,7 +494,7 @@ int wg_save_iface(char *iface, char *file)
 
 int wg_load_iface(char *iface, char *file)
 {
-	/* write wg config to file*/
+	/* write wg config to file */
 	if(eval("/bin/sh", WG_DIR"/scripts/wg-load.sh", iface, file)) {
 		logmsg(LOG_WARNING, "Unable to load wireguard interface %s from file %s!", iface, file);
 		return -1;
