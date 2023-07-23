@@ -48,6 +48,7 @@ function generatePeerConfig(num) {
 	var privatekey_peer = eval(`nvram.wg_server1_peer${num}_key`);
 	var publickey_server = window.wireguard.generatePublicKey(nvram.wg_server1_key);
 	var presharedkey = eval(`nvram.wg_server1_peer${num}_psk`);
+	var name = eval(`nvram.wg_server1_peer${num}_name`);
 
 	var address = eval(`nvram.wg_server1_peer${num}_ip`) + '/' + eval(`nvram.wg_server1_peer${num}_nm`);
 	var port = nvram.wg_server1_port;
@@ -93,8 +94,13 @@ function generatePeerConfig(num) {
 	}
 
 	var content = [];
+	content.push("[Interface]\n");
+
+	if (name != "") {
+		content.push(`#Name = ${name}\n`);
+	}
+
 	content.push(
-		"[Interface]\n",
 		`Address = ${address}\n`,
 		`ListenPort = ${port}\n`,
 		`PrivateKey = ${privatekey_peer}\n`,
