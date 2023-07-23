@@ -1718,6 +1718,7 @@ static const nvset_t nvset_list[] = {
 #ifdef TCONFIG_WIREGUARD
 /* wireguard-server */
 	{ "wg_server1_eas",			V_01				},
+	{ "wg_server1_file",		V_TEXT(0, 64)		},
 	{ "wg_server1_key",			V_TEXT(0, 44)		},
 	{ "wg_server1_endpoint",	V_TEXT(0, 64)		},
 	{ "wg_server1_port",		V_PORT				},

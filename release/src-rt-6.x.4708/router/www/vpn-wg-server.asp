@@ -21,7 +21,7 @@
 
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer1_ka,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer2_ka,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm,wg_server1_peer3_ka"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer1_ka,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer2_ka,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm,wg_server1_peer3_ka"); %>
 
 var cprefix = 'vpn_wg_server1';
 var changed = 0;
@@ -231,6 +231,7 @@ function init() {
 	<script>
 		createFieldTable('', [
 			{ title: 'Enable on Start', name: 'f_wg_server1_eas', type: 'checkbox', value: nvram.wg_server1_eas == '1' },
+			{ title: 'File to load interface from', name: 'wg_server1_file', type: 'text', maxlen: 64, size: 64, value: nvram.wg_server1_file },
 			{ title: 'Port', name: 'wg_server1_port', type: 'text', maxlen: 5, size: 10, value: nvram.wg_server1_port },
 			{ title: 'Private Key', multi: [
 				{ title: '', name: 'wg_server1_key', type: 'text', maxlen: 44, size: 44, value: nvram.wg_server1_key },
