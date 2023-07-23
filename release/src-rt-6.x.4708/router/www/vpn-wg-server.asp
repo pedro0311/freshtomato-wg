@@ -138,9 +138,12 @@ function generatePeerConfig(num) {
 				content.push(`PresharedKey = ${peer_psk}\n`,);
 			}
 
-			var peer_allowed_ips = eval(`nvarm.wg_server1_peer${i}_ip`);
-			if (peer_allowed_ips != "") {
-				content.push(`AllowedIPs = ${peer_allowed_ips}\n`,);
+			var peer_allowed_ips = eval(`nvarm.wg_server1_peer${i}_ip`) + '/' + eval(`nvarm.wg_server1_peer${i}_nm`);
+			content.push(`AllowedIPs = ${peer_allowed_ips}\n`,);
+
+			var peer_keepalive = eval(`nvarm.wg_server1_peer${i}_ka`);
+			if (peer_keepalive != "0") {
+				content.push(`PersistentKeepalive = ${peer_keepalive}\n`,);
 			}
 
 		}
