@@ -1736,19 +1736,21 @@ static const nvset_t nvset_list[] = {
 	{ "wg_server1_peer1_ip",	V_IP				},
 	{ "wg_server1_peer1_nm",	V_RANGE(0, 32)		},
 	{ "wg_server1_peer1_ka",	V_RANGE(0, 128)		},
+	{ "wg_server1_peer1_ep",	V_TEXT(0, 64)		},
 	{ "wg_server1_peer2_name",	V_TEXT(0, 32)		},
 	{ "wg_server1_peer2_key",	V_TEXT(0, 44)		},
 	{ "wg_server1_peer2_psk",	V_TEXT(0, 44)		},
 	{ "wg_server1_peer2_ip",	V_IP				},
 	{ "wg_server1_peer2_nm",	V_RANGE(0, 32)		},
 	{ "wg_server1_peer2_ka",	V_RANGE(0, 128)		},
+	{ "wg_server1_peer2_ep",	V_TEXT(0, 64)		},
 	{ "wg_server1_peer3_name",	V_TEXT(0, 32)		},
 	{ "wg_server1_peer3_key",	V_TEXT(0, 44)		},
 	{ "wg_server1_peer3_psk",	V_TEXT(0, 44)		},
 	{ "wg_server1_peer3_ip",	V_IP				},
 	{ "wg_server1_peer3_nm",	V_RANGE(0, 32)		},
 	{ "wg_server1_peer3_ka",	V_RANGE(0, 128)		},
-	
+	{ "wg_server1_peer3_ep",	V_TEXT(0, 64)		},
 #endif
 
 	{ NULL }

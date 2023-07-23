@@ -21,7 +21,7 @@
 
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_name,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer1_ka,wg_server1_peer2_name,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer2_ka,wg_server1_peer3_name,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm,wg_server1_peer3_ka"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_name,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer1_ka,wg_server1_peer1_ep,wg_server1_peer2_name,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer2_ka,wg_server1_peer2_ep,wg_server1_peer3_name,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm,wg_server1_peer3_ka,wg_server1_peer3_ep"); %>
 
 var cprefix = 'vpn_wg_server1';
 var changed = 0;
@@ -152,6 +152,10 @@ function generatePeerConfig(num) {
 				content.push(`PersistentKeepalive = ${peer_keepalive}\n`,);
 			}
 
+			var peer_endpoint = eval(`nvarm.wg_server1_peer${i}_ep`);
+			if (peer_endpoint != "0") {
+				content.push(`Endpoint = ${peer_endpoint}\n`);
+			}
 		}
 	}
 
@@ -317,6 +321,7 @@ function init() {
 					{ name: `wg_server1_peer${i}_nm`, type: 'text', maxlen: 2, size: 4, value: eval(`nvram.wg_server1_peer${i}_nm`) }
 				] },
 				{ title: `Keepalive to Peer ${i}`, name: `wg_server1_peer${i}_ka`, type: 'text', maxlen: 2, size: 4, value: eval(`nvram.wg_server1_peer${i}_ka`)},
+				{ title: `Peer ${i} Custom Endpoint`, name: `wg_server1_peer${i}_ep`, type: 'text', maxlen: 64, size: 64, value: eval(`nvram.wg_server1_peer${i}_ep`)},
 				{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+i+')" id="wg_config_peer'+i+'_button">' }
 			]);
 		}
