@@ -23,54 +23,61 @@ void start_wg_server(int unit)
 	memset(iface, 0, IF_SIZE);
 	snprintf(iface, IF_SIZE, "wgs%d", unit);
 
-    /* create interface */
-	if (wg_create_iface(iface)) {
-		stop_wg_server(unit);
-		return;
+	/* check if file is specified */
+	if(nvram_get("wg_server1_file")[0] != '\0') {
+		wg_load_iface(iface, nvram_get("wg_server1_file"));
 	}
+	else {
 
-	/* generate wireguard device address/subnet */
-	memset(buffer, 0, BUF_SIZE);
-	snprintf(buffer, BUF_SIZE, "%s/%s", nvram_get("wg_server1_ip"), nvram_get("wg_server1_nm"));
-
-    /* set interface address and netmask */
-	if (wg_set_iface_addr(iface, buffer)) {
-		stop_wg_server(unit);
-		return;
-	}
-
-	/* set interface port */
-	if (wg_set_iface_port(iface, nvram_get("wg_server1_port"))) {
-		stop_wg_server(unit);
-		return;
-	}
-
-	/* set interface private key */
-	if (wg_set_iface_privkey(iface, nvram_get("wg_server1_key"))) {
-		stop_wg_server(unit);
-		return;
-	}
-
-	/* add stored peers */
-	int i = 1;
-	while(i <= PEER_COUNT)
-	{
-		if (getNVRAMVar("wg_server1_peer%d_key", i)[0] != '\0' &&
-			getNVRAMVar("wg_server1_peer%d_ip", i)[0] != '\0' &&
-			getNVRAMVar("wg_server1_peer%d_nm", i)[0] != '\0')
-		{
-			memset(buffer, 0, BUF_SIZE);
-			snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server1_peer%d_ip", i), getNVRAMVar("wg_server1_peer%d_nm", i));
-			wg_add_peer_privkey(
-				iface,
-				getNVRAMVar("wg_server1_peer%d_key", i),
-				buffer,
-				getNVRAMVar("wg_server1_peer%d_psk", i),
-				getNVRAMVar("wg_server1_peer%d_ka", i)
-			);
+		/* create interface */
+		if (wg_create_iface(iface)) {
+			stop_wg_server(unit);
+			return;
 		}
-		
-		i += 1;
+
+		/* generate wireguard device address/subnet */
+		memset(buffer, 0, BUF_SIZE);
+		snprintf(buffer, BUF_SIZE, "%s/%s", nvram_get("wg_server1_ip"), nvram_get("wg_server1_nm"));
+
+		/* set interface address and netmask */
+		if (wg_set_iface_addr(iface, buffer)) {
+			stop_wg_server(unit);
+			return;
+		}
+
+		/* set interface port */
+		if (wg_set_iface_port(iface, nvram_get("wg_server1_port"))) {
+			stop_wg_server(unit);
+			return;
+		}
+
+		/* set interface private key */
+		if (wg_set_iface_privkey(iface, nvram_get("wg_server1_key"))) {
+			stop_wg_server(unit);
+			return;
+		}
+
+		/* add stored peers */
+		int i = 1;
+		while(i <= PEER_COUNT)
+		{
+			if (getNVRAMVar("wg_server1_peer%d_key", i)[0] != '\0' &&
+				getNVRAMVar("wg_server1_peer%d_ip", i)[0] != '\0' &&
+				getNVRAMVar("wg_server1_peer%d_nm", i)[0] != '\0')
+			{
+				memset(buffer, 0, BUF_SIZE);
+				snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server1_peer%d_ip", i), getNVRAMVar("wg_server1_peer%d_nm", i));
+				wg_add_peer_privkey(
+					iface,
+					getNVRAMVar("wg_server1_peer%d_key", i),
+					buffer,
+					getNVRAMVar("wg_server1_peer%d_psk", i),
+					getNVRAMVar("wg_server1_peer%d_ka", i)
+				);
+			}
+			
+			i += 1;
+		}
 	}
 
 	/* bring up interface */
@@ -161,13 +168,41 @@ void wg_setup_dirs() {
 	if(!(f_exists(WG_DIR"/scripts/fw-del.sh"))){
 		if((fp = fopen(WG_DIR"/scripts/fw-del.sh", "w"))) {
 			fprintf(fp, "#!/bin/sh\n"
-						"iptables -t mangle -nvL PREROUTING | grep -q '.*MARK.*all.*$2.*0x1/0x7' && iptables -t mangle -D PREROUTING -i $2 -j MARK --set-mark 0x01/0x7\n"
+						"/usr/sbin/iptables -t mangle -nvL PREROUTING | grep -q '.*MARK.*all.*$2.*0x1/0x7' && iptables -t mangle -D PREROUTING -i $2 -j MARK --set-mark 0x01/0x7\n"
 						"fi\n"
 						"/usr/sbin/iptables -nvL INPUT | grep -q \".*ACCEPT.*udp.dpt.$1$\" && /usr/sbin/iptables -D INPUT -p udp --dport \"$1\" -j ACCEPT\n"
 						"/usr/sbin/iptables -nvL INPUT | grep -q \".*ACCEPT.*all.*$2\" && /usr/sbin/iptables -D INPUT -i \"$2\" -j ACCEPT\n"
 						"/usr/sbin/iptables -nvL FORWARD | grep -q \".*ACCEPT.*all.*$2\" && /usr/sbin/iptables -D FORWARD -i \"$2\" -j ACCEPT\n");
 			fclose(fp);
 			chmod(WG_DIR"/scripts/fw-del.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
+	/* script to dump wireguard interface to file */
+	if(!(f_exists(WG_DIR"/scripts/wg-save.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/wg-save.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"/usr/sbin/wg showconf $1 > $2\n"
+						"IPandNM=$(/usr/sbin/ip addr show $1 | grep inet | awk '{ print $2 }')\n"
+						"sed -i \"2i Address = $IPandNM\" $2\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/wg-save.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
+	/* script to load wireguard interface from file */
+	if(!(f_exists(WG_DIR"/scripts/wg-load.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/wg-load.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"TEMPFILE="WG_DIR"/$1-temp.conf\n"
+						"IPandNM=$(/bin/grep \"Address = \" \"$2\" | awk '{ print $3 }')\n"
+						"ip link add $1 type wireguard\n"
+                        "ip addr add $IPandNM dev $1\n"
+                        "/bin/sed '/Address = .*/d' $2 > $TEMPFILE\n"
+                        "/usr/sbin/wg setconf $1 $TEMPFILE\n"
+                        "rm $TEMPFILE\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/wg-load.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
 		}
 	}
 
@@ -273,16 +308,16 @@ int wg_set_iface_up(char *iface)
 {
 	int retry = 0;
 
-	while (retry < 3) {
+	while (retry < 5) {
 		if (!(eval("/usr/sbin/ip", "link", "set", "up", "dev", iface))) {
 			logmsg(LOG_DEBUG, "wireguard interface %s has been brought up", iface);
 			return 0;
 		}
-		else if (retry < 2) {
+		else if (retry < 4) {
 			logmsg(LOG_WARNING, "unable to bring up wireguard interface %s, retrying...", iface);
 			sleep(3);
-			retry += 1;
 		}
+		retry += 1;
 	}
 
 	logmsg(LOG_WARNING, "unable to bring up wireguard interface %s!", iface);
@@ -445,4 +480,32 @@ int wg_pubkey(char *privkey, char *pubkey)
 	}
 
 	remove(WG_DIR"/keys/wgclient.pub");
+}
+
+int wg_save_iface(char *iface, char *file)
+{
+	/* write wg config to file */
+	if(eval("/bin/sh", WG_DIR"/scripts/wg-save.sh", iface, file)) {
+		logmsg(LOG_WARNING, "Unable to save wireguard interface %s to file %s!", iface, file);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "Saved wireguard interface %s to file %s", iface, file);
+	}
+
+	return 0;
+}
+
+int wg_load_iface(char *iface, char *file)
+{
+	/* write wg config to file */
+	if(eval("/bin/sh", WG_DIR"/scripts/wg-load.sh", iface, file)) {
+		logmsg(LOG_WARNING, "Unable to load wireguard interface %s from file %s!", iface, file);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "Loaded wireguard interface %s from file %s", iface, file);
+	}
+
+	return 0;
 }
