@@ -72,7 +72,8 @@ void start_wg_server(int unit)
 					getNVRAMVar("wg_server1_peer%d_key", i),
 					buffer,
 					getNVRAMVar("wg_server1_peer%d_psk", i),
-					getNVRAMVar("wg_server1_peer%d_ka", i)
+					getNVRAMVar("wg_server1_peer%d_ka", i),
+					getNVRAMVar("wg_server1_peer%d_ep", i)
 				);
 			}
 			
@@ -324,7 +325,7 @@ int wg_set_iface_up(char *iface)
 	return -1;
 }
 
-int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive)
+int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
 {
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
 		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
@@ -339,9 +340,14 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey
 		wg_set_peer_psk(iface, pubkey, presharedkey);
 	}
 
-	/* check if keepalive is not zero */
-	if (keepalive[0] != '0') {
+	/* check if keepalive is greater than zero */
+	if (atoi(keepalive) > 0) {
 		wg_set_peer_keepalive(iface, pubkey, keepalive);
+	}
+
+	/* check if endpoint is not empty */
+	if (presharedkey[0] != '\0') {
+		wg_set_peer_endpoint(iface, pubkey, endpoint);
 	}
 
 	return 0;
@@ -387,14 +393,27 @@ int wg_set_peer_keepalive(char *iface, char *pubkey, char *keepalive)
 	return 0;
 }
 
-int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey, char *keepalive)
+int wg_set_peer_endpoint(char *iface, char *pubkey, char *endpoint)
+{
+	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "endpoint", endpoint)){
+		logmsg(LOG_WARNING, "unable to add endpoint of %s to peer %s on wireguard interface %s!", endpoint, pubkey, iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "endpoint of %s has been added to peer %s on wireguard interface %s", endpoint, pubkey, iface);
+	}
+
+	return 0;
+}
+
+int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
 {
 	char pubkey[64];
 
 	memset(pubkey, 0, sizeof(pubkey));
 	wg_pubkey(privkey, pubkey);
 
-	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey, keepalive);
+	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey, keepalive, endpoint);
 }
 
 int wg_set_iptables(char *iface, char *port)
