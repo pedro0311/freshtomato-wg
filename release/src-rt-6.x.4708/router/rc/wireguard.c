@@ -28,7 +28,7 @@ void start_wg_server(int unit)
 		wg_load_iface(iface, nvram_get("wg_server1_file"));
 	}
 	else {
-		
+
 		/* create interface */
 		if (wg_create_iface(iface)) {
 			stop_wg_server(unit);
@@ -91,9 +91,6 @@ void start_wg_server(int unit)
 		stop_wg_server(unit);
 		return;
 	}
-
-	/* save iface MAKE SURE YOU REMOVE THIS */
-	wg_save_iface(iface, WG_DIR"/wgs1.conf");
 }
 
 void stop_wg_server(int unit)
