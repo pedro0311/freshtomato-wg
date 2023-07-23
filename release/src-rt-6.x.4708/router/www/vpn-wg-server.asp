@@ -123,7 +123,7 @@ function generatePeerConfig(num) {
 
 	/* add other peers if applicable */
 	for(let i = 0; i <= 3; ++i) {
-		var peer_key = eval(`nvarm.wg_server1_peer${i}_key`);
+		var peer_key = eval(`nvram.wg_server1_peer${i}_key`);
 		if (peer_key != "" && privatekey_peer != peer_key) {
 
 			content.push(
@@ -131,7 +131,7 @@ function generatePeerConfig(num) {
 				"[Peer]\n",
 			);
 
-			var peer_name = eval(`nvarm.wg_server1_peer${i}_name`)
+			var peer_name = eval(`nvram.wg_server1_peer${i}_name`)
 			if (peer_name != "") {
 				content.push(`#Name = ${peer_name}\n`,);
 			}
@@ -139,20 +139,20 @@ function generatePeerConfig(num) {
 			var peer_pubkey = window.wireguard.generatePublicKey(peer_key);
 			content.push(`PublicKey = ${peer_pubkey}\n`,);
 
-			var peer_psk = eval(`nvarm.wg_server1_peer${i}_psk`);
+			var peer_psk = eval(`nvram.wg_server1_peer${i}_psk`);
 			if (peer_psk != "") {
 				content.push(`PresharedKey = ${peer_psk}\n`,);
 			}
 
-			var peer_allowed_ips = eval(`nvarm.wg_server1_peer${i}_ip`) + '/' + eval(`nvarm.wg_server1_peer${i}_nm`);
+			var peer_allowed_ips = eval(`nvram.wg_server1_peer${i}_ip`) + '/' + eval(`nvram.wg_server1_peer${i}_nm`);
 			content.push(`AllowedIPs = ${peer_allowed_ips}\n`,);
 
-			var peer_keepalive = eval(`nvarm.wg_server1_peer${i}_ka`);
+			var peer_keepalive = eval(`nvram.wg_server1_peer${i}_ka`);
 			if (peer_keepalive != "0") {
 				content.push(`PersistentKeepalive = ${peer_keepalive}\n`,);
 			}
 
-			var peer_endpoint = eval(`nvarm.wg_server1_peer${i}_ep`);
+			var peer_endpoint = eval(`nvram.wg_server1_peer${i}_ep`);
 			if (peer_endpoint != "0") {
 				content.push(`Endpoint = ${peer_endpoint}\n`);
 			}
