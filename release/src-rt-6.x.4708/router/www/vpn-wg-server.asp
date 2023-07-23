@@ -21,7 +21,7 @@
 
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer1_ka,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer2_ka,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm,wg_server1_peer3_ka"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_name,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer1_ka,wg_server1_peer2_name,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer2_ka,wg_server1_peer3_name,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm,wg_server1_peer3_ka"); %>
 
 var cprefix = 'vpn_wg_server1';
 var changed = 0;
@@ -59,6 +59,7 @@ function generatePeerConfig(num) {
 		return;
 	}
 
+	/* build endpoint */
 	if (nvram.wg_server1_endpoint != "") {
 		endpoint = nvram.wg_server1_endpoint + ":" + port;
 	}
@@ -66,6 +67,7 @@ function generatePeerConfig(num) {
 		endpoint = nvram.wan_ipaddr + ":" + port;
 	}
 
+	/* build allowed ips for router peer */
 	var allowed_ips;
 	if (nvram.wg_server1_rgw == "1") {
 		allowed_ips = "0.0.0.0/0"
@@ -98,6 +100,7 @@ function generatePeerConfig(num) {
 		`PrivateKey = ${privatekey_peer}\n`,
 		"\n",
 		"[Peer]\n",
+		"#Name = Router\n",
 		`PublicKey = ${publickey_server}\n`
 	);
 	if (presharedkey != "") {
@@ -110,6 +113,37 @@ function generatePeerConfig(num) {
 	);
 	if (keepalive_server != "0") {
 		content.push(`PersistentKeepalive = ${keepalive_server}\n`);
+	}
+
+	/* add other peers if applicable */
+	for(let i = 0; i <= 3; ++i) {
+		var peer_key = eval(`nvarm.wg_server1_peer${i}_key`);
+		if (peer_key != "" && privatekey_peer != peer_key) {
+
+			content.push(
+				"\n",
+				"[Peer]\n",
+			);
+
+			var peer_name = eval(`nvarm.wg_server1_peer${i}_name`)
+			if (peer_name != "") {
+				content.push(`#Name = ${peer_name}\n`,);
+			}
+
+			var peer_pubkey = window.wireguard.generatePublicKey(peer_key);
+			content.push(`PublicKey = ${peer_pubkey}\n`,);
+
+			var peer_psk = eval(`nvarm.wg_server1_peer${i}_psk`);
+			if (peer_psk != "") {
+				content.push(`PresharedKey = ${peer_psk}\n`,);
+			}
+
+			var peer_allowed_ips = eval(`nvarm.wg_server1_peer${i}_ip`);
+			if (peer_allowed_ips != "") {
+				content.push(`AllowedIPs = ${peer_allowed_ips}\n`,);
+			}
+
+		}
 	}
 
 
@@ -259,6 +293,7 @@ function init() {
 	<script>
 		for (let i = 1; i <= peer_count; i++) {
 			createFieldTable('', [
+			{ title: `Peer ${i} Name`, name: `wg_server1_peer${i}_name`, type: 'text', maxlen: 32, size: 32, value: eval(`wg_server1_peer${i}_name`)},
 				{ title: `Peer ${i} Private Key`, multi: [
 					{ title: '', name: `wg_server1_peer${i}_key`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server1_peer${i}_key`) },
 					{ title: '', custom: '<input type="button" value="Generate" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' },
@@ -274,7 +309,6 @@ function init() {
 				] },
 				{ title: `Keepalive to Peer ${i}`, name: `wg_server1_peer${i}_ka`, type: 'text', maxlen: 2, size: 4, value: eval(`nvram.wg_server1_peer${i}_ka`)},
 				{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+i+')" id="wg_config_peer'+i+'_button">' }
-				
 			]);
 		}
 	</script>
