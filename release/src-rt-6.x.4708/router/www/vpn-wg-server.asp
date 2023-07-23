@@ -122,7 +122,7 @@ function generatePeerConfig(num) {
 	}
 
 	/* add other peers if applicable */
-	for(let i = 0; i <= 3; ++i) {
+	for(let i = 1; i <= peer_count; ++i) {
 		var peer_key = eval(`nvram.wg_server1_peer${i}_key`);
 		if (peer_key != "" && privatekey_peer != peer_key) {
 
