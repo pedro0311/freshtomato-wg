@@ -14,6 +14,14 @@
 <title>[<% ident(); %>] Wireguard Server</title>
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
+<style>
+	.truncate {
+		max-width: 100px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+</style>
 <script src="isup.jsz"></script>
 <script src="isup.js"></script>
 <script src="tomato.js"></script>
@@ -44,12 +52,12 @@ peers.resetNewEditor = function() {
 peers.setup = function() {
 	this.init('peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
-		{ type: 'textarea', maxlen: 44 },
-		{ type: 'textarea', maxlen: 44 },
-		{ type: 'textarea', maxlen: 100 },
+		{ type: 'text', maxlen: 44, prefix: '<div class="truncated">', suffix: '<\/div>' },
+		{ type: 'text', maxlen: 44, prefix: '<div class="truncated">', suffix: '<\/div>' },
+		{ type: 'text', maxlen: 100, prefix: '<div class="truncated">', suffix: '<\/div>' },
 		{ type: 'text', maxlen: 3 },
 		{ type: 'text', maxlen: 3 },
-		{ type: 'textarea', maxlen: 64 },
+		{ type: 'text', maxlen: 64, prefix: '<div class="truncated">', suffix: '<\/div>' },
 	]);
 	this.headerSet(['Name','Public Key','Preshared Key','IP','NM','KA','Endpoint']);
 	var nv = nvram.wg_server1_peers.split('>');
