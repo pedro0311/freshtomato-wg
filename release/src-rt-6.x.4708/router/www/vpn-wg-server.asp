@@ -44,12 +44,12 @@ peers.resetNewEditor = function() {
 peers.setup = function() {
 	this.init('peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
-		{ type: 'text', maxlen: 44 },
-		{ type: 'text', maxlen: 44 },
-		{ type: 'text', maxlen: 100 },
+		{ type: 'textarea', maxlen: 44 },
+		{ type: 'textarea', maxlen: 44 },
+		{ type: 'textarea', maxlen: 100 },
 		{ type: 'text', maxlen: 3 },
 		{ type: 'text', maxlen: 3 },
-		{ type: 'text', maxlen: 64 },
+		{ type: 'textarea', maxlen: 64 },
 	]);
 	this.headerSet(['Name','Public Key','Preshared Key','IP','NM','KA','Endpoint']);
 	var nv = nvram.wg_server1_peers.split('>');
