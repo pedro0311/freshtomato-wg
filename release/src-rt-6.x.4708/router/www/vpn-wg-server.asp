@@ -95,7 +95,7 @@ peers.verifyFields = function(row, quiet) {
 	else
 		ferror.clear(f[1]);
 
-	if (f[2] != '' && !window.wireguard.validateBase64Key(f[2].value)) {
+	if (f[2].value != '' && !window.wireguard.validateBase64Key(f[2].value)) {
 		ferror.set(f[2], 'Preshared key is invalid', quiet || !ok);
 		ok = 0;
 	}
