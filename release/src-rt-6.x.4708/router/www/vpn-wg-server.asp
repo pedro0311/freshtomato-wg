@@ -15,7 +15,7 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-	.truncate {
+	.co2 .co3 .co7 {
 		max-width: 100px;
 		white-space: nowrap;
 		overflow: hidden;
@@ -52,12 +52,12 @@ peers.resetNewEditor = function() {
 peers.setup = function() {
 	this.init('peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
-		{ type: 'text', maxlen: 44, prefix: '<div class="truncated">', suffix: '<\/div>' },
-		{ type: 'text', maxlen: 44, prefix: '<div class="truncated">', suffix: '<\/div>' },
-		{ type: 'text', maxlen: 100, prefix: '<div class="truncated">', suffix: '<\/div>' },
+		{ type: 'text', maxlen: 44 },
+		{ type: 'text', maxlen: 44 },
+		{ type: 'text', maxlen: 100 },
 		{ type: 'text', maxlen: 3 },
 		{ type: 'text', maxlen: 3 },
-		{ type: 'text', maxlen: 64, prefix: '<div class="truncated">', suffix: '<\/div>' },
+		{ type: 'text', maxlen: 64 },
 	]);
 	this.headerSet(['Name','Public Key','Preshared Key','IP','NM','KA','Endpoint']);
 	var nv = nvram.wg_server1_peers.split('>');
