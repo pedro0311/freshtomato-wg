@@ -60,7 +60,7 @@ peers.setup = function() {
 			this.insertData(-1, t);
 		}
 	}
-	peer.showNewEditor();
+	peers.showNewEditor();
 }
 
 function updatePeerKey(num) {
