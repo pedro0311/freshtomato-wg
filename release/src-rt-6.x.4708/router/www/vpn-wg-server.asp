@@ -21,12 +21,47 @@
 
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peer1_name,wg_server1_peer1_key,wg_server1_peer1_psk,wg_server1_peer1_ip,wg_server1_peer1_nm,wg_server1_peer1_ka,wg_server1_peer1_ep,wg_server1_peer2_name,wg_server1_peer2_key,wg_server1_peer2_psk,wg_server1_peer2_ip,wg_server1_peer2_nm,wg_server1_peer2_ka,wg_server1_peer2_ep,wg_server1_peer3_name,wg_server1_peer3_key,wg_server1_peer3_psk,wg_server1_peer3_ip,wg_server1_peer3_nm,wg_server1_peer3_ka,wg_server1_peer3_ep"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peers"); %>
 
 var cprefix = 'vpn_wg_server1';
 var changed = 0;
 var serviceType = 'wgserver1';
-var peer_count = 3;
+
+var peers = new TomatoGrid();
+
+peers.resetNewEditor = function() {
+	var f = fields.getAll(this.newEditor);
+	f[0].value = '';
+	f[1].value = '';
+	f[2].value = '';
+	f[3].value = '';
+	f[4].value = '';
+	f[5].value = '';
+	f[6].value = '';
+	f[7].value = '';
+	ferror.clearAll(fields.getAll(this.newEditor));
+}
+
+peers.setup = function() {
+	this.init('th-grid', '', 50, [
+		{ type: 'text', maxlen: 32 },
+		{ type: 'text', maxlen: 44 },
+		{ type: 'text', maxlen: 44 },
+		{ type: 'text', maxlen: 100 },
+		{ type: 'text', maxlen: 3 },
+		{ type: 'text', maxlen: 3 },
+		{ type: 'text', maxlen: 64 },
+	]);
+	this.headerSet(['Name','Public Key','Preshared Key','IP','Subnet','Keepalive','Endpoint']);
+	var nv = nvram.tinc_hosts.split('>');
+	for (var i = 0; i < nv.length; ++i) {
+		var t = nv[i].split('<');
+		if (t.length == 8) {
+			this.insertData(-1, t);
+		}
+	}
+	peer.showNewEditor();
+}
 
 function updatePeerKey(num) {
 	var keys = window.wireguard.generateKeypair();
@@ -122,6 +157,7 @@ function generatePeerConfig(num) {
 	}
 
 	/* add other peers if applicable */
+	/* Need to refactor
 	for(let i = 1; i <= peer_count; ++i) {
 		var peer_key = eval(`nvram.wg_server1_peer${i}_key`);
 		if (peer_key != "" && privatekey_peer != peer_key) {
@@ -157,7 +193,7 @@ function generatePeerConfig(num) {
 				content.push(`Endpoint = ${peer_endpoint}\n`);
 			}
 		}
-	}
+	} */
 
 
 	const link = document.createElement("a");
@@ -187,6 +223,7 @@ function verifyFields(focused, quiet) {
 	}
 	E(`_wg_server1_pubkey`).value = pubkey;
 
+	/* Need to refactor
 	for (let i = 1; i <= peer_count; i++) {
 		E(`_wg_server1_peer${i}_pubkey`).disabled = true;
 		pubkey = window.wireguard.generatePublicKey(E(`_wg_server1_peer${i}_key`).value);
@@ -195,6 +232,7 @@ function verifyFields(focused, quiet) {
 		}
 		E(`_wg_server1_peer${i}_pubkey`).value = pubkey;
 	}
+	*/
 
 	for (let i = 0; i <= 3; ++i) {
 		t = (i == 0 ? '' : i);
@@ -304,6 +342,8 @@ function init() {
 <div class="section-title">Wireguard Peers</div>
 <div class="section">
 	<script>
+		peers.setup();
+		/* Need to refactor
 		for (let i = 1; i <= peer_count; i++) {
 			createFieldTable('', [
 				{ title: `Peer ${i} Name`, name: `wg_server1_peer${i}_name`, type: 'text', maxlen: 32, size: 32, value: eval(`nvram.wg_server1_peer${i}_name`)},
@@ -324,7 +364,7 @@ function init() {
 				{ title: `Peer ${i} Custom Endpoint`, name: `wg_server1_peer${i}_ep`, type: 'text', maxlen: 64, size: 64, value: eval(`nvram.wg_server1_peer${i}_ep`)},
 				{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+i+')" id="wg_config_peer'+i+'_button">' }
 			]);
-		}
+		} */
 	</script>
 </div>
 
