@@ -38,7 +38,6 @@ peers.resetNewEditor = function() {
 	f[4].value = '';
 	f[5].value = '';
 	f[6].value = '';
-	f[7].value = '';
 	ferror.clearAll(fields.getAll(this.newEditor));
 }
 
@@ -61,16 +60,6 @@ peers.setup = function() {
 		}
 	}
 	peers.showNewEditor();
-}
-
-peers.dataToView = function(data) {
-	return [data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]];
-}
-
-peers.fieldValuesToData = function(row) {
-	var f = fields.getAll(row);
-
-	return [f[0].value, f[1].value, f[2].value, f[3].value, f[4].value, f[5].value, f[6].value, f[7].value];
 }
 
 peers.rpDel = function(e) {
