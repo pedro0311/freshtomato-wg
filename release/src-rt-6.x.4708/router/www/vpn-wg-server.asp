@@ -51,7 +51,7 @@ peers.setup = function() {
 		{ type: 'text', maxlen: 3 },
 		{ type: 'text', maxlen: 64 },
 	]);
-	this.headerSet(['Name','Public Key','Preshared Key','IP','Netmask','Keepalive','Endpoint']);
+	this.headerSet(['Name','Public Key','Preshared Key','IP','NM','KA','Endpoint']);
 	var nv = nvram.wg_server1_peers.split('>');
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
