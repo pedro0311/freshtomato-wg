@@ -341,6 +341,7 @@ function init() {
 </div>
 <div class="section-title">Wireguard Peers</div>
 <div class="section">
+<div class="tomato-grid" id="peers-grid"></div>
 	<script>
 		peers.setup();
 		/* Need to refactor
