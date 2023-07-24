@@ -53,7 +53,7 @@ peers.setup = function() {
 		{ type: 'text', maxlen: 64 },
 	]);
 	this.headerSet(['Name','Public Key','Preshared Key','IP','Subnet','Keepalive','Endpoint']);
-	var nv = nvram.tinc_hosts.split('>');
+	var nv = nvram.wg_server1_peers.split('>');
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
 		if (t.length == 8) {
