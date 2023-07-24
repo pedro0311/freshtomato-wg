@@ -43,7 +43,7 @@ peers.resetNewEditor = function() {
 }
 
 peers.setup = function() {
-	this.init('th-grid', '', 50, [
+	this.init('peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
