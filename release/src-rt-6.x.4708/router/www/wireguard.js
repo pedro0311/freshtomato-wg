@@ -193,7 +193,7 @@
 		var ret = 0;
 		var val;
 
-		if (base64.length != 44 || base64[43] != '=') 
+		if (!validateBase64Key(base64)) 
 			return false;
 
 		for (var i = 0; i < 32/3; ++i) {
@@ -210,6 +210,10 @@
 		key[i * 3 + 1] = (val >> 8) & 0xff;
 
 		return 1 & ((ret - 1) >> 8);
+	}
+
+	function validateBase64Key(base64) {
+		return typeof base64 === 'string' && base64.length == 44 && base64[43] == '=';
 	}
 
 	window.wireguard = {
@@ -235,6 +239,9 @@
 		},
 		generatePresharedKey: function() {
 			return keyToBase64(generatePresharedKey());
+		},
+		validateBase64Key: function(base64) {
+			return validateBase64Key(base64);
 		}
 	};
 })();

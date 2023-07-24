@@ -52,15 +52,70 @@ peers.setup = function() {
 		{ type: 'text', maxlen: 3 },
 		{ type: 'text', maxlen: 64 },
 	]);
-	this.headerSet(['Name','Public Key','Preshared Key','IP','Subnet','Keepalive','Endpoint']);
+	this.headerSet(['Name','Public Key','Preshared Key','IP','Netmask','Keepalive','Endpoint']);
 	var nv = nvram.wg_server1_peers.split('>');
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
-		if (t.length == 8) {
+		if (t.length == 7) {
 			this.insertData(-1, t);
 		}
 	}
 	peers.showNewEditor();
+}
+
+peers.dataToView = function(data) {
+	return [data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]];
+}
+
+peers.fieldValuesToData = function(row) {
+	var f = fields.getAll(row);
+
+	return [f[0].value, f[1].value, f[2].value, f[3].value, f[4].value, f[5].value, f[6].value, f[7].value];
+}
+
+peers.rpDel = function(e) {
+	changed = 1;
+	e = PR(e);
+	TGO(e).moving = null;
+	e.parentNode.removeChild(e);
+	this.recolor();
+	this.resort();
+	this.rpHide();
+}
+
+peers.verifyFields = function(row, quiet) {
+	var f = fields.getAll(row);
+	changed = 1;
+	var ok = 1;
+
+	if (!window.wireguard.validateBase64Key(f[1].value)) {
+		ferror.set(f[1], 'A valid public key is required', quiet || !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(f[1]);
+
+	if (f[2] != '' && !window.wireguard.validateBase64Key(f[2].value)) {
+		ferror.set(f[2], 'Preshared key is invalid', quiet || !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(f[2]);
+
+	if (!v_ip(f[3], quiet || !ok))
+		ok = 0;
+	else
+		ferror.clear(f[3]);
+
+	if (!v_range(f[4], quiet || !ok, 0, 32))
+		ok = 0;
+	else 
+		ferror.clear(f[4]);
+
+	if (!v_range(f[5], quiet || !ok, 0, 128))
+		ok = 0;
+	else 
+		ferror.clear(f[5]);
 }
 
 function updatePeerKey(num) {
@@ -256,7 +311,14 @@ function save(nomsg) {
 	save_pre();
 	if (!nomsg) show(); /* update '_service' field first */
 
+	var data = peers.getAllData();
+	var s = '';
+	for (var i = 0; i < data.length; ++i)
+		s += data[i].join('<')+'>';
+
 	var fom = E('t_fom');
+	fom.wg_server1_peers.value = s;
+	nvram.wg_server1_peers = s;
 
 	fom.wg_server1_eas.value = fom._f_wg_server1_eas.checked ? 1 : 0;
 	fom.wg_server1_lan.value = fom._f_wg_server1_lan.checked ? 1 : 0;
@@ -308,6 +370,7 @@ function init() {
 <input type="hidden" name="wg_server1_lan2">
 <input type="hidden" name="wg_server1_lan3">
 <input type="hidden" name="wg_server1_rgw">
+<input type="hidden" name="wg_server1_peers">
 
 <!-- / / / -->
 
