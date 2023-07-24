@@ -116,6 +116,8 @@ peers.verifyFields = function(row, quiet) {
 		ok = 0;
 	else 
 		ferror.clear(f[5]);
+
+	return ok;
 }
 
 function updatePeerKey(num) {
