@@ -15,7 +15,7 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-	.co2 .co3 .co7 {
+	.co2, .co3, .co7 {
 		max-width: 100px;
 		white-space: nowrap;
 		overflow: hidden;
