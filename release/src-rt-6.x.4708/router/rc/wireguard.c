@@ -62,7 +62,6 @@ void start_wg_server(int unit)
 		/* add stored peers */
 		nvp = nv = strdup(nvram_safe_get("wg_server1_peers"));
 		if (nv){
-
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
 				/* load fields*/
@@ -74,7 +73,7 @@ void start_wg_server(int unit)
 				snprintf(buffer, BUF_SIZE, "%s/%s", ip, nm);
 
 				/* add peer to interface */
-				wg_add_peer(iface, key, buffer, psk, ka, ep);
+				wg_add_peer(iface, &key, &buffer, &psk, &ka, &ep);
 
 			}
 		}
