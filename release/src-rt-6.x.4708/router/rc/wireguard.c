@@ -70,10 +70,10 @@ void start_wg_server(int unit)
 				
 				/* build peer address */
 				memset(buffer, 0, BUF_SIZE);
-				snprintf(buffer, BUF_SIZE, "%s/%s", ip, nm);
+				snprintf(buffer, BUF_SIZE, "%s/%s", &ip, &nm);
 
 				/* add peer to interface */
-				wg_add_peer(iface, &key, &buffer, &psk, &ka, &ep);
+				wg_add_peer(iface, &key, buffer, &psk, &ka, &ep);
 
 			}
 		}
