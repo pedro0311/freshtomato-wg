@@ -68,6 +68,12 @@ void start_wg_server(int unit)
 
 			int test = vstrsep(b, "<", &name, &key, &psk, &ip, &nm, &ka, &ep);
 			logmsg(LOG_WARNING, "Wirguard found %d fields", test);
+			logmsg(LOG_WARNING, "WG peer name: %s", name);
+			logmsg(LOG_WARNING, "WG peer psk: %s", psk);
+			logmsg(LOG_WARNING, "WG peer ip: %s", ip);
+			logmsg(LOG_WARNING, "WG peer nm: %s", nm);
+			logmsg(LOG_WARNING, "WG peer ka: %s", ka);
+			logmsg(LOG_WARNING, "WG peer ep: %s", ep);
 
 			/* load fields and skip if it's not a full set of data */
 			if (test < 7) {
