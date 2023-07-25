@@ -66,9 +66,14 @@ void start_wg_server(int unit)
 
 		while ((b = strsep(&nvp, ">")) != NULL) {
 
-			/* skip if it's not a full set of data */
-			if (vstrsep(b, "<", &name, &key, &psk, &ip, &nm, &ka, &ep) < 7)
+			int test = vstrsep(b, "<", &name, &key, &psk, &ip, &nm, &ka, &ep);
+			logmsg(LOG_WARNING, "Wirguard found %d fields", test);
+
+			/* load fields and skip if it's not a full set of data */
+			if (test < 7) {
+				logmsg(LOG_WARNING, "WIREGUARD IS SKIPPING NOW");
 				continue;
+			}
 			
 			/* build peer address */
 			memset(buffer, 0, BUF_SIZE);
