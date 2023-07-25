@@ -69,6 +69,7 @@ void start_wg_server(int unit)
 					continue;
 				
 				logmsg(LOG_WARNING, "WG peer name: %s", name);
+				logmsg(LOG_WARNING, "WG peer key: %s", key);
 				logmsg(LOG_WARNING, "WG peer psk: %s", psk);
 				logmsg(LOG_WARNING, "WG peer ip: %s", ip);
 				logmsg(LOG_WARNING, "WG peer nm: %s", nm);
