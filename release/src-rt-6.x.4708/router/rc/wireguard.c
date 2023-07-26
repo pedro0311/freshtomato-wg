@@ -14,7 +14,7 @@
 void start_wg_server(int unit)
 {
 	char *nv, *nvp, *b;
-	const char *name, *key, *psk, *ip, *nm, *ka, *ep;
+	char *name, *key, *psk, *ip, *nm, *ka, *ep;
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
 
