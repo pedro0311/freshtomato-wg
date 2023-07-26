@@ -86,7 +86,6 @@ void start_wg_server(int unit)
 				/* build peer address */
 				memset(buffer, 0, BUF_SIZE);
 				snprintf(buffer, BUF_SIZE, "%s/%s", ip, nm);
-				logmsg(LOG_WARNING, "WG peer address: %s", buffer);
 
 				/* add peer to interface */
 				wg_add_peer(iface, key, buffer, psk, ka, ep);
