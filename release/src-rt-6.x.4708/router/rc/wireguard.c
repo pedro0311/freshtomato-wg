@@ -70,13 +70,13 @@ void start_wg_server(int unit)
 				//if (vstrsep(b, "<", &name, &key, &psk, &ip, &nm, &ka, &ep) != 1)
 				//	continue;
 
-				name = strsep(&b, ">");
-				key = strsep(&b, ">");
-				psk = strsep(&b, ">");
-				ip = strsep(&b, ">");
-				nm = strsep(&b, ">");
-				ka = strsep(&b, ">");
-				ep = strsep(&b, ">");
+				name = strsep(&b, "<");
+				key = strsep(&b, "<");
+				psk = strsep(&b, "<");
+				ip = strsep(&b, "<");
+				nm = strsep(&b, "<");
+				ka = strsep(&b, "<");
+				ep = strsep(&b, "<");
 				
 				logmsg(LOG_WARNING, "WG peer name: %s", name);
 				logmsg(LOG_WARNING, "WG peer key: %s", key);
