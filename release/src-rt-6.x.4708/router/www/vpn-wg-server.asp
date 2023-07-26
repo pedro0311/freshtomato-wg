@@ -15,12 +15,19 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-	.co2, .co3, .co7 {
-		max-width: 100px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
+.co2, .co3, .co7 {
+	max-width: 150px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.co5, .co6 {
+	width: 24px;
+  	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+}
 </style>
 <script src="isup.jsz"></script>
 <script src="isup.js"></script>
