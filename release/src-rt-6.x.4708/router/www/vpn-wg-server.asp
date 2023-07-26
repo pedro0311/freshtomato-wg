@@ -140,7 +140,8 @@ function updatePeerPSK(num) {
 	E('_wg_server1_peer'+num+'_psk').value = window.wireguard.generatePresharedKey();
 }
 
-function generatePeerConfig(num) {
+function generatePeerConfig(peer_private_key, wg_prefix) {
+	
 	var privatekey_peer = eval(`nvram.wg_server1_peer${num}_key`);
 	var publickey_server = window.wireguard.generatePublicKey(nvram.wg_server1_key);
 	var presharedkey = eval(`nvram.wg_server1_peer${num}_psk`);
@@ -208,13 +209,20 @@ function generatePeerConfig(num) {
 	if (presharedkey != "") {
 		content.push(`PresharedKey = ${presharedkey}\n`);
 	}
-	PresharedKey = 
 	content.push(
 		`AllowedIPs = ${allowed_ips}\n`,
 		`Endpoint = ${endpoint}\n`
 	);
 	if (keepalive_server != "0") {
 		content.push(`PersistentKeepalive = ${keepalive_server}\n`);
+	}
+
+	var nv = nvram.wg_server1_peers.split('>');
+	for (var i = 0; i < nv.length; ++i) {
+		var t = nv[i].split('<');
+		if (t.length == 7) {
+			
+		}
 	}
 
 	/* add other peers if applicable */
@@ -256,7 +264,10 @@ function generatePeerConfig(num) {
 		}
 	} */
 
+	return content;
+}
 
+function downloadConfig(content) {
 	const link = document.createElement("a");
 	const file = new Blob(content, { type: 'text/plain' });
 	link.href = URL.createObjectURL(file);
