@@ -64,8 +64,6 @@ void start_wg_server(int unit)
 		if (nv){
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
-				logmsg(LOG_WARNING, "Parsed the following peer: %s", b);
-
 				name = strsep(&b, "<");
 				if ((key = strsep(&b, "<")) == NULL)
 					continue;
@@ -74,14 +72,6 @@ void start_wg_server(int unit)
 				nm = strsep(&b, "<");
 				ka = strsep(&b, "<");
 				ep = strsep(&b, "<");
-				
-				logmsg(LOG_WARNING, "WG peer name: %s", name);
-				logmsg(LOG_WARNING, "WG peer key: %s", key);
-				logmsg(LOG_WARNING, "WG peer psk: %s", psk);
-				logmsg(LOG_WARNING, "WG peer ip: %s", ip);
-				logmsg(LOG_WARNING, "WG peer nm: %s", nm);
-				logmsg(LOG_WARNING, "WG peer ka: %s", ka);
-				logmsg(LOG_WARNING, "WG peer ep: %s", ep);
 
 				/* build peer address */
 				memset(buffer, 0, BUF_SIZE);
@@ -340,14 +330,6 @@ int wg_set_iface_up(char *iface)
 
 int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
 {
-
-	logmsg(LOG_WARNING, "WG peer add iface: %s", iface);
-	logmsg(LOG_WARNING, "WG peer add pubkey: %s", pubkey);
-	logmsg(LOG_WARNING, "WG peer add allowed_ips: %s", allowed_ips);
-	logmsg(LOG_WARNING, "WG peer add presharedkey: %s", presharedkey);
-	logmsg(LOG_WARNING, "WG peer add keepalive: %s", keepalive);
-	logmsg(LOG_WARNING, "WG peer add endpoint: %s", endpoint);
-
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
 		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
 		return -1;
