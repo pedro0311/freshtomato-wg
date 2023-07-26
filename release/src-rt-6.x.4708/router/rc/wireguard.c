@@ -66,12 +66,9 @@ void start_wg_server(int unit)
 
 				logmsg(LOG_WARNING, "Parsed the following peer: %s", b);
 
-				/* load fields*/
-				//if (vstrsep(b, "<", &name, &key, &psk, &ip, &nm, &ka, &ep) != 1)
-				//	continue;
-
 				name = strsep(&b, "<");
-				key = strsep(&b, "<");
+				if ((key = strsep(&b, "<")) == NULL)
+					continue;
 				psk = strsep(&b, "<");
 				ip = strsep(&b, "<");
 				nm = strsep(&b, "<");
