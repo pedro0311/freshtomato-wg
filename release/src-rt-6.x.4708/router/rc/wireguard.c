@@ -330,7 +330,7 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey
 		return -1;
 	}
 	else {
-		logmsg(LOG_INFO, "peer %s has been added to wireguard interface %s", pubkey, iface);
+		logmsg(LOG_DEBUG, "peer %s has been added to wireguard interface %s", pubkey, iface);
 	}
 
 	/* check if psk is not empty */
