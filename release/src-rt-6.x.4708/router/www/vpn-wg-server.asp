@@ -167,7 +167,7 @@ function generateClient() {
 	peers.resetNewEditor();
 
 	/* generate config */
-	var content = generatePeerConfig(keys.privateKey);
+	var content = generatePeerConfig(data);
 	downloadConfig(content);
 
 	/* prompt the user to save */
