@@ -252,40 +252,42 @@ function generatePeerConfig(data) {
 	}
 
 	/* add remaining peers to config */
-	var server_peers = parsePeers(nvram.wg_server1_peers)
-	
-	for (var i = 0; i < server_peers.length; ++i) {
-		var peer = server_peers[i]
-
-		if (peer.key == window.wireguard.generatePublicKey(data[1])) {
-			continue;
-		}
-
-		content.push(
-			"\n",
-			"[Peer]\n",
-		);
-
-		if (peer.name != "") {
-			content.push(`#Name = ${peer.name}\n`,);
-		}
-
-		content.push(`PublicKey = ${peer.key}\n`,);
-
-		if (peer.psk != "") {
-			content.push(`PresharedKey = ${peer.psk}\n`,);
-		}
-
-		content.push(`AllowedIPs = ${peer.ip}/${peer.nm}\n`,);
-
-		if (peer.keepalive != "0") {
-			content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
-		}
-
+	if (nvram.wg_server1_lan == "1") {
+		var server_peers = parsePeers(nvram.wg_server1_peers)
 		
-		if (peer.endpoint != "") {
-				content.push(`Endpoint = ${peer.endpoint}\n`);
+		for (var i = 0; i < server_peers.length; ++i) {
+			var peer = server_peers[i]
+
+			if (peer.key == window.wireguard.generatePublicKey(data[1])) {
+				continue;
 			}
+
+			content.push(
+				"\n",
+				"[Peer]\n",
+			);
+
+			if (peer.name != "") {
+				content.push(`#Name = ${peer.name}\n`,);
+			}
+
+			content.push(`PublicKey = ${peer.key}\n`,);
+
+			if (peer.psk != "") {
+				content.push(`PresharedKey = ${peer.psk}\n`,);
+			}
+
+			content.push(`AllowedIPs = ${peer.ip}/${peer.nm}\n`,);
+
+			if (peer.keepalive != "0") {
+				content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
+			}
+
+			
+			if (peer.endpoint != "") {
+					content.push(`Endpoint = ${peer.endpoint}\n`);
+				}
+		}
 	}
 
 	return content;
