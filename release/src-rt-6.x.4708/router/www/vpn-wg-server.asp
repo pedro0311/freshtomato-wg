@@ -174,20 +174,11 @@ function generateClient() {
 	
 }
 
-function generatePeerConfig(peer_private_key) {
+function generatePeerConfig(data) {
 	
 	var netmask = nvram.wg_server1_nm;
 	var port = nvram.wg_server1_port;
 	var content = [];
-	var peer;
-
-	/* parse peer fields */
-	for (var server_peer in parsePeers(nvram.wg_server1_peers)) {
-		if (server_peer.key == window.wireguard.generatePublicKey(peer_private_key)) {
-			peer = server_peer;
-			break;
-		}
-	}
 
 	/* build interface section */
 	content.push("[Interface]\n");
@@ -197,9 +188,9 @@ function generatePeerConfig(peer_private_key) {
 	}
 
 	content.push(
-		`Address = ${peer.ip}/${netmask}\n`,
+		`Address = ${data[3]}/${netmask}\n`,
 		`ListenPort = ${port}\n`,
-		`PrivateKey = ${peer_private_key}\n`,
+		`PrivateKey = ${data[1]}\n`,
 	);
 
 
@@ -248,8 +239,8 @@ function generatePeerConfig(peer_private_key) {
 		`PublicKey = ${publickey_server}\n`
 	);
 
-	if (peer.psk != "") {
-		content.push(`PresharedKey = ${peer.psk}\n`);
+	if (data[2] != "") {
+		content.push(`PresharedKey = ${data[2]}\n`);
 	}
 
 	content.push(
@@ -263,7 +254,7 @@ function generatePeerConfig(peer_private_key) {
 
 	/* add remaining peers to config */
 	for (var peer in parsePeers(nvram.wg_server1_peers)) {
-		if (peer.key == window.wireguard.generatePublicKey(peer_private_key)) {
+		if (peer.key == window.wireguard.generatePublicKey(data[1])) {
 			continue;
 		}
 
