@@ -292,7 +292,7 @@ function downloadConfig(content) {
 	const link = document.createElement("a");
 	const file = new Blob(content, { type: 'text/plain' });
 	link.href = URL.createObjectURL(file);
-	link.download = `client${num}.conf`;
+	link.download = 'client.conf';
 	link.click();
 	URL.revokeObjectURL(link.href);
 }
