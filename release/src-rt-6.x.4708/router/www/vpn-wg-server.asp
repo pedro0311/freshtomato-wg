@@ -301,16 +301,19 @@ function parsePeers(peers_string) {
 	var nv = peers_string.split('>');
 	var output = [];
 	for (var i = 0; i < nv.length; ++i) {
-		var peer = nv[i].split('<');
-		if (t.length == 7) {
-			peer.name = t[0];
-			peer.key = t[1];
-			peer.psk = t[2];
-			peer.ip = t[3];
-			peer.netmask = t[4];
-			peer.keepalive = t[5];
-			peer.endpoint = t[6];
-			output.push(peer);
+		if (nv[i] != "") {
+			var t = nv[i].split('<');
+			var peer;
+			if (t.length == 7) {
+				peer.name = t[0];
+				peer.key = t[1];
+				peer.psk = t[2];
+				peer.ip = t[3];
+				peer.netmask = t[4];
+				peer.keepalive = t[5];
+				peer.endpoint = t[6];
+				output.push(peer);
+			}
 		}
 	}
 	return output;
