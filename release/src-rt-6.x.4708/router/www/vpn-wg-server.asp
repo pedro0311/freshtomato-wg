@@ -275,12 +275,12 @@ function generatePeerConfig(data) {
 
 		content.push(`AllowedIPs = ${peer.ip}\n`,);
 
-		if (peer_keepalive != "0") {
+		if (peer.keepalive != "0") {
 			content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
 		}
 
 		
-		if (peer_endpoint != "") {
+		if (peer.endpoint != "") {
 				content.push(`Endpoint = ${peer_endpoint}\n`);
 			}
 	}
