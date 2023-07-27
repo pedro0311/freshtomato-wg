@@ -142,8 +142,6 @@ function generateClient() {
 	}
 
 	var keys = window.wireguard.generateKeypair();
-	keys.privateKey;
-	keys.publicKey;
 
 	/* calculate ip of new peer */
 	var nm = CIDRToNetmask(nvram.wg_server1_nm);
@@ -167,6 +165,7 @@ function generateClient() {
 	peers.resetNewEditor();
 
 	/* generate config */
+	data[1] = keys.privateKey;
 	var content = generatePeerConfig(data);
 	downloadConfig(content);
 
@@ -257,7 +256,7 @@ function generatePeerConfig(data) {
 	
 	for (var i = 0; i < server_peers.length; ++i) {
 		var peer = server_peers[i]
-		
+
 		if (peer.key == window.wireguard.generatePublicKey(data[1])) {
 			continue;
 		}
@@ -351,17 +350,6 @@ function verifyFields(focused, quiet) {
 		pubkey = "";
 	}
 	E(`_wg_server1_pubkey`).value = pubkey;
-
-	/* Need to refactor
-	for (let i = 1; i <= peer_count; i++) {
-		E(`_wg_server1_peer${i}_pubkey`).disabled = true;
-		pubkey = window.wireguard.generatePublicKey(E(`_wg_server1_peer${i}_key`).value);
-		if(pubkey == false) {
-			pubkey = "";
-		}
-		E(`_wg_server1_peer${i}_pubkey`).value = pubkey;
-	}
-	*/
 
 	for (let i = 0; i <= 3; ++i) {
 		t = (i == 0 ? '' : i);
