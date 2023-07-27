@@ -158,8 +158,6 @@ function generateClient() {
 	];
 	
 	/* add peer to grid */
-	if (!peers.verifyFields(data, false)) return;
-
 	peers.insertData(-1, data);
 	peers.disableNewEditor(false);
 	peers.resetNewEditor();
@@ -168,6 +166,8 @@ function generateClient() {
 	var content = generatePeerConfig(keys.privateKey);
 	downloadConfig(content);
 
+	/* prompt the user to save */
+	
 }
 
 function generatePeerConfig(peer_private_key) {
