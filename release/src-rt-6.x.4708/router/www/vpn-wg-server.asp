@@ -303,8 +303,8 @@ function parsePeers(peers_string) {
 	for (var i = 0; i < nv.length; ++i) {
 		if (nv[i] != "") {
 			var t = nv[i].split('<');
-			var peer;
 			if (t.length == 7) {
+				var peer = {};
 				peer.name = t[0];
 				peer.key = t[1];
 				peer.psk = t[2];
