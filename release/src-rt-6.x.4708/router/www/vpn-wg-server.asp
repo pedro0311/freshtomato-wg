@@ -281,7 +281,7 @@ function generatePeerConfig(data) {
 
 		
 		if (peer.endpoint != "") {
-				content.push(`Endpoint = ${peer_endpoint}\n`);
+				content.push(`Endpoint = ${peer.endpoint}\n`);
 			}
 	}
 
