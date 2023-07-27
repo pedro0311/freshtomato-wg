@@ -220,7 +220,7 @@ function generatePeerConfig(data) {
 		}
 		allowed_ips = nvram.wg_server1_ip + netmask;
 		for(let i = 0; i <= 3; ++i){
-			if (eval(`nvram.wg_server1_lan${i}` != "")) {
+			if (eval(`nvram.wg_server1_lan${i}` != "0")) {
 				t = (i == 0 ? '' : i);
 				allowed_ips += ', ';
 				allowed_ips += eval(`nvram.lan${t}_ipaddr`);
@@ -276,7 +276,7 @@ function generatePeerConfig(data) {
 			content.push(`PresharedKey = ${peer.psk}\n`,);
 		}
 
-		content.push(`AllowedIPs = ${peer.ip}\n`,);
+		content.push(`AllowedIPs = ${peer.ip}/${peer.nm}\n`,);
 
 		if (peer.keepalive != "0") {
 			content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
