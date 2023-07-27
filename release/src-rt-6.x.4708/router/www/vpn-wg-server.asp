@@ -253,7 +253,11 @@ function generatePeerConfig(data) {
 	}
 
 	/* add remaining peers to config */
-	for (var peer in parsePeers(nvram.wg_server1_peers)) {
+	var server_peers = parsePeers(nvram.wg_server1_peers)
+	
+	for (var i = 0; i < server_peers.length; ++i) {
+		var peer = server_peers[i]
+		
 		if (peer.key == window.wireguard.generatePublicKey(data[1])) {
 			continue;
 		}
