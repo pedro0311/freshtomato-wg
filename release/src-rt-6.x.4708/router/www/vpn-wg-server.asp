@@ -153,7 +153,7 @@ function generateClient() {
 	/* generate peer */
 	var data = [
 		"",
-		keys.privateKey,
+		keys.publicKey,
 		window.wireguard.generatePresharedKey(),
 		ip,
 		"32",
@@ -162,8 +162,6 @@ function generateClient() {
 	];
 	
 	/* add peer to grid */
-	if (!peers.verifyFields(data, false)) return;
-
 	peers.insertData(-1, data);
 	peers.disableNewEditor(false);
 	peers.resetNewEditor();
@@ -177,11 +175,6 @@ function generateClient() {
 }
 
 function generatePeerConfig(peer_private_key) {
-
-	if (changed) {
-		alert('Changes have been made. You need to save before continue!');
-		return;
-	}
 	
 	var netmask = nvram.wg_server1_nm;
 	var port = nvram.wg_server1_port;
