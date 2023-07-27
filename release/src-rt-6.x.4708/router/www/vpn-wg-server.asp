@@ -33,7 +33,7 @@
 <script src="isup.js"></script>
 <script src="tomato.js"></script>
 <script src="wireguard.js"></script>
-
+<script src="interfaces.js"></script>
 <script>
 
 //	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peers"); %>
@@ -124,49 +124,100 @@ peers.verifyFields = function(row, quiet) {
 	return ok;
 }
 
-function updatePeerKey(num) {
-	var keys = window.wireguard.generateKeypair();
-	E('_wg_server1_peer'+num+'_key').value = keys.privateKey;
-	E('_wg_server1_peer'+num+'_pubkey').value = keys.publicKey;
-}
-
 function updateServerKey() {
 	var keys = window.wireguard.generateKeypair();
 	E('_wg_server1_key').value = keys.privateKey;
 	E('_wg_server1_pubkey').value = keys.publicKey;
 }
 
-function updatePeerPSK(num) {
-	E('_wg_server1_peer'+num+'_psk').value = window.wireguard.generatePresharedKey();
-}
-
-function generatePeerConfig(peer_private_key, wg_prefix) {
-	
-	var privatekey_peer = eval(`nvram.wg_server1_peer${num}_key`);
-	var publickey_server = window.wireguard.generatePublicKey(nvram.wg_server1_key);
-	var presharedkey = eval(`nvram.wg_server1_peer${num}_psk`);
-	var name = eval(`nvram.wg_server1_peer${num}_name`);
-
-	var address = eval(`nvram.wg_server1_peer${num}_ip`) + '/' + eval(`nvram.wg_server1_peer${num}_nm`);
-	var port = nvram.wg_server1_port;
-	var endpoint;
-	var keepalive_server = nvram.wg_server1_ka;
+function generateClient() {
 
 	if (changed) {
 		alert('Changes have been made. You need to save before continue!');
 		return;
 	}
 
+	var keys = window.wireguard.generateKeypair();
+	keys.privateKey;
+	keys.publicKey;
+
+	/* calculate ip of new peer */
+	var nm = CIDRToNetmask(nvram.wg_server1_nm);
+	var network = getNetworkAddress(nvram.wg_server1_ip, nm);
+	var ip = getAddress(ntoa(5) , network)
+
+	/* generate peer */
+	var data = [
+		"",
+		keys.privateKey,
+		window.wireguard.generatePresharedKey(),
+		ip,
+		"32",
+		"0",
+		""
+	];
+	
+	/* add peer to grid */
+	if (!peers.verifyFields(data, false)) return;
+
+	peers.insertData(-1, data);
+	peers.disableNewEditor(false);
+	peers.resetNewEditor();
+
+	/* generate config */
+	var content = generatePeerConfig(keys.privateKey);
+	downloadConfig(content);
+
+}
+
+function generatePeerConfig(peer_private_key) {
+
+	if (changed) {
+		alert('Changes have been made. You need to save before continue!');
+		return;
+	}
+	
+	var netmask = nvram.wg_server1_nm;
+	var port = nvram.wg_server1_port;
+	var content = [];
+	var peer;
+
+	/* parse peer fields */
+	for (var server_peer in parsePeers(nvram.wg_server1_peers)) {
+		if (server_peer.key == window.wireguard.generatePublicKey(peer_private_key)) {
+			peer = server_peer;
+			break;
+		}
+	}
+
+	/* build interface section */
+	content.push("[Interface]\n");
+
+	if (name != "") {
+		content.push(`#Name = ${name}\n`);
+	}
+
+	content.push(
+		`Address = ${peer.ip}/${netmask}\n`,
+		`ListenPort = ${port}\n`,
+		`PrivateKey = ${peer_private_key}\n`,
+	);
+
+
+	var publickey_server = window.wireguard.generatePublicKey(nvram.wg_server1_key);
+	var keepalive_server = nvram.wg_server1_ka;
+	var endpoint;
+	var allowed_ips;
+
 	/* build endpoint */
 	if (nvram.wg_server1_endpoint != "") {
-		endpoint = nvram.wg_server1_endpoint + ":" + port;
+		endpoint = nvram.wg_server1_endpoint + ":" + nvram.wg_server1_port;
 	}
 	else {
-		endpoint = nvram.wan_ipaddr + ":" + port;
+		endpoint = nvram.wan_ipaddr + ":" + nvram.wg_server1_port;
 	}
 
 	/* build allowed ips for router peer */
-	var allowed_ips;
 	if (nvram.wg_server1_rgw == "1") {
 		allowed_ips = "0.0.0.0/0"
 	}
@@ -190,79 +241,59 @@ function generatePeerConfig(peer_private_key, wg_prefix) {
 		}
 	}
 
-	var content = [];
-	content.push("[Interface]\n");
-
-	if (name != "") {
-		content.push(`#Name = ${name}\n`);
-	}
-
+	/* build router peer section */
 	content.push(
-		`Address = ${address}\n`,
-		`ListenPort = ${port}\n`,
-		`PrivateKey = ${privatekey_peer}\n`,
 		"\n",
 		"[Peer]\n",
 		"#Name = Router\n",
 		`PublicKey = ${publickey_server}\n`
 	);
-	if (presharedkey != "") {
-		content.push(`PresharedKey = ${presharedkey}\n`);
+
+	if (peer.psk != "") {
+		content.push(`PresharedKey = ${peer.psk}\n`);
 	}
+
 	content.push(
 		`AllowedIPs = ${allowed_ips}\n`,
 		`Endpoint = ${endpoint}\n`
 	);
+
 	if (keepalive_server != "0") {
 		content.push(`PersistentKeepalive = ${keepalive_server}\n`);
 	}
 
-	var nv = nvram.wg_server1_peers.split('>');
-	for (var i = 0; i < nv.length; ++i) {
-		var t = nv[i].split('<');
-		if (t.length == 7) {
-			
+	/* add remaining peers to config */
+	for (var peer in parsePeers(nvram.wg_server1_peers)) {
+		if (peer.key == window.wireguard.generatePublicKey(peer_private_key)) {
+			continue;
 		}
-	}
 
-	/* add other peers if applicable */
-	/* Need to refactor
-	for(let i = 1; i <= peer_count; ++i) {
-		var peer_key = eval(`nvram.wg_server1_peer${i}_key`);
-		if (peer_key != "" && privatekey_peer != peer_key) {
+		content.push(
+			"\n",
+			"[Peer]\n",
+		);
 
-			content.push(
-				"\n",
-				"[Peer]\n",
-			);
+		if (peer.name != "") {
+			content.push(`#Name = ${peer.name}\n`,);
+		}
 
-			var peer_name = eval(`nvram.wg_server1_peer${i}_name`)
-			if (peer_name != "") {
-				content.push(`#Name = ${peer_name}\n`,);
-			}
+		content.push(`PublicKey = ${peer.key}\n`,);
 
-			var peer_pubkey = window.wireguard.generatePublicKey(peer_key);
-			content.push(`PublicKey = ${peer_pubkey}\n`,);
+		if (peer.psk != "") {
+			content.push(`PresharedKey = ${peer.psk}\n`,);
+		}
 
-			var peer_psk = eval(`nvram.wg_server1_peer${i}_psk`);
-			if (peer_psk != "") {
-				content.push(`PresharedKey = ${peer_psk}\n`,);
-			}
+		content.push(`AllowedIPs = ${peer.ip}\n`,);
 
-			var peer_allowed_ips = eval(`nvram.wg_server1_peer${i}_ip`) + '/' + eval(`nvram.wg_server1_peer${i}_nm`);
-			content.push(`AllowedIPs = ${peer_allowed_ips}\n`,);
+		if (peer_keepalive != "0") {
+			content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
+		}
 
-			var peer_keepalive = eval(`nvram.wg_server1_peer${i}_ka`);
-			if (peer_keepalive != "0") {
-				content.push(`PersistentKeepalive = ${peer_keepalive}\n`,);
-			}
-
-			var peer_endpoint = eval(`nvram.wg_server1_peer${i}_ep`);
-			if (peer_endpoint != "0") {
+		
+		if (peer_endpoint != "") {
 				content.push(`Endpoint = ${peer_endpoint}\n`);
 			}
-		}
-	} */
+	}
 
 	return content;
 }
@@ -276,6 +307,25 @@ function downloadConfig(content) {
 	URL.revokeObjectURL(link.href);
 }
 
+function parsePeers(peers_string) {
+	var nv = peers_string.split('>');
+	var output = [];
+	for (var i = 0; i < nv.length; ++i) {
+		var peer = nv[i].split('<');
+		if (t.length == 7) {
+			peer.name = t[0];
+			peer.key = t[1];
+			peer.psk = t[2];
+			peer.ip = t[3];
+			peer.netmask = t[4];
+			peer.keepalive = t[5];
+			peer.endpoint = t[6];
+			output.push(peer);
+		}
+	}
+	return output;
+}
+
 function netmaskToCIDR(mask) {
 	var maskNodes = mask.match(/(\d+)/g);
 	var cidr = 0;
@@ -283,6 +333,16 @@ function netmaskToCIDR(mask) {
 		cidr += (((maskNodes[i] >>> 0).toString(2)).match(/1/g) || []).length;
 	}
 	return cidr;
+}
+
+function CIDRToNetmask(bitCount) {
+  var mask=[];
+  for(var i=0;i<4;i++) {
+    var n = Math.min(bitCount, 8);
+    mask.push(256 - Math.pow(2, 8-n));
+    bitCount -= n;
+  }
+  return mask.join('.');
 }
 
 function verifyFields(focused, quiet) {
@@ -424,29 +484,8 @@ function init() {
 <div class="tomato-grid" id="peers-grid"></div>
 	<script>
 		peers.setup();
-		/* Need to refactor
-		for (let i = 1; i <= peer_count; i++) {
-			createFieldTable('', [
-				{ title: `Peer ${i} Name`, name: `wg_server1_peer${i}_name`, type: 'text', maxlen: 32, size: 32, value: eval(`nvram.wg_server1_peer${i}_name`)},
-				{ title: `Peer ${i} Private Key`, multi: [
-					{ title: '', name: `wg_server1_peer${i}_key`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server1_peer${i}_key`) },
-					{ title: '', custom: '<input type="button" value="Generate" onclick="updatePeerKey('+(i)+')" id="wg_keygen_peer'+i+'_button">' },
-				] },
-				{ title: `Peer ${i} Public Key`, name: `wg_server1_peer${i}_pubkey`, type: 'text', maxlen: 44, size: 44, disabled: ""},
-				{ title: `Peer ${i} Preshared Key`, multi: [
-					{ title: '', name: `wg_server1_peer${i}_psk`, type: 'text', maxlen: 44, size: 44, value: eval(`nvram.wg_server1_peer${i}_psk`) },
-					{ title: '', custom: '<input type="button" value="Generate" onclick="updatePeerPSK('+(i)+')" id="wg_keygen_peer'+i+'_psk_button">' },
-				] },
-				{ title: 'IP/Netmask', multi: [
-					{ name: `wg_server1_peer${i}_ip`, type: 'text', maxlen: 15, size: 17, value: eval(`nvram.wg_server1_peer${i}_ip`) },
-					{ name: `wg_server1_peer${i}_nm`, type: 'text', maxlen: 2, size: 4, value: eval(`nvram.wg_server1_peer${i}_nm`) }
-				] },
-				{ title: `Keepalive to Peer ${i}`, name: `wg_server1_peer${i}_ka`, type: 'text', maxlen: 2, size: 4, value: eval(`nvram.wg_server1_peer${i}_ka`)},
-				{ title: `Peer ${i} Custom Endpoint`, name: `wg_server1_peer${i}_ep`, type: 'text', maxlen: 64, size: 64, value: eval(`nvram.wg_server1_peer${i}_ep`)},
-				{ title: '', custom: '<input type="button" value="Download Config" onclick="generatePeerConfig('+i+')" id="wg_config_peer'+i+'_button">' }
-			]);
-		} */
 	</script>
+	<input type="button" value="Generate Client Config" onclick="generateClient()" id="wg_server1_peer_gen">
 </div>
 
 <!-- / / / -->

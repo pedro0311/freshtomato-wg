@@ -324,11 +324,6 @@ int wg_set_iface_up(char *iface)
 
 int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
 {
-	logmsg(LOG_INFO, "WG Peer Key: %s!", pubkey);
-	logmsg(LOG_INFO, "WG Peer Allowed IPs: %s!", allowed_ips);
-	logmsg(LOG_INFO, "WG Peer Preshared Key: %s!", presharedkey);
-	logmsg(LOG_INFO, "WG Peer Keepalive: %s!", keepalive);
-	logmsg(LOG_INFO, "WG Peer Endpoint: %s!", endpoint);
 
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
 		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
