@@ -88,7 +88,11 @@ peers.rpDel = function(e) {
 }
 
 peers.verifyFields = function(row, quiet) {
-	var f = fields.getAll(row);
+	var f;
+	if (row.nodeType != null)
+		f = fields.getAll(row);
+	else
+		f = row;
 	changed = 1;
 	var ok = 1;
 
@@ -158,6 +162,8 @@ function generateClient() {
 	];
 	
 	/* add peer to grid */
+	if (!peers.verifyFields(data, false)) return;
+
 	peers.insertData(-1, data);
 	peers.disableNewEditor(false);
 	peers.resetNewEditor();
