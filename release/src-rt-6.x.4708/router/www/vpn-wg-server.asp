@@ -140,6 +140,10 @@ function generateClient() {
 		alert('Changes have been made. You need to save before continue!');
 		return;
 	}
+	
+	var psk = "";
+	if (E('f_wg_server1_peer_psk').checked)
+		psk = window.wireguard.generatePresharedKey();
 
 	/* retrieve existing IPs of server/clients to calculate new ip */
 	var existing_ips = parsePeers(nvram.wg_server1_peers);
@@ -175,13 +179,13 @@ function generateClient() {
 	/* generate peer */
 	var keys = window.wireguard.generateKeypair();
 	var data = [
-		"",
+		E('f_wg_server1_peer_name').value,
 		keys.publicKey,
-		window.wireguard.generatePresharedKey(),
+		psk,
 		ip,
-		"32",
-		"0",
-		""
+		E('f_wg_server1_peer_nm').value,
+		E('f_wg_server1_peer_ka').value,
+		E('f_wg_server1_peer_ep').value
 	];
 	
 	/* add peer to grid */
@@ -206,7 +210,7 @@ function generatePeerConfig(data) {
 	/* build interface section */
 	content.push("[Interface]\n");
 
-	if (name != "") {
+	if (data[0] != "") {
 		content.push(`#Name = ${name}\n`);
 	}
 
@@ -216,7 +220,7 @@ function generatePeerConfig(data) {
 		`PrivateKey = ${data[1]}\n`,
 	);
 
-
+	/* build router peer */
 	var publickey_server = window.wireguard.generatePublicKey(nvram.wg_server1_key);
 	var keepalive_server = nvram.wg_server1_ka;
 	var endpoint;
@@ -254,7 +258,7 @@ function generatePeerConfig(data) {
 		}
 	}
 
-	/* build router peer section */
+	/* populate router peer */
 	content.push(
 		"\n",
 		"[Peer]\n",
@@ -495,6 +499,19 @@ function init() {
 <div class="tomato-grid" id="peers-grid"></div>
 	<script>
 		peers.setup();
+	</script>
+</div>
+<div class="section-title">Client Generation</div>
+<div class="section">
+	<script>
+		createFieldTable('', [
+			{ title: 'Peer Name', name: 'f_wg_server1_peer_name', type: 'text', maxlen: 32, size: 32, value: 0},
+			{ title: 'Generate PSK', name: 'f_wg_server1_peer_psk', type: 'checkbox', value: true },
+			{ title: 'IP (optional)', name: 'f_wg_server1_peer_ip', type: 'text', maxlen: 64, size: 64},
+			{ title: 'Netmask', name: 'f_wg_server1_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
+			{ title: 'Keepalive to peer', name: 'f_wg_server1_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
+			{ title: 'Custom Endpoint', name: 'f_wg_server1_peer_ep', type: 'text', maxlen: 64, size: 64},
+		]);
 	</script>
 	<input type="button" value="Generate Client Config" onclick="generateClient()" id="wg_server1_peer_gen">
 </div>
