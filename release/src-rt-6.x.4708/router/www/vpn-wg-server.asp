@@ -508,12 +508,12 @@ function init() {
 <div class="section">
 	<script>
 		createFieldTable('', [
-			{ title: 'Peer Name', name: 'f_wg_server1_peer_name', type: 'text', maxlen: 32, size: 32, value: 0},
-			{ title: 'Generate PSK', name: 'f_wg_server1_peer_psk', type: 'checkbox', value: true },
+			{ title: 'Name', name: 'f_wg_server1_peer_name', type: 'text', maxlen: 32, size: 32},
+			{ title: 'PSK', name: 'f_wg_server1_peer_psk', type: 'checkbox', value: true },
 			{ title: 'IP (optional)', name: 'f_wg_server1_peer_ip', type: 'text', maxlen: 64, size: 64},
 			{ title: 'Netmask', name: 'f_wg_server1_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
-			{ title: 'Keepalive to peer', name: 'f_wg_server1_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
-			{ title: 'Custom Endpoint', name: 'f_wg_server1_peer_ep', type: 'text', maxlen: 64, size: 64},
+			{ title: 'Keepalive', name: 'f_wg_server1_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
+			{ title: 'Endpoint', name: 'f_wg_server1_peer_ep', type: 'text', maxlen: 64, size: 64},
 		]);
 	</script>
 	<input type="button" value="Generate Client Config" onclick="generateClient()" id="wg_server1_peer_gen">
