@@ -141,8 +141,6 @@ function generateClient() {
 		return;
 	}
 
-	var keys = window.wireguard.generateKeypair();
-
 	/* retrieve existing IPs of server/clients to calculate new ip */
 	var existing_ips = parsePeers(nvram.wg_server1_peers);
 	existing_ips = existing_ips.map(x => x.ip);
@@ -169,7 +167,13 @@ function generateClient() {
 		break;
 	}
 
+	if (ip == null) {
+		alert('Could not generate an IP for the client');
+		return;
+	}
+
 	/* generate peer */
+	var keys = window.wireguard.generateKeypair();
 	var data = [
 		"",
 		keys.publicKey,
