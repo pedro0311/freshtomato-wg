@@ -143,10 +143,32 @@ function generateClient() {
 
 	var keys = window.wireguard.generateKeypair();
 
+	/* retrieve existing IPs of server/clients to calculate new ip */
+	var existing_ips = parsePeers(nvram.wg_server1_peers);
+	existing_ips = existing_ips.map(x => x.ip);
+	existing_ips.push(nvram.wg_server1_ip)
+
 	/* calculate ip of new peer */
 	var nm = CIDRToNetmask(nvram.wg_server1_nm);
 	var network = getNetworkAddress(nvram.wg_server1_ip, nm);
-	var ip = getAddress(ntoa(5) , network)
+	var ip = null;
+	var limit = 2 ** (32 - parseInt(nm, 10));
+	var i = 1;
+
+	while (i < limit) {
+
+		var temp_ip = getAddress(ntoa(i) , network);
+		var end = temp_ip.split('.').slice(0, -1);
+
+		if (end == '255' || end == '0')
+			continue;
+
+		if (existing_ips.includes(temp_ip))
+		    continue;
+
+		ip = temp_ip;
+		break;
+	}
 
 	/* generate peer */
 	var data = [
@@ -160,6 +182,7 @@ function generateClient() {
 	];
 	
 	/* add peer to grid */
+	changed = 1;
 	peers.insertData(-1, data);
 	peers.disableNewEditor(false);
 	peers.resetNewEditor();
@@ -169,8 +192,6 @@ function generateClient() {
 	var content = generatePeerConfig(data);
 	downloadConfig(content);
 
-	/* prompt the user to save */
-	
 }
 
 function generatePeerConfig(data) {
