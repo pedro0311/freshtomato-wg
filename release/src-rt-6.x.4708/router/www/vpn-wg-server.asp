@@ -277,7 +277,7 @@ function generatePeerConfig(data) {
 				content.push(`PresharedKey = ${peer.psk}\n`,);
 			}
 
-			content.push(`AllowedIPs = ${peer.ip}/${peer.nm}\n`,);
+			content.push(`AllowedIPs = ${peer.ip}/${peer.netmask}\n`,);
 
 			if (peer.keepalive != "0") {
 				content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
