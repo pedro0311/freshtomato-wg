@@ -200,6 +200,9 @@ function generateClient() {
 	/* generate config */
 	data[1] = keys.privateKey;
 	var content = generatePeerConfig(data);
+	var name = "client.conf";
+	if (data[0] != "")
+		name = `${data[0]}.conf`;
 	downloadConfig(content);
 
 }
@@ -214,7 +217,7 @@ function generatePeerConfig(data) {
 	content.push("[Interface]\n");
 
 	if (data[0] != "") {
-		content.push(`#Name = ${name}\n`);
+		content.push(`#Name = ${data[0]}\n`);
 	}
 
 	content.push(
@@ -324,11 +327,11 @@ function generatePeerConfig(data) {
 	return content;
 }
 
-function downloadConfig(content) {
+function downloadConfig(content, name) {
 	const link = document.createElement("a");
 	const file = new Blob(content, { type: 'text/plain' });
 	link.href = URL.createObjectURL(file);
-	link.download = 'client.conf';
+	link.download = name;
 	link.click();
 	URL.revokeObjectURL(link.href);
 }
