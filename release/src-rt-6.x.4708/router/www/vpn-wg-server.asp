@@ -153,9 +153,8 @@ function generateClient() {
 	var network = getNetworkAddress(nvram.wg_server1_ip, nm);
 	var ip = null;
 	var limit = 2 ** (32 - parseInt(nm, 10));
-	var i = 1;
 
-	while (i < limit) {
+	for (var i = 1; i < limit; i++) {
 
 		var temp_ip = getAddress(ntoa(i) , network);
 		var end = temp_ip.split('.').slice(0, -1);
