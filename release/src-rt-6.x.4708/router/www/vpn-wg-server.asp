@@ -221,10 +221,11 @@ function generatePeerConfig(data) {
 		allowed_ips = nvram.wg_server1_ip + netmask;
 		for(let i = 0; i <= 3; i++){
 			if (eval(`nvram.wg_server1_lan${i}` != "0")) {
+				t = (i == 0 ? '' : i);
 				allowed_ips += ', ';
-				allowed_ips += eval(`nvram.lan${i}_ipaddr`);
+				allowed_ips += eval(`nvram.lan${t}_ipaddr`);
 				allowed_ips += '/';
-				allowed_ips += netmaskToCIDR(eval(`nvram.lan${i}_netmask`));
+				allowed_ips += netmaskToCIDR(eval(`nvram.lan${t}_netmask`));
 			}
 		}
 	}
