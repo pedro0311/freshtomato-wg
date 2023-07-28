@@ -152,7 +152,7 @@ function generateClient() {
 	var nm = CIDRToNetmask(nvram.wg_server1_nm);
 	var network = getNetworkAddress(nvram.wg_server1_ip, nm);
 	var ip = null;
-	var limit = 2 ** (32 - parseInt(nm, 10));
+	var limit = 2 ** (32 - parseInt(nvram.wg_server1_nm, 10));
 
 	for (var i = 1; i < limit; i++) {
 
