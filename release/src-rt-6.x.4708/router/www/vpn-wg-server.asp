@@ -203,7 +203,7 @@ function generateClient() {
 	var name = "client.conf";
 	if (data[0] != "")
 		name = `${data[0]}.conf`;
-	downloadConfig(content);
+	downloadConfig(content, name);
 
 }
 
