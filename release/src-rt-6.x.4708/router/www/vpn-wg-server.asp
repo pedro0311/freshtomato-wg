@@ -142,7 +142,7 @@ function generateClient() {
 	}
 	
 	var psk = "";
-	if (E('f_wg_server1_peer_psk').checked)
+	if (E('_f_wg_server1_peer_psk').checked)
 		psk = window.wireguard.generatePresharedKey();
 
 	/* retrieve existing IPs of server/clients to calculate new ip */
@@ -153,39 +153,42 @@ function generateClient() {
 	/* calculate ip of new peer */
 	var nm = CIDRToNetmask(nvram.wg_server1_nm);
 	var network = getNetworkAddress(nvram.wg_server1_ip, nm);
-	var ip = null;
-	var limit = 2 ** (32 - parseInt(nvram.wg_server1_nm, 10));
+	var ip = E('_f_wg_server1_peer_ip').value;
 
-	for (var i = 1; i < limit; i++) {
+	if (ip == "") {
 
-		var temp_ip = getAddress(ntoa(i) , network);
-		var end = temp_ip.split('.').slice(0, -1);
+		var limit = 2 ** (32 - parseInt(nvram.wg_server1_nm, 10));
+		for (var i = 1; i < limit; i++) {
 
-		if (end == '255' || end == '0')
-			continue;
+			var temp_ip = getAddress(ntoa(i) , network);
+			var end = temp_ip.split('.').slice(0, -1);
 
-		if (existing_ips.includes(temp_ip))
-		    continue;
+			if (end == '255' || end == '0')
+				continue;
 
-		ip = temp_ip;
-		break;
-	}
+			if (existing_ips.includes(temp_ip))
+				continue;
 
-	if (ip == null) {
-		alert('Could not generate an IP for the client');
-		return;
+			ip = temp_ip;
+			break;
+		}
+
+		if (ip == "") {
+			alert('Could not generate an IP for the client');
+			return;
+		}
 	}
 
 	/* generate peer */
 	var keys = window.wireguard.generateKeypair();
 	var data = [
-		E('f_wg_server1_peer_name').value,
+		E('_f_wg_server1_peer_name').value,
 		keys.publicKey,
 		psk,
 		ip,
-		E('f_wg_server1_peer_nm').value,
-		E('f_wg_server1_peer_ka').value,
-		E('f_wg_server1_peer_ep').value
+		E('_f_wg_server1_peer_nm').value,
+		E('_f_wg_server1_peer_ka').value,
+		E('_f_wg_server1_peer_ep').value
 	];
 	
 	/* add peer to grid */
