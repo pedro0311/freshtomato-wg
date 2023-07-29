@@ -198,8 +198,7 @@ function generateClient() {
 	peers.resetNewEditor();
 
 	/* generate config */
-	data[1] = keys.privateKey;
-	var content = generatePeerConfig(data);
+	var content = generatePeerConfig(data[0], keys.privateKey, data[2], data[3]);
 	var name = "client.conf";
 	if (data[0] != "")
 		name = `${data[0]}.conf`;
@@ -207,7 +206,7 @@ function generateClient() {
 
 }
 
-function generatePeerConfig(data) {
+function generatePeerConfig(name, privkey, psk, ip) {
 	
 	var netmask = nvram.wg_server1_nm;
 	var port = nvram.wg_server1_port;
@@ -216,14 +215,14 @@ function generatePeerConfig(data) {
 	/* build interface section */
 	content.push("[Interface]\n");
 
-	if (data[0] != "") {
-		content.push(`#Name = ${data[0]}\n`);
+	if (name != "") {
+		content.push(`#Name = ${name}\n`);
 	}
 
 	content.push(
-		`Address = ${data[3]}/${netmask}\n`,
+		`Address = ${ip}/${netmask}\n`,
 		`ListenPort = ${port}\n`,
-		`PrivateKey = ${data[1]}\n`,
+		`PrivateKey = ${privkey}\n`,
 	);
 
 	/* build router peer */
@@ -272,8 +271,8 @@ function generatePeerConfig(data) {
 		`PublicKey = ${publickey_server}\n`
 	);
 
-	if (data[2] != "") {
-		content.push(`PresharedKey = ${data[2]}\n`);
+	if (psk != "") {
+		content.push(`PresharedKey = ${psk}\n`);
 	}
 
 	content.push(
@@ -292,7 +291,7 @@ function generatePeerConfig(data) {
 		for (var i = 0; i < server_peers.length; ++i) {
 			var peer = server_peers[i]
 
-			if (peer.key == window.wireguard.generatePublicKey(data[1])) {
+			if (peer.key == window.wireguard.generatePublicKey(privkey)) {
 				continue;
 			}
 
