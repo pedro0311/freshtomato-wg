@@ -1644,6 +1644,10 @@ struct nvram_tuple router_defaults[] = {
 	{"tinc_firewall",		""				, 0 },
 #endif /* TCONFIG_TINC */
 
+#ifdef TCONFIG_WIREGUARD
+	{"wg_server1_peers",		""			, 0 },
+#endif /* TCONFIG_WIREGUARD */
+
 #ifdef TCONFIG_BT
 /* nas-transmission */
 	{ "bt_enable",			"0"				, 0 },

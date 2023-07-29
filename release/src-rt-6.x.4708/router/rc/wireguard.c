@@ -13,6 +13,8 @@
 
 void start_wg_server(int unit)
 {
+	char *nv, *nvp, *b;
+	char *name, *key, *psk, *ip, *nm, *ka, *ep;
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
 
@@ -58,26 +60,21 @@ void start_wg_server(int unit)
 		}
 
 		/* add stored peers */
-		int i = 1;
-		while(i <= PEER_COUNT)
-		{
-			if (getNVRAMVar("wg_server1_peer%d_key", i)[0] != '\0' &&
-				getNVRAMVar("wg_server1_peer%d_ip", i)[0] != '\0' &&
-				getNVRAMVar("wg_server1_peer%d_nm", i)[0] != '\0')
-			{
+		nvp = nv = strdup(nvram_safe_get("wg_server1_peers"));
+		if (nv){
+			while ((b = strsep(&nvp, ">")) != NULL) {
+
+				if (vstrsep(b, "<", &name, &key, &psk, &ip, &nm, &ka, &ep) < 7)
+					continue;
+				
+				/* build peer address */
 				memset(buffer, 0, BUF_SIZE);
-				snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server1_peer%d_ip", i), getNVRAMVar("wg_server1_peer%d_nm", i));
-				wg_add_peer_privkey(
-					iface,
-					getNVRAMVar("wg_server1_peer%d_key", i),
-					buffer,
-					getNVRAMVar("wg_server1_peer%d_psk", i),
-					getNVRAMVar("wg_server1_peer%d_ka", i),
-					getNVRAMVar("wg_server1_peer%d_ep", i)
-				);
+				snprintf(buffer, BUF_SIZE, "%s/%s", ip, nm);
+
+				/* add peer to interface */
+				wg_add_peer(iface, key, buffer, psk, ka, ep);
+
 			}
-			
-			i += 1;
 		}
 	}
 
@@ -327,6 +324,7 @@ int wg_set_iface_up(char *iface)
 
 int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
 {
+
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
 		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
 		return -1;
