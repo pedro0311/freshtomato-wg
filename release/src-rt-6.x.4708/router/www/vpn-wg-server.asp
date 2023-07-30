@@ -550,7 +550,7 @@ function init() {
 			W('<input type="hidden" name="wg_'+t+'_lan3">');
 			W('<input type="hidden" name="wg_'+t+'_rgw">');
 			W('<input type="hidden" name="wg_'+t+'_peers">');
-			W('<div id="wg_'+t+'conf"');
+			W('<div id="wg_'+t+'conf">');
 			W('<div class="section-title">Server Configuration</div>');
 			createFieldTable('', [
 				{ title: 'Enable on Start', name: 'f_wg_'+t+'_eas', type: 'checkbox', value: eval('nvram.wg_'+t+'_eas') == '1' },
@@ -575,12 +575,12 @@ function init() {
 				{ title: 'Forward all peer traffic', name: 'f_wg_'+t+'_rgw', type: 'checkbox', value: eval('nvram.wg_'+t+'_rgw') == '1' },
 			]);
 			W('</div>');
-			W('<div id="wg_'+t+'_peer"');
+			W('<div id="wg_'+t+'_peer">');
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
 			W('</div>');
-			W('<div id="wg_'+t+'_gen"');
+			W('<div id="wg_'+t+'_gen">');
 			W('<div class="section-title">Client Generation</div>');
 			createFieldTable('', [
 				{ title: 'Name', name: 'f_wg_'+t+'_peer_name', type: 'text', maxlen: 32, size: 32},
