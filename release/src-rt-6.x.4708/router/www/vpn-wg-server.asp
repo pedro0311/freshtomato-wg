@@ -81,7 +81,7 @@ function toggle(service, isup) {
 	countButton = 0;
 
 	var id = service.substr(service.length - 1);
-	E('_wg_'+service+'_button').disabled = 1;
+	E('_wg'+service+'_button').disabled = 1;
 	E('spin'+id).style.display = 'inline';
 
 	var fom = E('t_fom');
