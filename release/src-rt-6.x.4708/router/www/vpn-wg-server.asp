@@ -566,7 +566,7 @@ function init() {
 				{ title: 'Port', name: 'wg_'+t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port') },
 				{ title: 'Private Key', multi: [
 					{ title: '', name: 'wg_'+t+'_key', type: 'text', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key') },
-					{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey('+t+')" id="wg_'+t+'_keygen">' },
+					{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey('+i+')" id="wg_'+t+'_keygen">' },
 				] },
 				{ title: 'Public Key', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
 				{ title: 'IP/Netmask', multi: [
