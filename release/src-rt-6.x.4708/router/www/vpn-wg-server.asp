@@ -40,9 +40,35 @@
 
 var cprefix = 'vpn_wg_server1';
 var changed = 0;
-var serviceType = 'wgserver1';
+var serviceType = 'wgserver';
+
+var tabs =  [];
+for (i = 1; i <= WG_SERVER_COUNT; ++i)
+	tabs.push(['server'+i,'Server '+i]);
 
 var peers = new TomatoGrid();
+
+function tabSelect(name) {
+	tgHideIcons();
+
+	tabHigh(name);
+
+	for (var i = 0; i < tabs.length; ++i)
+		elem.display(tabs[i][0]+'-tab', (name == tabs[i][0]));
+
+	cookie.set('wg_server_tab', name);
+}
+
+function updateForm(num) {
+	var fom = E('t_fom');
+
+	if (eval('isup.vpnserver'+num) && fom._service.value.indexOf('server'+num) < 0) {
+		if (fom._service.value != '')
+			fom._service.value += ',';
+
+		fom._service.value += 'vpnserver'+num+'-restart';
+	}
+}
 
 peers.resetNewEditor = function() {
 	var f = fields.getAll(this.newEditor);
@@ -432,6 +458,7 @@ function save(nomsg) {
 
 function earlyInit() {
 	show();
+	tabSelect(cookie.get('wg_server_tab') || tabs[0][0]);
 	verifyFields(null, 1);
 }
 
@@ -460,65 +487,71 @@ function init() {
 <!-- / / / -->
 
 <input type="hidden" name="_service" value="">
-<input type="hidden" name="wg_server1_eas">
-<input type="hidden" name="wg_server1_lan">
-<input type="hidden" name="wg_server1_lan0">
-<input type="hidden" name="wg_server1_lan1">
-<input type="hidden" name="wg_server1_lan2">
-<input type="hidden" name="wg_server1_lan3">
-<input type="hidden" name="wg_server1_rgw">
-<input type="hidden" name="wg_server1_peers">
 
 <!-- / / / -->
 
-<div class="section-title">Wireguard Server</div>
+<div class="section-title">Wireguard Server Configuration</div>
 <div class="section">
 	<script>
-		createFieldTable('', [
-			{ title: 'Enable on Start', name: 'f_wg_server1_eas', type: 'checkbox', value: nvram.wg_server1_eas == '1' },
-			{ title: 'File to load interface from', name: 'wg_server1_file', type: 'text', maxlen: 64, size: 64, value: nvram.wg_server1_file },
-			{ title: 'Port', name: 'wg_server1_port', type: 'text', maxlen: 5, size: 10, value: nvram.wg_server1_port },
-			{ title: 'Private Key', multi: [
-				{ title: '', name: 'wg_server1_key', type: 'text', maxlen: 44, size: 44, value: nvram.wg_server1_key },
-				{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey()" id="wg_server1_keygen">' },
-			] },
-			{ title: 'Public Key', name: 'wg_server1_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
-			{ title: 'IP/Netmask', multi: [
-				{ name: 'wg_server1_ip', type: 'text', maxlen: 15, size: 17, value: nvram.wg_server1_ip },
-				{ name: 'wg_server1_nm', type: 'text', maxlen: 2, size: 4, value: nvram.wg_server1_nm }
-			] },
-			{ title: 'Keepalive to Server', name: 'wg_server1_ka', type: 'text', maxlen: 2, size: 4, value: nvram.wg_server1_ka},
-			{ title: 'Custom Endpoint', name: 'wg_server1_endpoint', type: 'text', maxlen: 64, size: 64, value: nvram.wg_server1_endpoint},
-			{ title: 'Allow peers to communicate', name: 'f_wg_server1_lan', type: 'checkbox', value: nvram.wg_server1_lan == '1'},
-			{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_server1_lan0', type: 'checkbox', value: nvram.wg_server1_lan0 == '1' },
-			{ title: 'Push LAN1 (br1) to peers', name: 'f_wg_server1_lan1', type: 'checkbox', value: nvram.wg_server1_lan1 == '1' },
-			{ title: 'Push LAN2 (br2) to peers', name: 'f_wg_server1_lan2', type: 'checkbox', value: nvram.wg_server1_lan2 == '1' },
-			{ title: 'Push LAN3 (br3) to peers', name: 'f_wg_server1_lan3', type: 'checkbox', value: nvram.wg_server1_lan3 == '1' },
-			{ title: 'Forward all peer traffic', name: 'f_wg_server1_rgw', type: 'checkbox', value: nvram.wg_server1_rgw == '1' },
-		]);
+		tabCreate.apply(this, tabs);
+
+		for (i = 0; i < tabs.length; ++i) {
+			t = tabs[i][0];
+			W('<div id="'+t+'-tab">');
+			W('<input type="hidden" name="wg_'+t+'_eas">');
+			W('<input type="hidden" name="wg_'+t+'_lan">');
+			W('<input type="hidden" name="wg_'+t+'_lan0">');
+			W('<input type="hidden" name="wg_'+t+'_lan1">');
+			W('<input type="hidden" name="wg_'+t+'_lan2">');
+			W('<input type="hidden" name="wg_'+t+'_lan3">');
+			W('<input type="hidden" name="wg_'+t+'_rgw">');
+			W('<input type="hidden" name="wg_'+t+'_peers">');
+			W('<div id="wg_'+t+'conf"');
+			W('<div class="section-title">Server Configuration</div>');
+			createFieldTable('', [
+				{ title: 'Enable on Start', name: 'f_wg_'+t+'_eas', type: 'checkbox', value: eval('nvram.wg_'+t+'_eas') == '1' },
+				{ title: 'File to load interface from', name: 'wg_'+t+'_file', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_file') },
+				{ title: 'Port', name: 'wg_'+t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port') },
+				{ title: 'Private Key', multi: [
+					{ title: '', name: 'wg_'+t+'_key', type: 'text', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key') },
+					{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey('+t+')" id="wg_'+t+'_keygen">' },
+				] },
+				{ title: 'Public Key', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
+				{ title: 'IP/Netmask', multi: [
+					{ name: 'wg_'+t+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_'+t+'_ip') },
+					{ name: 'wg_'+t+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_nm') }
+				] },
+				{ title: 'Keepalive to Server', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
+				{ title: 'Custom Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_endpoint') },
+				{ title: 'Allow peers to communicate', name: 'f_wg_'+t+'_lan', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan') == '1'},
+				{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_'+t+'_lan0', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan0') == '1' },
+				{ title: 'Push LAN1 (br1) to peers', name: 'f_wg_'+t+'_lan1', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan1') == '1' },
+				{ title: 'Push LAN2 (br2) to peers', name: 'f_wg_'+t+'_lan2', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan2') == '1' },
+				{ title: 'Push LAN3 (br3) to peers', name: 'f_wg_'+t+'_lan3', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan3') == '1' },
+				{ title: 'Forward all peer traffic', name: 'f_wg_'+t+'_rgw', type: 'checkbox', value: eval('nvram.wg_'+t+'_rgw') == '1' },
+			]);
+			W('</div>');
+			W('<div id="wg_'+t+'conf"');
+			W('<div class="section-title">Peers</div>');
+			peers.setup();
+			W('</div>');
+			W('<div id="wg_'+t+'conf"');
+			W('<div class="section-title">Client Generation</div>');
+			createFieldTable('', [
+				{ title: 'Name', name: 'f_wg_'+t+'_peer_name', type: 'text', maxlen: 32, size: 32},
+				{ title: 'PSK', name: 'f_wg_'+t+'_peer_psk', type: 'checkbox', value: true },
+				{ title: 'IP (optional)', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
+				{ title: 'Netmask', name: 'f_wg_'+t+'_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
+				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
+				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
+			]);
+			W('<input type="button" value="Generate Client Config" onclick="generateClient()" id="wg_server1_peer_gen">');
+			W('</div>');
+			W('</div>');
+		}
+		
 	</script>
 	<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wgserver1_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>
-</div>
-<div class="section-title">Wireguard Peers</div>
-<div class="section">
-<div class="tomato-grid" id="peers-grid"></div>
-	<script>
-		peers.setup();
-	</script>
-</div>
-<div class="section-title">Client Generation</div>
-<div class="section">
-	<script>
-		createFieldTable('', [
-			{ title: 'Name', name: 'f_wg_server1_peer_name', type: 'text', maxlen: 32, size: 32},
-			{ title: 'PSK', name: 'f_wg_server1_peer_psk', type: 'checkbox', value: true },
-			{ title: 'IP (optional)', name: 'f_wg_server1_peer_ip', type: 'text', maxlen: 64, size: 64},
-			{ title: 'Netmask', name: 'f_wg_server1_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
-			{ title: 'Keepalive', name: 'f_wg_server1_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
-			{ title: 'Endpoint', name: 'f_wg_server1_peer_ep', type: 'text', maxlen: 64, size: 64},
-		]);
-	</script>
-	<input type="button" value="Generate Client Config" onclick="generateClient()" id="wg_server1_peer_gen">
 </div>
 
 <!-- / / / -->

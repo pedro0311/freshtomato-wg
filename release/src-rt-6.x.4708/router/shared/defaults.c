@@ -1646,6 +1646,8 @@ struct nvram_tuple router_defaults[] = {
 
 #ifdef TCONFIG_WIREGUARD
 	{"wg_server1_peers",		""			, 0 },
+	{"wg_server2_peers",		""			, 0 },
+	{"wg_server3_peers",		""			, 0 },
 #endif /* TCONFIG_WIREGUARD */
 
 #ifdef TCONFIG_BT
