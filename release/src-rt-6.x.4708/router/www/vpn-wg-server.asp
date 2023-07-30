@@ -449,7 +449,7 @@ function CIDRToNetmask(bitCount) {
 function verifyFields(focused, quiet) {
 	var ok = 1;
 
-	for (var i = 0; i < WG_SERVER_COUNT; i++) {
+	for (var i = 1; i <= WG_SERVER_COUNT; i++) {
 
 		E('_wg_server'+i+'_pubkey').disabled = true;
 		var pubkey = window.wireguard.generatePublicKey(E('_wg_server'+i+'_key').value);
