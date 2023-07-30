@@ -37,7 +37,7 @@
 
 //	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peers,wg_server2_eas,wg_server2_file,wg_server2_ip,wg_server2_nm,wg_server2_ka,wg_server2_port,wg_server2_key,wg_server2_endpoint,wg_server2_lan,wg_server2_lan0,wg_server2_lan1,wg_server2_lan2,wg_server2_lan3,wg_server2_rgw,wg_server2_peers,wg_server3_eas,wg_server3_file,wg_server3_ip,wg_server3_nm,wg_server3_ka,wg_server3_port,wg_server3_key,wg_server3_endpoint,wg_server3_lan,wg_server3_lan0,wg_server3_lan1,wg_server3_lan2,wg_server3_lan3,wg_server3_rgw,wg_server3_peers"); %>
 
-var cprefix = 'vpn_wg_server1';
+var cprefix = 'vpn_wg_server';
 var changed = 0;
 var serviceType = 'wgserver';
 
@@ -198,13 +198,13 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	return ok;
 }
 
-function updateServerKey() {
+function updateServerKey(unit) {
 	var keys = window.wireguard.generateKeypair();
-	E('_wg_server1_key').value = keys.privateKey;
-	E('_wg_server1_pubkey').value = keys.publicKey;
+	E('_wg_server'+unit+'_key').value = keys.privateKey;
+	E('_wg_server'+unit+'_pubkey').value = keys.publicKey;
 }
 
-function generateClient() {
+function generateClient(unit) {
 
 	if (changed) {
 		alert('Changes have been made. You need to save before continue!');
@@ -212,22 +212,22 @@ function generateClient() {
 	}
 	
 	var psk = "";
-	if (E('_f_wg_server1_peer_psk').checked)
+	if (E('_f_wg_server'+unit+'_peer_psk').checked)
 		psk = window.wireguard.generatePresharedKey();
 
 	/* retrieve existing IPs of server/clients to calculate new ip */
-	var existing_ips = parsePeers(nvram.wg_server1_peers);
+	var existing_ips = parsePeers(eval('nvram.wg_server'+unit+'_peers'));
 	existing_ips = existing_ips.map(x => x.ip);
-	existing_ips.push(nvram.wg_server1_ip)
+	existing_ips.push(eval('nvram.wg_server'+unit+'_ip'))
 
 	/* calculate ip of new peer */
-	var nm = CIDRToNetmask(nvram.wg_server1_nm);
-	var network = getNetworkAddress(nvram.wg_server1_ip, nm);
-	var ip = E('_f_wg_server1_peer_ip').value;
+	var nm = CIDRToNetmask(eval('nvram.wg_server'+unit+'_nm'));
+	var network = getNetworkAddress(eval('nvram.wg_server'+unit+'_ip'), nm);
+	var ip = E('_f_wg_server'+unit+'_peer_ip').value;
 
 	if (ip == "") {
 
-		var limit = 2 ** (32 - parseInt(nvram.wg_server1_nm, 10));
+		var limit = 2 ** (32 - parseInt(eval('nvram.wg_server'+unit+'_nm'), 10));
 		for (var i = 1; i < limit; i++) {
 
 			var temp_ip = getAddress(ntoa(i) , network);
@@ -252,23 +252,23 @@ function generateClient() {
 	/* generate peer */
 	var keys = window.wireguard.generateKeypair();
 	var data = [
-		E('_f_wg_server1_peer_name').value,
+		E('_f_wg_server'+unit+'_peer_name').value,
 		keys.publicKey,
 		psk,
 		ip,
-		E('_f_wg_server1_peer_nm').value,
-		E('_f_wg_server1_peer_ka').value,
-		E('_f_wg_server1_peer_ep').value
+		E('_f_wg_server'+unit+'_peer_nm').value,
+		E('_f_wg_server'+unit+'_peer_ka').value,
+		E('_f_wg_server'+unit+'_peer_ep').value
 	];
 	
 	/* add peer to grid */
 	changed = 1;
-	peers.insertData(-1, data);
-	peers.disableNewEditor(false);
-	peers.resetNewEditor();
+	peerTables[unit].insertData(-1, data);
+	peerTables[unit].disableNewEditor(false);
+	peerTables[unit].resetNewEditor();
 
 	/* generate config */
-	var content = generatePeerConfig(data[0], keys.privateKey, data[2], data[3]);
+	var content = generatePeerConfig(unit, data[0], keys.privateKey, data[2], data[3]);
 	var name = "client.conf";
 	if (data[0] != "")
 		name = `${data[0]}.conf`;
@@ -276,10 +276,10 @@ function generateClient() {
 
 }
 
-function generatePeerConfig(name, privkey, psk, ip) {
+function generatePeerConfig(unit, name, privkey, psk, ip) {
 	
-	var netmask = nvram.wg_server1_nm;
-	var port = nvram.wg_server1_port;
+	var netmask = eval('nvram.wg_server'+unit+'_nm');
+	var port = eval('nvram.wg_server'+unit+'_port');
 	var content = [];
 
 	/* build interface section */
@@ -296,34 +296,34 @@ function generatePeerConfig(name, privkey, psk, ip) {
 	);
 
 	/* build router peer */
-	var publickey_server = window.wireguard.generatePublicKey(nvram.wg_server1_key);
-	var keepalive_server = nvram.wg_server1_ka;
+	var publickey_server = window.wireguard.generatePublicKey(eval('nvram.wg_server'+unit+'_key'));
+	var keepalive_server = eval('nvram.wg_server'+unit+'_ka');
 	var endpoint;
 	var allowed_ips;
 
 	/* build endpoint */
-	if (nvram.wg_server1_endpoint != "") {
-		endpoint = nvram.wg_server1_endpoint + ":" + nvram.wg_server1_port;
+	if (eval('nvram.wg_server'+unit+'_endpoint') != "") {
+		endpoint = eval('nvram.wg_server'+unit+'_endpoint') + ":" + eval('nvram.wg_server'+unit+'_port');
 	}
 	else {
-		endpoint = nvram.wan_ipaddr + ":" + nvram.wg_server1_port;
+		endpoint = nvram.wan_ipaddr + ":" + eval('nvram.wg_server'+unit+'_port');
 	}
 
 	/* build allowed ips for router peer */
-	if (nvram.wg_server1_rgw == "1") {
+	if (eval('nvram.wg_server'+unit+'_rgw') == "1") {
 		allowed_ips = "0.0.0.0/0"
 	}
 	else {
 		var netmask;
-		if (nvram.wg_server1_lan == "1") {
-			netmask = `/${nvram.wg_server1_nm}`;
+		if (eval('nvram.wg_server'+unit+'_lan') == "1") {
+			netmask = '/' + eval('nvram.wg_server'+unit+'_nm');
 		}
 		else {
 			netmask = "/32";
 		}
-		allowed_ips = nvram.wg_server1_ip + netmask;
+		allowed_ips = eval('nvram.wg_server'+unit+'_ip') + netmask;
 		for(let i = 0; i <= 3; i++){
-			if (eval(`nvram.wg_server1_lan${i}` == "1")) {
+			if (eval('nvram.wg_server'+unit+'_lan'+i) == "1") {
 				let t = (i == 0 ? '' : i);
 				allowed_ips += ', ';
 				allowed_ips += eval(`nvram.lan${t}_ipaddr`);
@@ -355,8 +355,8 @@ function generatePeerConfig(name, privkey, psk, ip) {
 	}
 
 	/* add remaining peers to config */
-	if (nvram.wg_server1_lan == "1") {
-		var server_peers = parsePeers(nvram.wg_server1_peers)
+	if (eval('nvram.wg_server'+unit+'_lan') == "1") {
+		var server_peers = parsePeers(eval('nvram.wg_server'+unit+'_peers'))
 		
 		for (var i = 0; i < server_peers.length; ++i) {
 			var peer = server_peers[i]
@@ -449,20 +449,24 @@ function CIDRToNetmask(bitCount) {
 function verifyFields(focused, quiet) {
 	var ok = 1;
 
-	E('_wg_server1_pubkey').disabled = true;
-	var pubkey = window.wireguard.generatePublicKey(E('_wg_server1_key').value);
-	if(pubkey == false) {
-		pubkey = "";
-	}
-	E(`_wg_server1_pubkey`).value = pubkey;
+	for (var i = 0; i < WG_SERVER_COUNT; i++) {
 
-	for (let i = 0; i <= 3; ++i) {
-		t = (i == 0 ? '' : i);
-
-		if (eval('nvram.lan'+t+'_ifname.length') < 1) {
-			E('_f_wg_server1_lan'+t).checked = 0;
-			E('_f_wg_server1_lan'+t).disabled = 1;
+		E('_wg_server'+i+'_pubkey').disabled = true;
+		var pubkey = window.wireguard.generatePublicKey(E('_wg_server'+i+'_key').value);
+		if(pubkey == false) {
+			pubkey = "";
 		}
+		E('_wg_server'+i+'_pubkey').value = pubkey;
+
+		for (let j = 0; j <= 3; ++j) {
+			t = (j == 0 ? '' : j);
+
+			if (eval('nvram.lan'+t+'_ifname.length') < 1) {
+				E('_f_wg_server'+i+'_lan'+t).checked = 0;
+				E('_f_wg_server'+i+'_lan'+t).disabled = 1;
+			}
+		}
+
 	}
 
 	return ok;
@@ -478,22 +482,26 @@ function save(nomsg) {
 	save_pre();
 	if (!nomsg) show(); /* update '_service' field first */
 
-	var data = peers.getAllData();
-	var s = '';
-	for (var i = 0; i < data.length; ++i)
-		s += data[i].join('<')+'>';
-
 	var fom = E('t_fom');
-	fom.wg_server1_peers.value = s;
-	nvram.wg_server1_peers = s;
+	for (var i = 0; i < WG_SERVER_COUNT; i++) {
 
-	fom.wg_server1_eas.value = fom._f_wg_server1_eas.checked ? 1 : 0;
-	fom.wg_server1_lan.value = fom._f_wg_server1_lan.checked ? 1 : 0;
-	fom.wg_server1_lan0.value = fom._f_wg_server1_lan0.checked ? 1 : 0;
-	fom.wg_server1_lan1.value = fom._f_wg_server1_lan1.checked ? 1 : 0;
-	fom.wg_server1_lan2.value = fom._f_wg_server1_lan2.checked ? 1 : 0;
-	fom.wg_server1_lan3.value = fom._f_wg_server1_lan3.checked ? 1 : 0;
-	fom.wg_server1_rgw.value = fom._f_wg_server1_rgw.checked ? 1 : 0;
+		var data = peerTables[i].getAllData();
+		var s = '';
+		for (var i = 0; i < data.length; ++i)
+			s += data[i].join('<')+'>';
+
+		eval('fom.wg_server'+i+'_peers.value = s');
+		eval('nvram.wg_server'+i+'_peers = s');
+
+		eval('fom.wg_server'+i+'_eas.value = fom._f_wg_server'+i+'_eas.checked ? 1 : 0');
+		eval('fom.wg_server'+i+'_lan.value = fom._f_wg_server'+i+'_lan.checked ? 1 : 0');
+		eval('fom.wg_server'+i+'_lan0.value = fom._f_wg_server'+i+'_lan0.checked ? 1 : 0');
+		eval('fom.wg_server'+i+'_lan1.value = fom._f_wg_server'+i+'_lan1.checked ? 1 : 0');
+		eval('fom.wg_server'+i+'_lan2.value = fom._f_wg_server'+i+'_lan2.checked ? 1 : 0');
+		eval('fom.wg_server'+i+'_lan3.value = fom._f_wg_server'+i+'_lan3.checked ? 1 : 0');
+		eval('fom.wg_server'+i+'_rgw.value = fom._f_wg_server'+i+'_rgw.checked ? 1 : 0');
+		
+	}
 
 	form.submit(fom, 1);
 
@@ -590,7 +598,7 @@ function init() {
 				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
 			]);
-			W('<input type="button" value="Generate Client Config" onclick="generateClient()" id="wg_server1_peer_gen">');
+			W('<input type="button" value="Generate Client Config" onclick="generateClient('+i+')" id="wg_'+t+'_peer_gen">');
 			W('</div>');
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>')
 			W('</div>');
