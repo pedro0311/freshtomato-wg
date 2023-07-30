@@ -576,12 +576,11 @@ function init() {
 				{ title: 'Forward all peer traffic', name: 'f_wg_'+t+'_rgw', type: 'checkbox', value: eval('nvram.wg_'+t+'_rgw') == '1' },
 			]);
 			W('</div>');
-			W('<div id="wg_'+t+'conf"');
+			W('<div id="wg_'+t+'_peer"');
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
-			W('</div>');
-			W('<div id="wg_'+t+'conf"');
+			W('<div id="wg_'+t+'_gen"');
 			W('<div class="section-title">Client Generation</div>');
 			createFieldTable('', [
 				{ title: 'Name', name: 'f_wg_'+t+'_peer_name', type: 'text', maxlen: 32, size: 32},
