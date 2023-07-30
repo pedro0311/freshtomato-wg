@@ -593,7 +593,7 @@ function init() {
 			]);
 			W('<input type="button" value="Generate Client Config" onclick="generateClient()" id="wg_server1_peer_gen">');
 			W('</div>');
-			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin"></div>')
+			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>')
 			W('</div>');
 		}
 		
