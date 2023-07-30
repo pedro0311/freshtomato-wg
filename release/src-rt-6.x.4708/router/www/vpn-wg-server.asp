@@ -57,7 +57,7 @@ for (i = 0; i < tabs.length; ++i) {
 function show() {
 	countButton += 1;
 	for (var i = 1; i <= WG_SERVER_COUNT; ++i) {
-		var e = E('_wg_'+serviceType+i+'_button');
+		var e = E('_wg'+serviceType+i+'_button');
 		var d = eval('isup.wg'+serviceType+i);
 
 		e.value = (d ? 'Stop' : 'Start')+' Now';
