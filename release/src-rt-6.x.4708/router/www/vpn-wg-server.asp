@@ -580,6 +580,7 @@ function init() {
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
+			W('</div>');
 			W('<div id="wg_'+t+'_gen"');
 			W('<div class="section-title">Client Generation</div>');
 			createFieldTable('', [
