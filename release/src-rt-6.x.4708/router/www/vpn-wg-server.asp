@@ -57,11 +57,11 @@ for (i = 0; i < tabs.length; ++i) {
 function show() {
 	countButton += 1;
 	for (var i = 1; i <= WG_SERVER_COUNT; ++i) {
-		var e = E('_wg'+serviceType+i+'_button');
-		var d = eval('isup.wg'+serviceType+i);
+		var e = E('_'+serviceType+i+'_button');
+		var d = eval('isup.'+serviceType+i);
 
 		e.value = (d ? 'Stop' : 'Start')+' Now';
-		e.setAttribute('onclick', 'javascript:toggle(\'wg'+serviceType+''+i+'\','+d+');');
+		e.setAttribute('onclick', 'javascript:toggle(\''+serviceType+''+i+'\','+d+');');
 		if (serviceLastUp[i - 1] != d || countButton > 6) {
 			serviceLastUp[i - 1] = d;
 			countButton = 0;
@@ -81,12 +81,12 @@ function toggle(service, isup) {
 	countButton = 0;
 
 	var id = service.substr(service.length - 1);
-	E('_wg'+service+'_button').disabled = 1;
+	E('_'+service+'_button').disabled = 1;
 	E('spin'+id).style.display = 'inline';
 
 	var fom = E('t_fom');
 	var bup = fom._service.value;
-	fom._service.value = 'wg'+service+(isup ? '-stop' : '-start');
+	fom._service.value = service+(isup ? '-stop' : '-start');
 	fom._nofootermsg.value = 1;
 
 	form.submit(fom, 1, 'service.cgi');
