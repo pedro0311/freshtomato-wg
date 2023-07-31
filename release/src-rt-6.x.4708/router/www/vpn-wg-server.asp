@@ -566,7 +566,7 @@ function init() {
 				{ title: 'Port', name: 'wg_'+t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port') },
 				{ title: 'Private Key', multi: [
 					{ title: '', name: 'wg_'+t+'_key', type: 'text', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key') },
-					{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey('+i+')" id="wg_'+t+'_keygen">' },
+					{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey('+(i+1)+')" id="wg_'+t+'_keygen">' },
 				] },
 				{ title: 'Public Key', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
 				{ title: 'IP/Netmask', multi: [
@@ -598,7 +598,7 @@ function init() {
 				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
 			]);
-			W('<input type="button" value="Generate Client Config" onclick="generateClient('+i+')" id="wg_'+t+'_peer_gen">');
+			W('<input type="button" value="Generate Client Config" onclick="generateClient('+(i+1)+')" id="wg_'+t+'_peer_gen">');
 			W('</div>');
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>')
 			W('</div>');
