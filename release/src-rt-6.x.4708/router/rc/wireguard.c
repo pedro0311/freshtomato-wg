@@ -357,7 +357,7 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey
 	}
 
 	/* check if endpoint is not empty */
-	if (presharedkey[0] != '\0') {
+	if (endpoint[0] != '\0') {
 		wg_set_peer_endpoint(iface, pubkey, endpoint);
 	}
 
