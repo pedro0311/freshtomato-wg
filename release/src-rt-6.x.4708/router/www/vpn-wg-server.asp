@@ -481,12 +481,12 @@ function save(nomsg) {
 	if (!nomsg) show(); /* update '_service' field first */
 
 	var fom = E('t_fom');
-	for (var i = 0; i < WG_SERVER_COUNT; i++) {
+	for (var i = 1; i <= WG_SERVER_COUNT; i++) {
 
-		var data = peerTables[i].getAllData();
+		var data = peerTables[i-1].getAllData();
 		var s = '';
-		for (var i = 0; i < data.length; ++i)
-			s += data[i].join('<')+'>';
+		for (var j = 0; j < data.length; ++j)
+			s += data[j].join('<')+'>';
 
 		eval('fom.wg_server'+i+'_peers.value = s');
 		eval('nvram.wg_server'+i+'_peers = s');
