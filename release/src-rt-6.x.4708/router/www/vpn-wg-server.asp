@@ -44,7 +44,7 @@ var serviceType = 'wgserver';
 var tabs =  [];
 for (i = 1; i <= WG_SERVER_COUNT; ++i)
 	tabs.push(['server'+i,'Server '+i]);
-var sections = [['Server Config','server'],['Peers','peers'],['Client Generation','gen']];
+var sections = [['server','Server Configuration'],['peers','Peers'],['gen','Client Generation']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
