@@ -44,6 +44,7 @@ var serviceType = 'wgserver';
 var tabs =  [];
 for (i = 1; i <= WG_SERVER_COUNT; ++i)
 	tabs.push(['server'+i,'Server '+i]);
+var sections = [['Server Config','server'],['Peers','peers'],['Client Generation','gen']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
@@ -99,6 +100,23 @@ function tabSelect(name) {
 		elem.display(tabs[i][0]+'-tab', (name == tabs[i][0]));
 
 	cookie.set('wg_server_tab', name);
+}
+
+function sectSelect(tab, section) {
+	tgHideIcons();
+
+	for (var i = 0; i < sections.length; ++i) {
+		if (section == sections[i][0]) {
+			elem.addClass(tabs[tab][0]+'-'+sections[i][0]+'-tab', 'active');
+			elem.display(tabs[tab][0]+'-'+sections[i][0], true);
+		}
+		else {
+			elem.removeClass(tabs[tab][0]+'-'+sections[i][0]+'-tab', 'active');
+			elem.display(tabs[tab][0]+'-'+sections[i][0], false);
+		}
+	}
+
+	cookie.set('vpn_server'+tab+'_section', section);
 }
 
 function updateForm(num) {
@@ -509,6 +527,9 @@ function save(nomsg) {
 function earlyInit() {
 	show();
 	tabSelect(cookie.get('wg_server_tab') || tabs[0][0]);
+	for (var i = 0; i < tabs.length; ++i) {
+		sectSelect(i, cookie.get('wg_server'+i+'_section') || sections[0][0]);
+	}
 	verifyFields(null, 1);
 }
 
@@ -556,7 +577,14 @@ function init() {
 			W('<input type="hidden" name="wg_'+t+'_lan3">');
 			W('<input type="hidden" name="wg_'+t+'_rgw">');
 			W('<input type="hidden" name="wg_'+t+'_peers">');
-			W('<div id="wg_'+t+'conf">');
+
+			W('<ul class="tabs">');
+			for (j = 0; j < sections.length; j++) {
+				W('<li><a href="javascript:sectSelect('+i+',\''+sections[j][0]+'\')" id="'+t+'-'+sections[j][0]+'-tab">'+sections[j][1]+'<\/a><\/li>');
+			}
+			W('<\/ul><div class="tabs-bottom"><\/div>');
+
+			W('<div id="'+t+'-server">');
 			W('<div class="section-title">Server Configuration</div>');
 			createFieldTable('', [
 				{ title: 'Enable on Start', name: 'f_wg_'+t+'_eas', type: 'checkbox', value: eval('nvram.wg_'+t+'_eas') == '1' },
@@ -581,12 +609,12 @@ function init() {
 				{ title: 'Forward all peer traffic', name: 'f_wg_'+t+'_rgw', type: 'checkbox', value: eval('nvram.wg_'+t+'_rgw') == '1' },
 			]);
 			W('</div>');
-			W('<div id="wg_'+t+'_peer">');
+			W('<div id="'+t+'-peers">');
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
 			W('</div>');
-			W('<div id="wg_'+t+'_gen">');
+			W('<div id="'+t+'-gen">');
 			W('<div class="section-title">Client Generation</div>');
 			createFieldTable('', [
 				{ title: 'Name', name: 'f_wg_'+t+'_peer_name', type: 'text', maxlen: 32, size: 32},
