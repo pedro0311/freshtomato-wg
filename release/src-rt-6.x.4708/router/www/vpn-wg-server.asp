@@ -263,9 +263,9 @@ function generateClient(unit) {
 	
 	/* add peer to grid */
 	changed = 1;
-	peerTables[unit].insertData(-1, data);
-	peerTables[unit].disableNewEditor(false);
-	peerTables[unit].resetNewEditor();
+	peerTables[unit-1].insertData(-1, data);
+	peerTables[unit-1].disableNewEditor(false);
+	peerTables[unit-1].resetNewEditor();
 
 	/* generate config */
 	var content = generatePeerConfig(unit, data[0], keys.privateKey, data[2], data[3]);
