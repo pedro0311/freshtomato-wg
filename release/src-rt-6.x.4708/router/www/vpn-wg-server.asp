@@ -68,8 +68,6 @@ function show() {
 			e.disabled = 0;
 			E('spin'+i).style.display = 'none';
 		}
-
-		if (d) updateStatus(i - 1);
 	}
 }
 
