@@ -12,6 +12,18 @@
 
 #define WG_SERVER_MAX	3
 
+void start_wg_eas()
+{
+	int unit;
+
+	for (unit = 1; unit <= WG_SERVER_MAX; unit ++) {
+		if (getNVRAMVar("wg_server%d_eas", unit) != "" && getNVRAMVar("wg_server%d_eas", unit) != "0") {
+			start_wg_server(1);
+		}
+	}
+
+	
+}
 
 void start_wg_server(int unit)
 {
@@ -471,19 +483,6 @@ int wg_remove_iface(char *iface)
 	}
 
     return 0;
-}
-
-void start_wg_eas()
-{
-	int unit;
-
-	for (unit = 1; unit <=WG_SERVER_MAX; unit ++) {
-		if (getNVRAMVar("wg_server%d_eas", unit)) {
-			start_wg_server(1);
-		}
-	}
-
-	
 }
 
 int wg_pubkey(char *privkey, char *pubkey)
