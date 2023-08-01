@@ -302,9 +302,12 @@ function generateClient(unit) {
 
 	/* display QR code */
 	var qrcode = E('wg_server'+unit+'_qrcode');
-	qrcode.replaceChild(showQRCode(content.join('')), qrcode.firstChild);
-	qrcode.display = "grid";
-
+	var qrcode_content = content.join('');
+	if (qrcode_content.length*8+20 < 4184) {
+		qrcode.replaceChild(showQRCode(), qrcode.firstChild);
+		qrcode.display = "grid";
+	}
+	
 }
 
 function generatePeerConfig(unit, name, privkey, psk, ip) {
