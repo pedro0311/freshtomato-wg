@@ -304,7 +304,7 @@ function generateClient(unit) {
 	var qrcode = E('wg_server'+unit+'_qrcode');
 	var qrcode_content = content.join('');
 	if (qrcode_content.length*8+20 < 4184) {
-		qrcode.replaceChild(showQRCode(), qrcode.firstChild);
+		qrcode.replaceChild(showQRCode(qrcode_content), qrcode.firstChild);
 		qrcode.display = "grid";
 	}
 	
