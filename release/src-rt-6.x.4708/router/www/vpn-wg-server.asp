@@ -32,6 +32,7 @@
 .qrcode {
 	display: grid;
 	width: 100%;
+	justify-items: center;
 	text-align: center;
 	font-size: large;
 	padding: 10px;
