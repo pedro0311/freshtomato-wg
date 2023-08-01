@@ -28,6 +28,14 @@
   	overflow: hidden;
   	text-overflow: ellipsis;
 }
+
+.qrcode {
+	width: 100%;
+	text-align: center;
+	font-size: large;
+	padding: 10px;
+}
+
 </style>
 <script src="isup.jsz"></script>
 <script src="tomato.js"></script>
@@ -295,6 +303,7 @@ function generateClient(unit) {
 	/* display QR code */
 	var qrcode = E('wg_server'+unit+'_qrcode');
 	qrcode.replaceChild(showQRCode(content.join('')), qrcode.firstChild);
+	qrcode.display = "grid";
 	elem.display('wg_server'+unit+'_qrcode', true);
 
 }
@@ -632,9 +641,9 @@ function init() {
 				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
 			]);
 			W('<input type="button" value="Generate Client Config" onclick="generateClient('+(i+1)+')" id="wg_'+t+'_peer_gen">');
-			W('<div id=wg_'+t+'_qrcode style="display:none">');
+			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
 			W('<img alt="wg_'+t+'_qrcode_img">');
-			W('<div id=wg_'+t+'_qrcode_labels class="qr-wifi-labels" contentEditable="true" title="Message">');
+			W('<div id="wg_'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
 			W('Point your mobile phone camera<br>');
 			W('here above to connect automatically');
 			W('</div>');
