@@ -360,10 +360,12 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 		for(let i = 0; i <= 3; i++){
 			if (eval('nvram.wg_server'+unit+'_lan'+i) == "1") {
 				let t = (i == 0 ? '' : i);
+				var nm = eval(`nvram.lan${t}_netmask`);
+				var network_ip = getNetworkAddress(eval(`nvram.lan${t}_ipaddr`), nm);
 				allowed_ips += ', ';
-				allowed_ips += eval(`nvram.lan${t}_ipaddr`);
+				allowed_ips += network_ip;
 				allowed_ips += '/';
-				allowed_ips += netmaskToCIDR(eval(`nvram.lan${t}_netmask`));
+				allowed_ips += netmaskToCIDR(nm);
 			}
 		}
 	}
