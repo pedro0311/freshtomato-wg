@@ -10,6 +10,19 @@
 #define IF_SIZE			8
 #define PEER_COUNT		3
 
+#define WG_SERVER_MAX	3
+
+void start_wg_eas()
+{
+	int unit;
+
+	for (unit = 1; unit <= WG_SERVER_MAX; unit ++) {
+		if (atoi(getNVRAMVar("wg_server%d_eas", unit)) == 1) {
+			start_wg_server(unit);
+		}
+	}
+	
+}
 
 void start_wg_server(int unit)
 {
@@ -26,8 +39,8 @@ void start_wg_server(int unit)
 	snprintf(iface, IF_SIZE, "wgs%d", unit);
 
 	/* check if file is specified */
-	if(nvram_get("wg_server1_file")[0] != '\0') {
-		wg_load_iface(iface, nvram_get("wg_server1_file"));
+	if(getNVRAMVar("wg_server%d_file", unit)[0] != '\0') {
+		wg_load_iface(iface, getNVRAMVar("wg_server%d_file", unit));
 	}
 	else {
 
@@ -39,7 +52,7 @@ void start_wg_server(int unit)
 
 		/* generate wireguard device address/subnet */
 		memset(buffer, 0, BUF_SIZE);
-		snprintf(buffer, BUF_SIZE, "%s/%s", nvram_get("wg_server1_ip"), nvram_get("wg_server1_nm"));
+		snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server%d_ip", unit), getNVRAMVar("wg_server%d_nm", unit));
 
 		/* set interface address and netmask */
 		if (wg_set_iface_addr(iface, buffer)) {
@@ -48,19 +61,19 @@ void start_wg_server(int unit)
 		}
 
 		/* set interface port */
-		if (wg_set_iface_port(iface, nvram_get("wg_server1_port"))) {
+		if (wg_set_iface_port(iface, getNVRAMVar("wg_server%d_port", unit))) {
 			stop_wg_server(unit);
 			return;
 		}
 
 		/* set interface private key */
-		if (wg_set_iface_privkey(iface, nvram_get("wg_server1_key"))) {
+		if (wg_set_iface_privkey(iface, getNVRAMVar("wg_server%d_key", unit))) {
 			stop_wg_server(unit);
 			return;
 		}
 
 		/* add stored peers */
-		nvp = nv = strdup(nvram_safe_get("wg_server1_peers"));
+		nvp = nv = strdup(getNVRAMVar("wg_server%d_peers", unit));
 		if (nv){
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
@@ -85,7 +98,7 @@ void start_wg_server(int unit)
 	}
 
 	/* set iptables rules */
-	if (wg_set_iptables(iface, nvram_get("wg_server1_port"))) {
+	if (wg_set_iptables(iface, getNVRAMVar("wg_server%d_port", unit))) {
 		stop_wg_server(unit);
 		return;
 	}
@@ -104,7 +117,7 @@ void stop_wg_server(int unit)
     wg_remove_iface(iface);
 
 	/* remove iptables rules */
-	wg_remove_iptables(iface, nvram_get("wg_server1_port"));
+	wg_remove_iptables(iface, getNVRAMVar("wg_server%d_port", unit));
 }
 
 void wg_setup_dirs() {
@@ -344,7 +357,7 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey
 	}
 
 	/* check if endpoint is not empty */
-	if (presharedkey[0] != '\0') {
+	if (endpoint[0] != '\0') {
 		wg_set_peer_endpoint(iface, pubkey, endpoint);
 	}
 
@@ -469,14 +482,6 @@ int wg_remove_iface(char *iface)
 	}
 
     return 0;
-}
-
-void start_wg_eas()
-{
-	if (nvram_get_int("wg_server1_eas"))
-	{
-		start_wg_server(1);
-	}
 }
 
 int wg_pubkey(char *privkey, char *pubkey)

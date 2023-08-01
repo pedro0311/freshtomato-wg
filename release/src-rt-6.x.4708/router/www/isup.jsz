@@ -38,7 +38,10 @@ isup.pptpd = parseInt('<% psup("pptpd"); %>');
 /* PPTPD-END */
 
 /* WIREGUARD-BEGIN */
+var WG_SERVER_COUNT = 3;
 isup.wgserver1 = parseInt('<% wgstat("wgs1"); %>');
+isup.wgserver2 = parseInt('<% wgstat("wgs2"); %>');
+isup.wgserver3 = parseInt('<% wgstat("wgs3"); %>');
 /* WIREGUARD-END */
 
 /* NGINX-BEGIN */
