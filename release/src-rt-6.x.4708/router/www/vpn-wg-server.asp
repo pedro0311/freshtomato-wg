@@ -33,6 +33,8 @@
 <script src="tomato.js"></script>
 <script src="wireguard.js"></script>
 <script src="interfaces.js"></script>
+<script src="qrcode.js"></script>
+<script src="html5-qrcode.js"></script>
 <script>
 
 //	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peers,wg_server2_eas,wg_server2_file,wg_server2_ip,wg_server2_nm,wg_server2_ka,wg_server2_port,wg_server2_key,wg_server2_endpoint,wg_server2_lan,wg_server2_lan0,wg_server2_lan1,wg_server2_lan2,wg_server2_lan3,wg_server2_rgw,wg_server2_peers,wg_server3_eas,wg_server3_file,wg_server3_ip,wg_server3_nm,wg_server3_ka,wg_server3_port,wg_server3_key,wg_server3_endpoint,wg_server3_lan,wg_server3_lan0,wg_server3_lan1,wg_server3_lan2,wg_server3_lan3,wg_server3_rgw,wg_server3_peers"); %>
@@ -289,6 +291,11 @@ function generateClient(unit) {
 	if (data[0] != "")
 		name = `${data[0]}.conf`;
 	downloadConfig(content, name);
+
+	/* display QR code */
+	var qrcode = E('wg_server'+unit+'_qrcode');
+	qrcode.replaceChild(showQRCode(content.join('')), qrcode.firstChild);
+	elem.display('wg_server'+unit+'_qrcode', true);
 
 }
 
@@ -625,6 +632,13 @@ function init() {
 				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
 			]);
 			W('<input type="button" value="Generate Client Config" onclick="generateClient('+(i+1)+')" id="wg_'+t+'_peer_gen">');
+			W('<div id=wg_'+t+'_qrcode style="display:none">');
+			W('<img alt="wg_'+t+'_qrcode_img">');
+			W('<div id=wg_'+t+'_qrcode_labels class="qr-wifi-labels" contentEditable="true" title="Message">');
+			W('Point your mobile phone camera<br>');
+			W('here above to connect automatically');
+			W('</div>');
+			W('</div>');
 			W('</div>');
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>')
 			W('</div>');
