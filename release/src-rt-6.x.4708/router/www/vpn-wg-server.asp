@@ -304,7 +304,6 @@ function generateClient(unit) {
 	var qrcode = E('wg_server'+unit+'_qrcode');
 	qrcode.replaceChild(showQRCode(content.join('')), qrcode.firstChild);
 	qrcode.display = "grid";
-	elem.display('wg_server'+unit+'_qrcode', true);
 
 }
 
