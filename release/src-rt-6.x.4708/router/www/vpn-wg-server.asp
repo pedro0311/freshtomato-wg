@@ -30,6 +30,7 @@
 }
 
 .qrcode {
+	display: grid;
 	width: 100%;
 	text-align: center;
 	font-size: large;
@@ -305,7 +306,7 @@ function generateClient(unit) {
 	var qrcode_content = content.join('');
 	if (qrcode_content.length*8+20 < 4184) {
 		qrcode.replaceChild(showQRCode(qrcode_content), qrcode.firstChild);
-		qrcode.display = "grid";
+		elem.display('wg_server'+unit+'_qrcode', true);
 	}
 	
 }
