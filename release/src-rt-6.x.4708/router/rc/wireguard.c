@@ -17,7 +17,7 @@ void start_wg_eas()
 	int unit;
 
 	for (unit = 1; unit <= WG_SERVER_MAX; unit ++) {
-		if (getNVRAMVar("wg_server%d_eas", unit) == "1") {
+		if (atoi(getNVRAMVar("wg_server%d_eas", unit)) == 1) {
 			start_wg_server(unit);
 		}
 	}
