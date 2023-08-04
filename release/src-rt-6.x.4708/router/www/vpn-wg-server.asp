@@ -15,14 +15,14 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-.co2, .co3, .co7 {
+.co2, .co3, .co4 {
 	max-width: 150px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.co5, .co6 {
+.co6, .co7 {
 	width: 24px;
   	white-space: nowrap;
   	overflow: hidden;
