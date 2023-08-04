@@ -226,6 +226,10 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	return ok;
 }
 
+function copyServerPubKey(unit) {
+	navigator.clipboard.writeText(E('_wg_server'+unit+'_pubkey').value);
+}
+
 function updateServerKey(unit) {
 	var keys = window.wireguard.generateKeypair();
 	E('_wg_server'+unit+'_key').value = keys.privateKey;
@@ -617,7 +621,10 @@ function init() {
 					{ title: '', name: 'wg_'+t+'_key', type: 'text', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key') },
 					{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey('+(i+1)+')" id="wg_'+t+'_keygen">' },
 				] },
-				{ title: 'Public Key', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
+				{ title: 'Public Key', multi: [
+					{ title: '', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
+					{ title: '', custom: '<input type="button" value="Copy" onclick="copyServerPubKey('+i+1+')" id="wg_'+t+'_pubkey_copy">' },
+				] },
 				{ title: 'IP/Netmask', multi: [
 					{ name: 'wg_'+t+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_'+t+'_ip') },
 					{ name: 'wg_'+t+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_nm') }
