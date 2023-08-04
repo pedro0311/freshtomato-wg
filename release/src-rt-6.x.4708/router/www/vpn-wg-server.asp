@@ -227,7 +227,12 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 }
 
 function copyServerPubKey(unit) {
-	navigator.clipboard.writeText(E('_wg_server'+unit+'_pubkey').value);
+	E('_wg_server'+unit+'_pubkey').select();
+	try {
+		document.execCommand('copy');
+	} catch (error) {
+		console.error(error);
+	}
 }
 
 function updateServerKey(unit) {
