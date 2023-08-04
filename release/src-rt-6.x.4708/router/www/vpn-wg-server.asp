@@ -158,7 +158,7 @@ PeerGrid.prototype.setup = function() {
 	this.init(this.servername+'-peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
 		{ type: 'text', maxlen: 64 },
-		{ type: 'password', maxlen: 44 },
+		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 100 },
 		{ type: 'text', maxlen: 3 },
