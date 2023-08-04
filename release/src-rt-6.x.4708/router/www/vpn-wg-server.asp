@@ -640,7 +640,7 @@ function init() {
 				] },
 				{ title: 'Public Key', multi: [
 					{ title: '', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
-					{ title: '', custom: '<input type="button" value="Copy" onclick="copyServerPubKey('+i+1+')" id="wg_'+t+'_pubkey_copy">' },
+					{ title: '', custom: '<input type="button" value="Copy" onclick="copyServerPubKey('+(i+1)+')" id="wg_'+t+'_pubkey_copy">' },
 				] },
 				{ title: 'IP/Netmask', multi: [
 					{ name: 'wg_'+t+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_'+t+'_ip') },
