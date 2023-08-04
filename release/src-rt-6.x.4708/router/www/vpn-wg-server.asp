@@ -164,7 +164,7 @@ PeerGrid.prototype.setup = function() {
 		{ type: 'text', maxlen: 3 },
 		{ type: 'text', maxlen: 3 },
 	]);
-	this.headerSet(['Name','Endpoint','Public Key','Preshared Key','IP','NM','KA']);
+	this.headerSet(['Alias','Endpoint','Public Key','Preshared Key','IP','NM','KA']);
 	var nv = eval("nvram.wg_"+this.servername+"_peers.split('>')");
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
@@ -280,7 +280,7 @@ function generateClient(unit) {
 	/* generate peer */
 	var keys = window.wireguard.generateKeypair();
 	var data = [
-		E('_f_wg_server'+unit+'_peer_name').value,
+		E('_f_wg_server'+unit+'_peer_alias').value,
 		keys.publicKey,
 		psk,
 		ip,
@@ -322,7 +322,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	content.push("[Interface]\n");
 
 	if (name != "") {
-		content.push(`#Name = ${name}\n`);
+		content.push(`#Alias = ${name}\n`);
 	}
 
 	content.push(
@@ -375,7 +375,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	content.push(
 		"\n",
 		"[Peer]\n",
-		"#Name = Router\n",
+		"#Alias = Router\n",
 		`PublicKey = ${publickey_server}\n`
 	);
 
@@ -409,7 +409,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 			);
 
 			if (peer.name != "") {
-				content.push(`#Name = ${peer.name}\n`,);
+				content.push(`#Alias = ${peer.name}\n`,);
 			}
 
 			content.push(`PublicKey = ${peer.key}\n`,);
@@ -640,7 +640,7 @@ function init() {
 			W('<div id="'+t+'-gen">');
 			W('<div class="section-title">Client Generation</div>');
 			createFieldTable('', [
-				{ title: 'Name', name: 'f_wg_'+t+'_peer_name', type: 'text', maxlen: 32, size: 32},
+				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
 				{ title: 'PSK', name: 'f_wg_'+t+'_peer_psk', type: 'checkbox', value: true },
 				{ title: 'IP (optional)', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
 				{ title: 'Netmask', name: 'f_wg_'+t+'_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
