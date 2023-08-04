@@ -157,14 +157,14 @@ PeerGrid.prototype.resetNewEditor = function() {
 PeerGrid.prototype.setup = function() {
 	this.init(this.servername+'-peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
+		{ type: 'text', maxlen: 64 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 100 },
 		{ type: 'text', maxlen: 3 },
 		{ type: 'text', maxlen: 3 },
-		{ type: 'text', maxlen: 64 },
 	]);
-	this.headerSet(['Name','Public Key','Preshared Key','IP','NM','KA','Endpoint']);
+	this.headerSet(['Name','Endpoint','Public Key','Preshared Key','IP','NM','KA']);
 	var nv = eval("nvram.wg_"+this.servername+"_peers.split('>')");
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
@@ -194,34 +194,34 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	changed = 1;
 	var ok = 1;
 
-	if (!window.wireguard.validateBase64Key(f[1].value)) {
-		ferror.set(f[1], 'A valid public key is required', quiet || !ok);
+	if (!window.wireguard.validateBase64Key(f[2].value)) {
+		ferror.set(f[2], 'A valid public key is required', quiet || !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(f[1]);
 
-	if (f[2].value != '' && !window.wireguard.validateBase64Key(f[2].value)) {
-		ferror.set(f[2], 'Preshared key is invalid', quiet || !ok);
+	if (f[3].value != '' && !window.wireguard.validateBase64Key(f[3].value)) {
+		ferror.set(f[3], 'Preshared key is invalid', quiet || !ok);
 		ok = 0;
 	}
 	else
-		ferror.clear(f[2]);
-
-	if (!v_ip(f[3], quiet || !ok))
-		ok = 0;
-	else
 		ferror.clear(f[3]);
 
-	if (!v_range(f[4], quiet || !ok, 0, 32))
+	if (!v_ip(f[4], quiet || !ok))
 		ok = 0;
-	else 
+	else
 		ferror.clear(f[4]);
 
-	if (!v_range(f[5], quiet || !ok, 0, 128))
+	if (!v_range(f[5], quiet || !ok, 0, 32))
 		ok = 0;
 	else 
 		ferror.clear(f[5]);
+
+	if (!v_range(f[6], quiet || !ok, 0, 128))
+		ok = 0;
+	else 
+		ferror.clear(f[6]);
 
 	return ok;
 }
@@ -452,12 +452,13 @@ function parsePeers(peers_string) {
 			if (t.length == 7) {
 				var peer = {};
 				peer.name = t[0];
-				peer.key = t[1];
-				peer.psk = t[2];
-				peer.ip = t[3];
-				peer.netmask = t[4];
-				peer.keepalive = t[5];
-				peer.endpoint = t[6];
+				peer.endpoint = t[1];
+				peer.key = t[2];
+				peer.psk = t[3];
+				peer.ip = t[4];
+				peer.netmask = t[5];
+				peer.keepalive = t[6];
+				
 				output.push(peer);
 			}
 		}

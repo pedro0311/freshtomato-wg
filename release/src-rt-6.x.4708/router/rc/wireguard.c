@@ -77,7 +77,7 @@ void start_wg_server(int unit)
 		if (nv){
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
-				if (vstrsep(b, "<", &name, &key, &psk, &ip, &nm, &ka, &ep) < 7)
+				if (vstrsep(b, "<", &name, &ep, &key, &psk, &ip, &nm, &ka) < 7)
 					continue;
 				
 				/* build peer address */
