@@ -15,14 +15,14 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-.co2, .co3, .co7 {
+.co2, .co3, .co4 {
 	max-width: 150px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.co5, .co6 {
+.co6, .co7 {
 	width: 24px;
   	white-space: nowrap;
   	overflow: hidden;
@@ -157,14 +157,14 @@ PeerGrid.prototype.resetNewEditor = function() {
 PeerGrid.prototype.setup = function() {
 	this.init(this.servername+'-peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
+		{ type: 'text', maxlen: 64 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 100 },
 		{ type: 'text', maxlen: 3 },
 		{ type: 'text', maxlen: 3 },
-		{ type: 'text', maxlen: 64 },
 	]);
-	this.headerSet(['Name','Public Key','Preshared Key','IP','NM','KA','Endpoint']);
+	this.headerSet(['Alias','Endpoint','Public Key','Preshared Key','IP','NM','KA']);
 	var nv = eval("nvram.wg_"+this.servername+"_peers.split('>')");
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
@@ -194,36 +194,57 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	changed = 1;
 	var ok = 1;
 
-	if (!window.wireguard.validateBase64Key(f[1].value)) {
-		ferror.set(f[1], 'A valid public key is required', quiet || !ok);
+	if (!window.wireguard.validateBase64Key(f[2].value)) {
+		ferror.set(f[2], 'A valid public key is required', quiet || !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(f[1]);
 
-	if (f[2].value != '' && !window.wireguard.validateBase64Key(f[2].value)) {
-		ferror.set(f[2], 'Preshared key is invalid', quiet || !ok);
+	if (f[3].value != '' && !window.wireguard.validateBase64Key(f[3].value)) {
+		ferror.set(f[3], 'Preshared key is invalid', quiet || !ok);
 		ok = 0;
 	}
 	else
-		ferror.clear(f[2]);
-
-	if (!v_ip(f[3], quiet || !ok))
-		ok = 0;
-	else
 		ferror.clear(f[3]);
 
-	if (!v_range(f[4], quiet || !ok, 0, 32))
+	if (!v_ip(f[4], quiet || !ok))
 		ok = 0;
-	else 
+	else
 		ferror.clear(f[4]);
 
-	if (!v_range(f[5], quiet || !ok, 0, 128))
+	if (!v_range(f[5], quiet || !ok, 0, 32))
 		ok = 0;
 	else 
 		ferror.clear(f[5]);
 
+	if (!v_range(f[6], quiet || !ok, 0, 128))
+		ok = 0;
+	else 
+		ferror.clear(f[6]);
+
 	return ok;
+}
+
+function copyServerPubKey(unit) {
+	
+	const textArea = document.createElement("textarea");
+	textArea.value = E('_wg_server'+unit+'_pubkey').value;
+		
+	// Move textarea out of the viewport so it's not visible
+	textArea.style.position = "absolute";
+	textArea.style.left = "-999999px";
+		
+	document.body.prepend(textArea);
+	textArea.select();
+
+	try {
+		document.execCommand('copy');
+	} catch (error) {
+		console.error(error);
+	} finally {
+		textArea.remove();
+	}
 }
 
 function updateServerKey(unit) {
@@ -280,7 +301,7 @@ function generateClient(unit) {
 	/* generate peer */
 	var keys = window.wireguard.generateKeypair();
 	var data = [
-		E('_f_wg_server'+unit+'_peer_name').value,
+		E('_f_wg_server'+unit+'_peer_alias').value,
 		keys.publicKey,
 		psk,
 		ip,
@@ -322,7 +343,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	content.push("[Interface]\n");
 
 	if (name != "") {
-		content.push(`#Name = ${name}\n`);
+		content.push(`#Alias = ${name}\n`);
 	}
 
 	content.push(
@@ -375,7 +396,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	content.push(
 		"\n",
 		"[Peer]\n",
-		"#Name = Router\n",
+		"#Alias = Router\n",
 		`PublicKey = ${publickey_server}\n`
 	);
 
@@ -409,7 +430,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 			);
 
 			if (peer.name != "") {
-				content.push(`#Name = ${peer.name}\n`,);
+				content.push(`#Alias = ${peer.name}\n`,);
 			}
 
 			content.push(`PublicKey = ${peer.key}\n`,);
@@ -452,12 +473,13 @@ function parsePeers(peers_string) {
 			if (t.length == 7) {
 				var peer = {};
 				peer.name = t[0];
-				peer.key = t[1];
-				peer.psk = t[2];
-				peer.ip = t[3];
-				peer.netmask = t[4];
-				peer.keepalive = t[5];
-				peer.endpoint = t[6];
+				peer.endpoint = t[1];
+				peer.key = t[2];
+				peer.psk = t[3];
+				peer.ip = t[4];
+				peer.netmask = t[5];
+				peer.keepalive = t[6];
+				
 				output.push(peer);
 			}
 		}
@@ -613,10 +635,13 @@ function init() {
 				{ title: 'File to load interface from', name: 'wg_'+t+'_file', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_file') },
 				{ title: 'Port', name: 'wg_'+t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port') },
 				{ title: 'Private Key', multi: [
-					{ title: '', name: 'wg_'+t+'_key', type: 'text', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key') },
+					{ title: '', name: 'wg_'+t+'_key', type: 'password', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key'), peekaboo: 1 },
 					{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey('+(i+1)+')" id="wg_'+t+'_keygen">' },
 				] },
-				{ title: 'Public Key', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
+				{ title: 'Public Key', multi: [
+					{ title: '', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
+					{ title: '', custom: '<input type="button" value="Copy" onclick="copyServerPubKey('+(i+1)+')" id="wg_'+t+'_pubkey_copy">' },
+				] },
 				{ title: 'IP/Netmask', multi: [
 					{ name: 'wg_'+t+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_'+t+'_ip') },
 					{ name: 'wg_'+t+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_nm') }
@@ -639,7 +664,7 @@ function init() {
 			W('<div id="'+t+'-gen">');
 			W('<div class="section-title">Client Generation</div>');
 			createFieldTable('', [
-				{ title: 'Name', name: 'f_wg_'+t+'_peer_name', type: 'text', maxlen: 32, size: 32},
+				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
 				{ title: 'PSK', name: 'f_wg_'+t+'_peer_psk', type: 'checkbox', value: true },
 				{ title: 'IP (optional)', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
 				{ title: 'Netmask', name: 'f_wg_'+t+'_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
