@@ -158,7 +158,7 @@ PeerGrid.prototype.setup = function() {
 	this.init(this.servername+'-peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
 		{ type: 'text', maxlen: 64 },
-		{ type: 'text', maxlen: 44 },
+		{ type: 'password', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 100 },
 		{ type: 'text', maxlen: 3 },
@@ -623,7 +623,7 @@ function init() {
 				{ title: 'File to load interface from', name: 'wg_'+t+'_file', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_file') },
 				{ title: 'Port', name: 'wg_'+t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port') },
 				{ title: 'Private Key', multi: [
-					{ title: '', name: 'wg_'+t+'_key', type: 'text', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key') },
+					{ title: '', name: 'wg_'+t+'_key', type: 'password', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key') },
 					{ title: '', custom: '<input type="button" value="Generate" onclick="updateServerKey('+(i+1)+')" id="wg_'+t+'_keygen">' },
 				] },
 				{ title: 'Public Key', multi: [
