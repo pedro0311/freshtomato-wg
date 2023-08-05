@@ -291,7 +291,7 @@ function updateServerKey(unit) {
 	}
 }
 
-function addPeer(unit) {
+function addPeer(unit, quiet) {
 
 	var ok = 1;
 
