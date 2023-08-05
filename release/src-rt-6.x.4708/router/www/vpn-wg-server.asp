@@ -186,44 +186,75 @@ PeerGrid.prototype.rpDel = function(e) {
 }
 
 PeerGrid.prototype.verifyFields = function(row, quiet) {
-	var f;
-	if (row.nodeType != null)
-		f = fields.getAll(row);
-	else
-		f = row;
+
 	changed = 1;
 	var ok = 1;
 
-	if (!window.wireguard.validateBase64Key(f[2].value)) {
+	var f = fields.getAll(row);
+	var data = this.fieldValuesToData(row)
+	var results = verifyPeerFieldData(data);
+	
+	if (!results[2]) {
 		ferror.set(f[2], 'A valid public key is required', quiet || !ok);
 		ok = 0;
 	}
 	else
-		ferror.clear(f[1]);
+		ferror.clear(f[2]);
 
-	if (f[3].value != '' && !window.wireguard.validateBase64Key(f[3].value)) {
+	if (!results[3]) {
 		ferror.set(f[3], 'Preshared key is invalid', quiet || !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(f[3]);
 
-	if (!v_ip(f[4], quiet || !ok))
+	if (!results[4]) {
+		ferror.set(f[4], 'IP is invalid', quiet || !ok);
 		ok = 0;
+	}
 	else
 		ferror.clear(f[4]);
 
-	if (!v_range(f[5], quiet || !ok, 0, 32))
+	if (!results[5]) {
+		ferror.set(f[5], 'Netmask is not within range 0-32', quiet || !ok);
 		ok = 0;
+	}
 	else 
 		ferror.clear(f[5]);
 
-	if (!v_range(f[6], quiet || !ok, 0, 128))
+	if (!results[6]) {
+		ferror.set(f[6], 'Keepalive is not within range 0-128', quiet || !ok);
 		ok = 0;
+	}
 	else 
 		ferror.clear(f[6]);
 
 	return ok;
+}
+
+function verifyPeerFieldData(data) {
+
+	var results = [];
+	for (var i = 0; i < data.length; i++) {
+		results.push(true);
+	}
+
+	if (!window.wireguard.validateBase64Key(data[2]))
+		results[2] = false;
+
+	if (data[3] != '' && !window.wireguard.validateBase64Key(data[3])) 
+		results[3] = false;
+
+	if (!fixIP(f[4]))
+		results[4] = false;
+
+	if ((!f[5].match(/^ *[-\+]?\d+ *$/)) || (f[5] < 0) || (f[5] > 32)) 
+		results[5] = false;
+	
+	if ((!f[6].match(/^ *[-\+]?\d+ *$/)) || (f[6] < 0) || (f[6] > 128)) 
+		results[6] = false;
+
+	return results;
 }
 
 function copyServerPubKey(unit) {
@@ -270,6 +301,8 @@ function addPeer(unit) {
 		E('_f_wg_server'+unit+'_peer_nm').value,
 		E('_f_wg_server'+unit+'_peer_ka').value
 	];
+
+	var results = verifyPeerFieldData(data);
 
 	changed = 1;
 	peerTables[unit-1].insertData(-1, data);
