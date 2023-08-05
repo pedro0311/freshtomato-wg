@@ -296,12 +296,12 @@ function addPeer(unit) {
 	var ok = 1;
 
 	var alias = E('_f_wg_server'+unit+'_peer_alias');
-	var endpoint = E('_f_wg_server'+unit+'_peer_ep').value;
-	var pubkey = E('_f_wg_server'+unit+'_peer_pubkey').value;
-	var psk = E('_f_wg_server'+unit+'_peer_psk').value;
-	var ip = E('_f_wg_server'+unit+'_peer_ip').value;
-	var netmask = E('_f_wg_server'+unit+'_peer_nm').value;
-	var keepalive = E('_f_wg_server'+unit+'_peer_ka').value;
+	var endpoint = E('_f_wg_server'+unit+'_peer_ep');
+	var pubkey = E('_f_wg_server'+unit+'_peer_pubkey');
+	var psk = E('_f_wg_server'+unit+'_peer_psk');
+	var ip = E('_f_wg_server'+unit+'_peer_ip');
+	var netmask = E('_f_wg_server'+unit+'_peer_nm');
+	var keepalive = E('_f_wg_server'+unit+'_peer_ka');
 
 	var data = [
 		alias.value,
