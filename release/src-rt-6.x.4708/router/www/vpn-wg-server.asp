@@ -245,13 +245,13 @@ function verifyPeerFieldData(data) {
 	if (data[3] != '' && !window.wireguard.validateBase64Key(data[3])) 
 		results[3] = false;
 
-	if (!fixIP(f[4]))
+	if (!fixIP(data[4]))
 		results[4] = false;
 
-	if ((!f[5].match(/^ *[-\+]?\d+ *$/)) || (f[5] < 0) || (f[5] > 32)) 
+	if ((!data[5].match(/^ *[-\+]?\d+ *$/)) || (data[5] < 0) || (data[5] > 32)) 
 		results[5] = false;
 	
-	if ((!f[6].match(/^ *[-\+]?\d+ *$/)) || (f[6] < 0) || (f[6] > 128)) 
+	if ((!data[6].match(/^ *[-\+]?\d+ *$/)) || (data[6] < 0) || (data[6] > 128)) 
 		results[6] = false;
 
 	return results;
@@ -350,14 +350,14 @@ function addPeer(unit) {
 	else 
 		ferror.clear(keepalive);
 
-	return ok;
+	if(ok) {
+		changed = 1;
+		peerTables[unit-1].insertData(-1, data);
+		peerTables[unit-1].disableNewEditor(false);
+		peerTables[unit-1].resetNewEditor();
 
-	changed = 1;
-	peerTables[unit-1].insertData(-1, data);
-	peerTables[unit-1].disableNewEditor(false);
-	peerTables[unit-1].resetNewEditor();
-
-	save();
+		save();
+	}
 }
 
 function generateClient(unit) {
