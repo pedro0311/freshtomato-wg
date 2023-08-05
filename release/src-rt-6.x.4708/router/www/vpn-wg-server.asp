@@ -248,7 +248,12 @@ function copyServerPubKey(unit) {
 }
 
 function updateServerKey(unit) {
-	if (confirm('Regenerating the interface private key will\ncause any generated peers to stop working!\nDo you want to continue?')) {
+	var response = false;
+	if (E('_wg_server'+unit+'_key').value == '')
+		response = true;
+	else
+		response = confirm('Regenerating the interface private key will\ncause any generated peers to stop working!\nDo you want to continue?');
+	if (response) {
 		var keys = window.wireguard.generateKeypair();
 		E('_wg_server'+unit+'_key').value = keys.privateKey;
 		E('_wg_server'+unit+'_pubkey').value = keys.publicKey;
