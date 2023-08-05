@@ -248,9 +248,11 @@ function copyServerPubKey(unit) {
 }
 
 function updateServerKey(unit) {
-	var keys = window.wireguard.generateKeypair();
-	E('_wg_server'+unit+'_key').value = keys.privateKey;
-	E('_wg_server'+unit+'_pubkey').value = keys.publicKey;
+	if (confirm('Regenerating the interface private key will\ncause any generated peers to stop working!\nAre you sure you want to generate a new key?')) {
+		var keys = window.wireguard.generateKeypair();
+		E('_wg_server'+unit+'_key').value = keys.privateKey;
+		E('_wg_server'+unit+'_pubkey').value = keys.publicKey;
+	}
 }
 
 function generateClient(unit) {
