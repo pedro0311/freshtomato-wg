@@ -661,7 +661,7 @@ function init() {
 			}
 			W('<\/ul><div class="tabs-bottom"><\/div>');
 
-			W('<div id="'+t+'-server">');
+			W('<div id="'+t+'-interface">');
 			W('<div class="section-title">Server Configuration</div>');
 			createFieldTable('', [
 				{ title: 'Enable on Start', name: 'f_wg_'+t+'_eas', type: 'checkbox', value: eval('nvram.wg_'+t+'_eas') == '1' },
