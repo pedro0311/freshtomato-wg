@@ -11,7 +11,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8">
 <meta name="robots" content="noindex,nofollow">
-<title>[<% ident(); %>] Wireguard Server</title>
+<title>[<% ident(); %>] Wireguard</title>
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
@@ -56,7 +56,7 @@ var serviceType = 'wgserver';
 var tabs =  [];
 for (i = 1; i <= WG_SERVER_COUNT; ++i)
 	tabs.push(['server'+i,'Server '+i]);
-var sections = [['server','Server Configuration'],['peers','Peers'],['gen','Client Generation']];
+var sections = [['Interface','Interface Configuration'],['peers','Peers'],['gen','Client Generation']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
@@ -260,15 +260,37 @@ function updateServerKey(unit) {
 	}
 }
 
+function addPeer(unit) {
+	var data = [
+		E('_f_wg_server'+unit+'_peer_alias').value,
+		E('_f_wg_server'+unit+'_peer_ep').value,
+		E('_f_wg_server'+unit+'_peer_pubkey').value,
+		E('_f_wg_server'+unit+'_peer_psk').value,
+		E('_f_wg_server'+unit+'_peer_ip').value,
+		E('_f_wg_server'+unit+'_peer_nm').value,
+		E('_f_wg_server'+unit+'_peer_ka').value
+	];
+
+	changed = 1;
+	peerTables[unit-1].insertData(-1, data);
+	peerTables[unit-1].disableNewEditor(false);
+	peerTables[unit-1].resetNewEditor();
+}
+
 function generateClient(unit) {
 
+	/* check if changes have been made */
 	if (changed) {
 		alert('Changes have been made. You need to save before continue!');
 		return;
 	}
+
+	/* Generate keys */
+	var keys = window.wireguard.generateKeypair();
 	
+	/* Generate PSK (if checked) */
 	var psk = "";
-	if (E('_f_wg_server'+unit+'_peer_psk').checked)
+	if (E('_f_wg_server'+unit+'_peer_psk_gen').checked)
 		psk = window.wireguard.generatePresharedKey();
 
 	/* retrieve existing IPs of server/clients to calculate new ip */
@@ -277,65 +299,69 @@ function generateClient(unit) {
 	existing_ips.push(eval('nvram.wg_server'+unit+'_ip'))
 
 	/* calculate ip of new peer */
+	var ip = "";
 	var nm = CIDRToNetmask(eval('nvram.wg_server'+unit+'_nm'));
 	var network = getNetworkAddress(eval('nvram.wg_server'+unit+'_ip'), nm);
-	var ip = E('_f_wg_server'+unit+'_peer_ip').value;
+	var limit = 2 ** (32 - parseInt(eval('nvram.wg_server'+unit+'_nm'), 10));
+	for (var i = 1; i < limit; i++) {
 
-	if (ip == "") {
+		var temp_ip = getAddress(ntoa(i) , network);
+		var end = temp_ip.split('.').slice(0, -1);
 
-		var limit = 2 ** (32 - parseInt(eval('nvram.wg_server'+unit+'_nm'), 10));
-		for (var i = 1; i < limit; i++) {
+		if (end == '255' || end == '0')
+			continue;
 
-			var temp_ip = getAddress(ntoa(i) , network);
-			var end = temp_ip.split('.').slice(0, -1);
+		if (existing_ips.includes(temp_ip))
+			continue;
 
-			if (end == '255' || end == '0')
-				continue;
-
-			if (existing_ips.includes(temp_ip))
-				continue;
-
-			ip = temp_ip;
-			break;
-		}
-
-		if (ip == "") {
-			alert('Could not generate an IP for the client');
-			return;
-		}
+		ip = temp_ip;
+		break;
 	}
 
-	/* generate peer */
-	var keys = window.wireguard.generateKeypair();
-	var data = [
-		E('_f_wg_server'+unit+'_peer_alias').value,
-		keys.publicKey,
-		psk,
-		ip,
-		E('_f_wg_server'+unit+'_peer_nm').value,
-		E('_f_wg_server'+unit+'_peer_ka').value,
-		E('_f_wg_server'+unit+'_peer_ep').value
-	];
-	
-	/* add peer to grid */
-	changed = 1;
-	peerTables[unit-1].insertData(-1, data);
-	peerTables[unit-1].disableNewEditor(false);
-	peerTables[unit-1].resetNewEditor();
+	/* return if we could not generate an IP */
+	if (ip == "") {
+		alert('Could not generate an IP for the client');
+		return;
+	}
+
+	/* set keepalive (if checked) */
+	var keepalive = 0;
+	if (E('_f_wg_'+t+'_peer_ka_enable').checked)
+		keepalive = 25;
+
+	/* set fields with generated data */
+	E('_f_wg_server'+unit+'_peer_psk').value = keys.publicKey;
+	E('_f_wg_server'+unit+'_peer_psk').value = psk;
+	E('_f_wg_server'+unit+'_peer_ip').value = ip;
+	E('_f_wg_server'+unit+'_peer_nm').value = '32';
+	E('_f_wg_server'+unit+'_peer_ka').value = keepalive;
 
 	/* generate config */
-	var content = generatePeerConfig(unit, data[0], keys.privateKey, data[2], data[3]);
-	var name = "client.conf";
-	if (data[0] != "")
-		name = `${data[0]}.conf`;
-	downloadConfig(content, name);
+	var alias = E('_f_wg_server'+unit+'_peer_alias').value;
+	var content = generatePeerConfig(
+		unit,
+		alias,
+		keys.privateKey,
+		psk,
+		ip
+	);
 
-	/* display QR code */
-	var qrcode = E('wg_server'+unit+'_qrcode');
-	var qrcode_content = content.join('');
-	if (qrcode_content.length*8+20 < 4184) {
-		qrcode.replaceChild(showQRCode(qrcode_content), qrcode.firstChild);
-		elem.display('wg_server'+unit+'_qrcode', true);
+	/* download config file (if checked) */
+	if (E('_f_wg_server'+unit+'_peer_save').checked) {
+		var filename = "client.conf";
+		if (alias != "")
+			filename = `${alias}.conf`;
+		downloadConfig(content, filename);
+	}
+
+	/* display config QR code (if checked) */
+	if (E('_f_wg_server'+unit+'_peer_qr_enable').checked) {
+		var qrcode = E('wg_server'+unit+'_qrcode');
+		var qrcode_content = content.join('');
+		if (qrcode_content.length*8+20 < 4184) {
+			qrcode.replaceChild(showQRCode(qrcode_content), qrcode.firstChild);
+			elem.display('wg_server'+unit+'_qrcode', true);
+		}
 	}
 	
 }
@@ -612,7 +638,7 @@ function init() {
 
 <!-- / / / -->
 
-<div class="section-title">Wireguard Server Configuration</div>
+<div class="section-title">Wireguard Interface Configuration</div>
 <div class="section">
 	<script>
 		tabCreate.apply(this, tabs);
@@ -671,12 +697,10 @@ function init() {
 			W('<div id="'+t+'-gen">');
 			W('<div class="section-title">Client Generation</div>');
 			createFieldTable('', [
-				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
-				{ title: 'PSK', name: 'f_wg_'+t+'_peer_psk', type: 'checkbox', value: true },
-				{ title: 'IP (optional)', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
-				{ title: 'Netmask', name: 'f_wg_'+t+'_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
-				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
-				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
+				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
+				{ title: 'Send Keepalive to Client', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: true},
+				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
+				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
 			W('<input type="button" value="Generate Client Config" onclick="generateClient('+(i+1)+')" id="wg_'+t+'_peer_gen">');
 			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
@@ -686,6 +710,17 @@ function init() {
 			W('here above to connect automatically');
 			W('</div>');
 			W('</div>');
+			W('<div class="section-title">Peer Addition</div>');
+			createFieldTable('', [
+				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
+				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
+				{ title: 'Public Key', name: 'f_wg_'+t+'_peer_pubkey', type: 'text', maxlen: 44, size: 44},
+				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
+				{ title: 'IP (optional)', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
+				{ title: 'Netmask', name: 'f_wg_'+t+'_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
+				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
+			]);
+			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
 			W('</div>');
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>')
 			W('</div>');
