@@ -330,7 +330,7 @@ function generateClient(unit) {
 		keepalive = 25;
 
 	/* set fields with generated data */
-	E('_f_wg_server'+unit+'_peer_psk').value = keys.publicKey;
+	E('_f_wg_server'+unit+'_peer_pubkey').value = keys.publicKey;
 	E('_f_wg_server'+unit+'_peer_psk').value = psk;
 	E('_f_wg_server'+unit+'_peer_ip').value = ip;
 	E('_f_wg_server'+unit+'_peer_nm').value = '32';
