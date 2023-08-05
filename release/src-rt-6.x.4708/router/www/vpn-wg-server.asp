@@ -326,7 +326,7 @@ function generateClient(unit) {
 
 	/* set keepalive (if checked) */
 	var keepalive = 0;
-	if (E('_f_wg_'+t+'_peer_ka_enable').checked)
+	if (E('_f_wg_server'+unit+'_peer_ka_enable').checked)
 		keepalive = 25;
 
 	/* set fields with generated data */
