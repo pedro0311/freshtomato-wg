@@ -292,17 +292,65 @@ function updateServerKey(unit) {
 }
 
 function addPeer(unit) {
+
+	var ok = 1;
+
+	var alias = E('_f_wg_server'+unit+'_peer_alias');
+	var endpoint = E('_f_wg_server'+unit+'_peer_ep').value;
+	var pubkey = E('_f_wg_server'+unit+'_peer_pubkey').value;
+	var psk = E('_f_wg_server'+unit+'_peer_psk').value;
+	var ip = E('_f_wg_server'+unit+'_peer_ip').value;
+	var netmask = E('_f_wg_server'+unit+'_peer_nm').value;
+	var keepalive = E('_f_wg_server'+unit+'_peer_ka').value;
+
 	var data = [
-		E('_f_wg_server'+unit+'_peer_alias').value,
-		E('_f_wg_server'+unit+'_peer_ep').value,
-		E('_f_wg_server'+unit+'_peer_pubkey').value,
-		E('_f_wg_server'+unit+'_peer_psk').value,
-		E('_f_wg_server'+unit+'_peer_ip').value,
-		E('_f_wg_server'+unit+'_peer_nm').value,
-		E('_f_wg_server'+unit+'_peer_ka').value
+		alias.value,
+		endpoint.value,
+		pubkey.value,
+		psk.value,
+		ip.value,
+		netmask.value,
+		keepalive.value
 	];
 
 	var results = verifyPeerFieldData(data);
+
+	if (!results[2]) {
+		ferror.set(pubkey, 'A valid public key is required', quiet || !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(pubkey);
+
+	if (!results[3]) {
+		ferror.set(psk, 'Preshared key is invalid', quiet || !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(psk);
+
+	if (!results[4]) {
+		ferror.set(ip, 'IP is invalid', quiet || !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(ip);
+
+	if (!results[5]) {
+		ferror.set(netmask, 'Netmask is not within range 0-32', quiet || !ok);
+		ok = 0;
+	}
+	else 
+		ferror.clear(netmask);
+
+	if (!results[6]) {
+		ferror.set(keepalive, 'Keepalive is not within range 0-128', quiet || !ok);
+		ok = 0;
+	}
+	else 
+		ferror.clear(keepalive);
+
+	return ok;
 
 	changed = 1;
 	peerTables[unit-1].insertData(-1, data);
