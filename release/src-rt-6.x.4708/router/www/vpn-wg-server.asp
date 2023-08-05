@@ -275,6 +275,8 @@ function addPeer(unit) {
 	peerTables[unit-1].insertData(-1, data);
 	peerTables[unit-1].disableNewEditor(false);
 	peerTables[unit-1].resetNewEditor();
+
+	save();
 }
 
 function generateClient(unit) {
