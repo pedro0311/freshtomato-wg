@@ -27,7 +27,7 @@ void start_wg_eas()
 void start_wg_server(int unit)
 {
 	char *nv, *nvp, *b;
-	char *name, *key, *psk, *ip, *nm, *ka, *ep;
+	char *name, *key, *psk, *ip, *nm, *ka, *aip, *ep;
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
 
@@ -77,12 +77,17 @@ void start_wg_server(int unit)
 		if (nv){
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
-				if (vstrsep(b, "<", &name, &ep, &key, &psk, &ip, &nm, &ka) < 7)
+				if (vstrsep(b, "<", &name, &ep, &key, &psk, &ip, &nm, &aip, &ka) < 8)
 					continue;
 				
-				/* build peer address */
+				/* build peer allowed ips */
 				memset(buffer, 0, BUF_SIZE);
-				snprintf(buffer, BUF_SIZE, "%s/%s", ip, nm);
+				if (aip[0] == '\0') {
+					snprintf(buffer, BUF_SIZE, "%s/%s", ip, nm);
+				}
+				else {
+					snprintf(buffer, BUF_SIZE, "%s/%s,%s", ip, nm, aip);
+				}
 
 				/* add peer to interface */
 				wg_add_peer(iface, key, buffer, psk, ka, ep);
@@ -248,19 +253,32 @@ int wg_create_iface(char *iface)
     return 0;
 }
 
-int wg_set_iface_addr(char *iface, char *addr)
+int wg_flush_iface_addr(char *iface)
 {
-    /* Flush wireguard interface */
-	/*
 	if (eval("/usr/sbin/ip", "addr", "flush", "dev", iface)) {
 		logmsg(LOG_WARNING, "unable to flush wireguard interface %s!", iface);
 		return -1;
 	}
 	else {
 		logmsg(LOG_DEBUG, "successfully flushed wireguard interface %s!", iface);
-	} */
+	}
+
+	return 0;
+}
+
+int wg_set_iface_addr(char *iface, char *addr)
+{
+    /* Flush all addresses from interface */
+	// wg_flush_iface_addr(iface)
 
     /* Set wireguard interface address/netmask */
+	wg_add_iface_addr(iface, addr);
+
+    return 0;
+}
+
+int wg_add_iface_addr(char *iface, char *addr)
+{
 	if (eval("/usr/sbin/ip", "addr", "add", addr, "dev", iface)) {
 		logmsg(LOG_WARNING, "unable to set wireguard interface %s address to %s!", iface, addr);
 		return -1;
@@ -269,7 +287,7 @@ int wg_set_iface_addr(char *iface, char *addr)
 		logmsg(LOG_DEBUG, "wireguard interface %s has had its address set to %s", iface, addr);
 	}
 
-    return 0;
+	return 0;
 }
 
 int wg_set_iface_port(char *iface, char *port)
@@ -337,28 +355,35 @@ int wg_set_iface_up(char *iface)
 
 int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
 {
+	/* set allowed ips / create peer */
+	wg_set_peer_allowed_ips(iface, pubkey, allowed_ips);
 
+	/* set peer psk */
+	if (presharedkey[0] != '\0') {
+		wg_set_peer_psk(iface, pubkey, presharedkey);
+	}
+
+	/* set peer keepalive */
+	if (atoi(keepalive) > 0) {
+		wg_set_peer_keepalive(iface, pubkey, keepalive);
+	}
+
+	/* set peer endpoint */
+	if (endpoint[0] != '\0') {
+		wg_set_peer_endpoint(iface, pubkey, endpoint);
+	}
+
+	return 0;
+}
+
+int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips)
+{
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
 		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "peer %s has been added to wireguard interface %s", pubkey, iface);
-	}
-
-	/* check if psk is not empty */
-	if (presharedkey[0] != '\0') {
-		wg_set_peer_psk(iface, pubkey, presharedkey);
-	}
-
-	/* check if keepalive is greater than zero */
-	if (atoi(keepalive) > 0) {
-		wg_set_peer_keepalive(iface, pubkey, keepalive);
-	}
-
-	/* check if endpoint is not empty */
-	if (endpoint[0] != '\0') {
-		wg_set_peer_endpoint(iface, pubkey, endpoint);
+		logmsg(LOG_DEBUG, "peer %s for wireguard interface %s has had its allowed ips set to %s", pubkey, iface, allowed_ips);
 	}
 
 	return 0;

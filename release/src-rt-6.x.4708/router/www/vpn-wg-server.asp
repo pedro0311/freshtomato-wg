@@ -15,15 +15,15 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-.co2, .co3, .co4 {
-	max-width: 150px;
+.co1, .co2, .co3, .co4, .co5, .co7 {
+	max-width: 120px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.co6, .co7 {
-	width: 24px;
+.co6, .co8 {
+	max-width: 24px;
   	white-space: nowrap;
   	overflow: hidden;
   	text-overflow: ellipsis;
@@ -47,7 +47,7 @@
 <script src="html5-qrcode.js"></script>
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peers,wg_server2_eas,wg_server2_file,wg_server2_ip,wg_server2_nm,wg_server2_ka,wg_server2_port,wg_server2_key,wg_server2_endpoint,wg_server2_lan,wg_server2_lan0,wg_server2_lan1,wg_server2_lan2,wg_server2_lan3,wg_server2_rgw,wg_server2_peers,wg_server3_eas,wg_server3_file,wg_server3_ip,wg_server3_nm,wg_server3_ka,wg_server3_port,wg_server3_key,wg_server3_endpoint,wg_server3_lan,wg_server3_lan0,wg_server3_lan1,wg_server3_lan2,wg_server3_lan3,wg_server3_rgw,wg_server3_peers"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_nm,wg_server1_aip,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peers,wg_server2_eas,wg_server2_file,wg_server2_ip,wg_server2_nm,wg_server2_aip,wg_server2_ka,wg_server2_port,wg_server2_key,wg_server2_endpoint,wg_server2_lan,wg_server2_lan0,wg_server2_lan1,wg_server2_lan2,wg_server2_lan3,wg_server2_rgw,wg_server2_peers,wg_server3_eas,wg_server3_file,wg_server3_ip,wg_server3_nm,wg_server3_aip,wg_server3_ka,wg_server3_port,wg_server3_key,wg_server3_endpoint,wg_server3_lan,wg_server3_lan0,wg_server3_lan1,wg_server3_lan2,wg_server3_lan3,wg_server3_rgw,wg_server3_peers"); %>
 
 var cprefix = 'vpn_wg_server';
 var changed = 0;
@@ -142,33 +142,22 @@ function updateForm(num) {
 	}
 }
 
-PeerGrid.prototype.resetNewEditor = function() {
-	var f = fields.getAll(this.newEditor);
-	f[0].value = '';
-	f[1].value = '';
-	f[2].value = '';
-	f[3].value = '';
-	f[4].value = '';
-	f[5].value = '';
-	f[6].value = '';
-	ferror.clearAll(fields.getAll(this.newEditor));
-}
-
 PeerGrid.prototype.setup = function() {
 	this.init(this.servername+'-peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
-		{ type: 'text', maxlen: 64 },
+		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 100 },
 		{ type: 'text', maxlen: 3 },
+		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 3 },
 	]);
-	this.headerSet(['Alias','Endpoint','Public Key','Preshared Key','IP','NM','KA']);
+	this.headerSet(['Alias','Endpoint','Public Key','Preshared Key','IP','NM','Allowed IPs','KA']);
 	var nv = eval("nvram.wg_"+this.servername+"_peers.split('>')");
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
-		if (t.length == 7) {
+		if (t.length == 8) {
 			this.insertData(-1, t);
 		}
 	}
@@ -221,13 +210,20 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	}
 	else 
 		ferror.clear(f[5]);
-
+	
 	if (!results[6]) {
-		ferror.set(f[6], 'Keepalive is not within range 0-128', quiet || !ok);
+		ferror.set(f[6], 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
 		ok = 0;
 	}
 	else 
 		ferror.clear(f[6]);
+
+	if (!results[7]) {
+		ferror.set(f[7], 'Keepalive is not within range 0-128', quiet || !ok);
+		ok = 0;
+	}
+	else 
+		ferror.clear(f[7]);
 
 	return ok;
 }
@@ -251,8 +247,19 @@ function verifyPeerFieldData(data) {
 	if ((!data[5].match(/^ *[-\+]?\d+ *$/)) || (data[5] < 0) || (data[5] > 32)) 
 		results[5] = false;
 	
-	if ((!data[6].match(/^ *[-\+]?\d+ *$/)) || (data[6] < 0) || (data[6] > 128)) 
-		results[6] = false;
+	if (data[6] != '') {
+		var cidrs = data[6].split(',')
+		for(var i = 0; i < cidrs.length; i++) {
+			var cidr = cidrs[i].trim();
+			if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
+				results[6] = false;
+				break;
+			}
+		}
+	}
+	
+	if ((!data[7].match(/^ *[-\+]?\d+ *$/)) || (data[6] < 0) || (data[6] > 128)) 
+		results[7] = false;
 
 	return results;
 }
@@ -301,6 +308,7 @@ function addPeer(unit, quiet) {
 	var psk = E('_f_wg_server'+unit+'_peer_psk');
 	var ip = E('_f_wg_server'+unit+'_peer_ip');
 	var netmask = E('_f_wg_server'+unit+'_peer_nm');
+	var allowedips = E('_f_wg_server'+unit+'_peer_aip');
 	var keepalive = E('_f_wg_server'+unit+'_peer_ka');
 
 	var data = [
@@ -310,6 +318,7 @@ function addPeer(unit, quiet) {
 		psk.value,
 		ip.value,
 		netmask.value,
+		allowedips.value,
 		keepalive.value
 	];
 
@@ -344,6 +353,13 @@ function addPeer(unit, quiet) {
 		ferror.clear(netmask);
 
 	if (!results[6]) {
+		ferror.set(allowedips, 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
+		ok = 0;
+	}
+	else 
+		ferror.clear(keepalive);
+
+	if (!results[7]) {
 		ferror.set(keepalive, 'Keepalive is not within range 0-128', quiet || !ok);
 		ok = 0;
 	}
@@ -500,12 +516,15 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 				let t = (i == 0 ? '' : i);
 				var nm = eval(`nvram.lan${t}_netmask`);
 				var network_ip = getNetworkAddress(eval(`nvram.lan${t}_ipaddr`), nm);
-				allowed_ips += ', ';
+				allowed_ips += ',';
 				allowed_ips += network_ip;
 				allowed_ips += '/';
 				allowed_ips += netmaskToCIDR(nm);
 			}
 		}
+		var server_allowed_ips = eval('nvram.wg_server'+unit+'_aip');
+		if (server_allowed_ips != '')
+			allowed_ips += ',' + server_allowed_ips;
 	}
 
 	/* populate router peer */
@@ -545,26 +564,25 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 				"[Peer]\n",
 			);
 
-			if (peer.name != "") {
+			if (peer.name != "")
 				content.push(`#Alias = ${peer.name}\n`,);
-			}
 
 			content.push(`PublicKey = ${peer.key}\n`,);
 
-			if (peer.psk != "") {
+			if (peer.psk != "")
 				content.push(`PresharedKey = ${peer.psk}\n`,);
-			}
 
-			content.push(`AllowedIPs = ${peer.ip}/${peer.netmask}\n`,);
+			content.push(`AllowedIPs = ${peer.ip}/${peer.netmask}`,);
+			if (peer.allowed_ips != "")
+				content.push(`,${peer.allowed_ips}`,);
+			content.push('\n');
 
-			if (peer.keepalive != "0") {
+			if (peer.keepalive != "0")
 				content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
-			}
 
+			if (peer.endpoint != "")
+				content.push(`Endpoint = ${peer.endpoint}\n`);
 			
-			if (peer.endpoint != "") {
-					content.push(`Endpoint = ${peer.endpoint}\n`);
-				}
 		}
 	}
 
@@ -586,7 +604,7 @@ function parsePeers(peers_string) {
 	for (var i = 0; i < nv.length; ++i) {
 		if (nv[i] != "") {
 			var t = nv[i].split('<');
-			if (t.length == 7) {
+			if (t.length == 8) {
 				var peer = {};
 				peer.name = t[0];
 				peer.endpoint = t[1];
@@ -594,7 +612,8 @@ function parsePeers(peers_string) {
 				peer.psk = t[3];
 				peer.ip = t[4];
 				peer.netmask = t[5];
-				peer.keepalive = t[6];
+				peer.allowed_ips = t[6]
+				peer.keepalive = t[7];
 				
 				output.push(peer);
 			}
@@ -764,6 +783,7 @@ function init() {
 				] },
 				{ title: 'Keepalive to Server', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
 				{ title: 'Custom Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_endpoint') },
+				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_aip') },
 				{ title: 'Allow peers to communicate', name: 'f_wg_'+t+'_lan', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan') == '1'},
 				{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_'+t+'_lan0', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan0') == '1' },
 				{ title: 'Push LAN1 (br1) to peers', name: 'f_wg_'+t+'_lan1', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan1') == '1' },
@@ -799,13 +819,14 @@ function init() {
 				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
 				{ title: 'Public Key', name: 'f_wg_'+t+'_peer_pubkey', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
-				{ title: 'IP (optional)', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
+				{ title: 'IP', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
 				{ title: 'Netmask', name: 'f_wg_'+t+'_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
+				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', maxlen: 128, size: 64},
 				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 			]);
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
 			W('</div>');
-			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>')
+			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>');
 			W('</div>');
 		}
 		
