@@ -247,8 +247,9 @@ function verifyPeerFieldData(data) {
 		results[5] = false;
 	
 	if (data[6] != '') {
-		for(var cidr in data[6].split(',')) {
-			cidr = cidr.trim()
+		var cidrs = data[6].split(',')
+		for(var i = 0; i < cidrs.length; i++) {
+			var cidr = cidrs[i].trim();
 			if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
 				results[6] = false;
 				break;
