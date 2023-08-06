@@ -16,13 +16,14 @@
 <% css(); %>
 <style>
 .co1, .co2, .co3, .co4, .co5, .co7 {
+	max-width: 120px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
 .co6, .co8 {
-	width: 24px;
+	max-width: 24px;
   	white-space: nowrap;
   	overflow: hidden;
   	text-overflow: ellipsis;
