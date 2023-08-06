@@ -82,7 +82,7 @@ void start_wg_server(int unit)
 				
 				/* build peer allowed ips */
 				memset(buffer, 0, BUF_SIZE);
-				if (aip[0] != '\0') {
+				if (aip[0] == '\0') {
 					snprintf(buffer, BUF_SIZE, "%s/%s", ip, nm);
 				}
 				else {
