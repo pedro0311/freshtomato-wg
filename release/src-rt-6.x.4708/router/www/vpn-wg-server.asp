@@ -15,8 +15,8 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-.co2, .co3, .co4 {
-	max-width: 150px;
+.co2, .co3, .co4, .co8 {
+	max-width: 125px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -145,7 +145,7 @@ function updateForm(num) {
 PeerGrid.prototype.setup = function() {
 	this.init(this.servername+'-peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
-		{ type: 'text', maxlen: 64 },
+		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 100 },
@@ -157,7 +157,7 @@ PeerGrid.prototype.setup = function() {
 	var nv = eval("nvram.wg_"+this.servername+"_peers.split('>')");
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
-		if (t.length == 7) {
+		if (t.length == 8) {
 			this.insertData(-1, t);
 		}
 	}
@@ -210,13 +210,20 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	}
 	else 
 		ferror.clear(f[5]);
-
+	
 	if (!results[6]) {
-		ferror.set(f[6], 'Keepalive is not within range 0-128', quiet || !ok);
+		ferror.set(f[6], 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
 		ok = 0;
 	}
 	else 
 		ferror.clear(f[6]);
+
+	if (!results[7]) {
+		ferror.set(f[7], 'Keepalive is not within range 0-128', quiet || !ok);
+		ok = 0;
+	}
+	else 
+		ferror.clear(f[7]);
 
 	return ok;
 }
@@ -240,8 +247,18 @@ function verifyPeerFieldData(data) {
 	if ((!data[5].match(/^ *[-\+]?\d+ *$/)) || (data[5] < 0) || (data[5] > 32)) 
 		results[5] = false;
 	
-	if ((!data[6].match(/^ *[-\+]?\d+ *$/)) || (data[6] < 0) || (data[6] > 128)) 
-		results[6] = false;
+	if (data[6] != '') {
+		for(var cidr in data[6].split(',')) {
+			cidr = cidr.trim()
+			if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
+				results[6] = false;
+				break;
+			}
+		}
+	}
+	
+	if ((!data[7].match(/^ *[-\+]?\d+ *$/)) || (data[6] < 0) || (data[6] > 128)) 
+		results[7] = false;
 
 	return results;
 }
@@ -290,6 +307,7 @@ function addPeer(unit, quiet) {
 	var psk = E('_f_wg_server'+unit+'_peer_psk');
 	var ip = E('_f_wg_server'+unit+'_peer_ip');
 	var netmask = E('_f_wg_server'+unit+'_peer_nm');
+	var allowedips = E('_f_wg_server'+unit+'_peer_aip');
 	var keepalive = E('_f_wg_server'+unit+'_peer_ka');
 
 	var data = [
@@ -299,6 +317,7 @@ function addPeer(unit, quiet) {
 		psk.value,
 		ip.value,
 		netmask.value,
+		allowedips.value,
 		keepalive.value
 	];
 
@@ -333,6 +352,13 @@ function addPeer(unit, quiet) {
 		ferror.clear(netmask);
 
 	if (!results[6]) {
+		ferror.set(allowedips, 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
+		ok = 0;
+	}
+	else 
+		ferror.clear(keepalive);
+
+	if (!results[7]) {
 		ferror.set(keepalive, 'Keepalive is not within range 0-128', quiet || !ok);
 		ok = 0;
 	}
@@ -495,6 +521,9 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 				allowed_ips += netmaskToCIDR(nm);
 			}
 		}
+		var server_allowed_ips = eval('nvram.wg_server'+unit+'_aip');
+		if (server_allowed_ips != '')
+			allowed_ips += ',' + server_allowed_ips;
 	}
 
 	/* populate router peer */
@@ -534,26 +563,25 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 				"[Peer]\n",
 			);
 
-			if (peer.name != "") {
+			if (peer.name != "")
 				content.push(`#Alias = ${peer.name}\n`,);
-			}
 
 			content.push(`PublicKey = ${peer.key}\n`,);
 
-			if (peer.psk != "") {
+			if (peer.psk != "")
 				content.push(`PresharedKey = ${peer.psk}\n`,);
-			}
 
-			content.push(`AllowedIPs = ${peer.ip}/${peer.netmask}\n`,);
+			content.push(`AllowedIPs = ${peer.ip}/${peer.netmask}`,);
+			if (peer.allowed_ips != "")
+				content.push(`,${peer.allowed_ips}`,);
+			content.push('\n');
 
-			if (peer.keepalive != "0") {
+			if (peer.keepalive != "0")
 				content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
-			}
 
+			if (peer.endpoint != "")
+				content.push(`Endpoint = ${peer.endpoint}\n`);
 			
-			if (peer.endpoint != "") {
-					content.push(`Endpoint = ${peer.endpoint}\n`);
-				}
 		}
 	}
 
@@ -575,7 +603,7 @@ function parsePeers(peers_string) {
 	for (var i = 0; i < nv.length; ++i) {
 		if (nv[i] != "") {
 			var t = nv[i].split('<');
-			if (t.length == 7) {
+			if (t.length == 8) {
 				var peer = {};
 				peer.name = t[0];
 				peer.endpoint = t[1];
@@ -583,7 +611,8 @@ function parsePeers(peers_string) {
 				peer.psk = t[3];
 				peer.ip = t[4];
 				peer.netmask = t[5];
-				peer.keepalive = t[6];
+				peer.allowed_ips = t[6]
+				peer.keepalive = t[7];
 				
 				output.push(peer);
 			}
