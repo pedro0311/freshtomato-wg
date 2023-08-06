@@ -516,7 +516,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 				let t = (i == 0 ? '' : i);
 				var nm = eval(`nvram.lan${t}_netmask`);
 				var network_ip = getNetworkAddress(eval(`nvram.lan${t}_ipaddr`), nm);
-				allowed_ips += ', ';
+				allowed_ips += ',';
 				allowed_ips += network_ip;
 				allowed_ips += '/';
 				allowed_ips += netmaskToCIDR(nm);
