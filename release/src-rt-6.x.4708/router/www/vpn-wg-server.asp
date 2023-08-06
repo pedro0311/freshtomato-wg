@@ -820,7 +820,7 @@ function init() {
 				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
 				{ title: 'IP', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
 				{ title: 'Netmask', name: 'f_wg_'+t+'_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
-				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', maxlen: 128, size: 128},
+				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', maxlen: 128, size: 64},
 				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 			]);
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
