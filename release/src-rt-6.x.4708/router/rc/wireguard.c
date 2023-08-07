@@ -27,7 +27,7 @@ void start_wg_eas()
 void start_wg_server(int unit)
 {
 	char *nv, *nvp, *b;
-	char *name, *key, *psk, *ip, *nm, *ka, *aip, *ep;
+	char *name, *key, *psk, *ip, *ka, *aip, *ep;
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
 
@@ -50,12 +50,8 @@ void start_wg_server(int unit)
 			return;
 		}
 
-		/* generate wireguard device address/subnet */
-		memset(buffer, 0, BUF_SIZE);
-		snprintf(buffer, BUF_SIZE, "%s/%s", getNVRAMVar("wg_server%d_ip", unit), getNVRAMVar("wg_server%d_nm", unit));
-
-		/* set interface address and netmask */
-		if (wg_set_iface_addr(iface, buffer)) {
+		/* set interface address */
+		if (wg_set_iface_addr(iface, getNVRAMVar("wg_server%d_ip", unit))) {
 			stop_wg_server(unit);
 			return;
 		}
@@ -77,16 +73,16 @@ void start_wg_server(int unit)
 		if (nv){
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
-				if (vstrsep(b, "<", &name, &ep, &key, &psk, &ip, &nm, &aip, &ka) < 8)
+				if (vstrsep(b, "<", &name, &ep, &key, &psk, &ip, &aip, &ka) < 7)
 					continue;
 				
 				/* build peer allowed ips */
 				memset(buffer, 0, BUF_SIZE);
 				if (aip[0] == '\0') {
-					snprintf(buffer, BUF_SIZE, "%s/%s", ip, nm);
+					snprintf(buffer, BUF_SIZE, "%s", ip);
 				}
 				else {
-					snprintf(buffer, BUF_SIZE, "%s/%s,%s", ip, nm, aip);
+					snprintf(buffer, BUF_SIZE, "%s,%s", ip, aip);
 				}
 
 				/* add peer to interface */
@@ -271,8 +267,10 @@ int wg_set_iface_addr(char *iface, char *addr)
     /* Flush all addresses from interface */
 	// wg_flush_iface_addr(iface)
 
-    /* Set wireguard interface address/netmask */
-	wg_add_iface_addr(iface, addr);
+    /* Set wireguard interface address */
+	if(wg_add_iface_addr(iface, addr)) {
+		return -1;
+	}
 
     return 0;
 }
