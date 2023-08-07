@@ -757,10 +757,7 @@ function init() {
 					{ title: '', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
 					{ title: '', custom: '<input type="button" value="Copy" onclick="copyServerPubKey('+(i+1)+')" id="wg_'+t+'_pubkey_copy">' },
 				] },
-				{ title: 'IP/Netmask', multi: [
-					{ name: 'wg_'+t+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_'+t+'_ip') },
-					{ name: 'wg_'+t+'_nm', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_nm') }
-				] },
+				{ title: 'IP/Netmask', name: 'wg_'+t+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_'+t+'_ip') },
 				{ title: 'Keepalive to Server', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
 				{ title: 'Custom Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_endpoint') },
 				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_aip') },
@@ -800,7 +797,6 @@ function init() {
 				{ title: 'Public Key', name: 'f_wg_'+t+'_peer_pubkey', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
 				{ title: 'IP', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
-				{ title: 'Netmask', name: 'f_wg_'+t+'_peer_nm', type: 'text', maxlen: 2, size: 4, value: "32"},
 				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', maxlen: 128, size: 64},
 				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 			]);
