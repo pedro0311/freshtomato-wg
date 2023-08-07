@@ -402,8 +402,6 @@ function generateClient(unit) {
 		alert('Could not generate an IP for the client');
 		return;
 	}
-	else
-		ip += '/32'
 
 	/* set keepalive (if checked) */
 	var keepalive = 0;
@@ -448,6 +446,7 @@ function generateClient(unit) {
 
 function generatePeerConfig(unit, name, privkey, psk, ip) {
 	
+	var [server_ip, server_nm] = eval('nvram.wg_server'+unit+'_ip.split("/", 2)');
 	var port = eval('nvram.wg_server'+unit+'_port');
 	var content = [];
 
@@ -459,7 +458,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	}
 
 	content.push(
-		`Address = ${ip}\n`,
+		`Address = ${ip}/${server_nm}\n`,
 		`ListenPort = ${port}\n`,
 		`PrivateKey = ${privkey}\n`,
 	);
@@ -467,7 +466,6 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	/* build router peer */
 	var publickey_server = window.wireguard.generatePublicKey(eval('nvram.wg_server'+unit+'_key'));
 	var keepalive_server = eval('nvram.wg_server'+unit+'_ka');
-	var [server_ip, server_nm] = eval('nvram.wg_server'+unit+'_ip.split("/", 2)');
 	var endpoint;
 	var allowed_ips;
 
