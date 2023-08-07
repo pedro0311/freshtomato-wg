@@ -375,7 +375,7 @@ function generateClient(unit) {
 	/* retrieve existing IPs of server/clients to calculate new ip */
 	var [server_ip, server_nm] = eval('nvram.wg_server'+unit+'_ip.split("/", 2)');
 	var existing_ips = parsePeers(eval('nvram.wg_server'+unit+'_peers'));
-	existing_ips = existing_ips.map(x => x.ip);
+	existing_ips = existing_ips.map(x => x.ip.split('/',1)[0]);
 	existing_ips.push(server_ip);
 
 	/* calculate ip of new peer */
