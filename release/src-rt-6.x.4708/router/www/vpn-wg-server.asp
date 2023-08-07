@@ -373,7 +373,7 @@ function generateClient(unit) {
 		psk = window.wireguard.generatePresharedKey();
 
 	/* retrieve existing IPs of server/clients to calculate new ip */
-	var [server_ip, server_nm] = eval('nvram.wg_server'+unit+'_ip.split("/", 1)');
+	var [server_ip, server_nm] = eval('nvram.wg_server'+unit+'_ip.split("/", 2)');
 	var existing_ips = parsePeers(eval('nvram.wg_server'+unit+'_peers'));
 	existing_ips = existing_ips.map(x => x.ip);
 	existing_ips.push(server_ip);
@@ -467,7 +467,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	/* build router peer */
 	var publickey_server = window.wireguard.generatePublicKey(eval('nvram.wg_server'+unit+'_key'));
 	var keepalive_server = eval('nvram.wg_server'+unit+'_ka');
-	var [server_ip, server_nm] = eval('nvram.wg_server'+unit+'_ip.split("/", 1)');
+	var [server_ip, server_nm] = eval('nvram.wg_server'+unit+'_ip.split("/", 2)');
 	var endpoint;
 	var allowed_ips;
 
