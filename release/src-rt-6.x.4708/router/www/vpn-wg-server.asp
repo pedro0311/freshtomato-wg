@@ -23,7 +23,7 @@
 }
 
 .co7 {
-	max-width: 24px;
+	width: 32px;
   	white-space: nowrap;
   	overflow: hidden;
   	text-overflow: ellipsis;
