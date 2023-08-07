@@ -411,7 +411,7 @@ function generateClient(unit) {
 	/* set fields with generated data */
 	E('_f_wg_server'+unit+'_peer_pubkey').value = keys.publicKey;
 	E('_f_wg_server'+unit+'_peer_psk').value = psk;
-	E('_f_wg_server'+unit+'_peer_ip').value = ip;
+	E('_f_wg_server'+unit+'_peer_ip').value = `${ip}/32`;
 	E('_f_wg_server'+unit+'_peer_ka').value = keepalive;
 
 	/* generate config */
