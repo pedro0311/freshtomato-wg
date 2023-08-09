@@ -233,14 +233,14 @@ function verifyPeerFieldData(data) {
 	if (data[3] != '' && !window.wireguard.validateBase64Key(data[3])) 
 		results[3] = false;
 
-	if (!data[4].match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/))
+	if (!verifyCIDR(data[4]))
 		results[4] = false;
 	
 	if (data[5] != '') {
 		var cidrs = data[5].split(',')
 		for(var i = 0; i < cidrs.length; i++) {
 			var cidr = cidrs[i].trim();
-			if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
+			if (!verifyCIDR(cidr)) {
 				results[5] = false;
 				break;
 			}
@@ -619,6 +619,10 @@ function CIDRToNetmask(bitCount) {
   return mask.join('.');
 }
 
+function verifyCIDR(cidr) {
+	return cidr.match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\/([1-2][0-9]|3[0-1])/)
+}
+
 function verifyFields(focused, quiet) {
 	var ok = 1;
 
@@ -653,7 +657,7 @@ function verifyFields(focused, quiet) {
 
 		/* verify interface CIDR address */
 		var ip = E('_wg_server'+i+'_ip')
-		if (!ip.value.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
+		if (!verifyCIDR(ip.value)) {
 			ferror.set(ip, 'A valid CIDR address is required for the interface', quiet || !ok);
 			ok = 0;
 		}
