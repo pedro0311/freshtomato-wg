@@ -698,14 +698,11 @@ function verifyFields(focused, quiet) {
 	return ok;
 }
 
-function save_pre() {
-	if (!verifyFields(null, 0))
-		return 0;
-	return 1;
-}
-
 function save(nomsg) {
-	save_pre();
+	
+	if (!verifyFields(null, 0))
+		return;
+		
 	if (!nomsg) show(); /* update '_service' field first */
 
 	var fom = E('t_fom');
