@@ -624,6 +624,7 @@ function verifyFields(focused, quiet) {
 
 	for (var i = 1; i <= WG_SERVER_COUNT; i++) {
 
+		/* calculate interface pubkey */
 		E('_wg_server'+i+'_pubkey').disabled = true;
 		var pubkey = window.wireguard.generatePublicKey(E('_wg_server'+i+'_key').value);
 		if(pubkey == false) {
@@ -631,6 +632,7 @@ function verifyFields(focused, quiet) {
 		}
 		E('_wg_server'+i+'_pubkey').value = pubkey;
 
+		/* disable lan checkbox if lan is not in use */
 		for (let j = 0; j <= 3; ++j) {
 			t = (j == 0 ? '' : j);
 
@@ -639,6 +641,53 @@ function verifyFields(focused, quiet) {
 				E('_f_wg_server'+i+'_lan'+t).disabled = 1;
 			}
 		}
+
+		/* verify interface public key */
+		var privkey = E('_wg_server'+i+'_key')
+		if (privkey.value != '' && !window.wireguard.validateBase64Key(privkey.value)) {
+			ferror.set(privkey, 'A valid private key is required for the interface', quiet || !ok);
+			ok = 0;
+		}
+		else
+			ferror.clear(privkey);
+
+		/* verify interface CIDR address */
+		var ip = E('_wg_server'+i+'_ip')
+		if (!ip.value.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
+			ferror.set(ip, 'A valid CIDR address is required for the interface', quiet || !ok);
+			ok = 0;
+		}
+		else
+			ferror.clear(ip);
+
+		/* verify keepalive to interface */
+		var keepalive = E('_wg_server'+i+'_ka')
+		if ((!keepalive.value.match(/^ *[-\+]?\d+ *$/)) || (keepalive.value < 0) || (keepalive.value > 128)) {
+			ferror.set(keepalive, 'The keepalive value to the interface must be a number between 0 and 128', quiet || !ok);
+			ok = 0;
+		}
+		else
+			ferror.clear(keepalive);
+
+		/* verify interface allowed ips */
+		var allowed_ips = E('_wg_server'+i+'_aip')
+		var aip_valid = true;
+		if(allowed_ips.value != '') {
+			var cidrs = allowed_ips.value.split(',')
+			for(var i = 0; i < cidrs.length; i++) {
+				var cidr = cidrs[i].trim();
+				if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
+					aip_valid = false;
+					break;
+				}
+			}
+		}
+		if (!aip_valid) {
+			ferror.set(allowed_ips, 'The interface allowed ips must be a comma separated list of valid CIDRs', quiet || !ok);
+			ok = 0;
+		}
+		else
+			ferror.clear(allowed_ips);
 
 	}
 
