@@ -55,7 +55,7 @@ var serviceType = 'wgserver';
 
 var tabs =  [];
 for (i = 1; i <= WG_SERVER_COUNT; ++i)
-	tabs.push(['server'+i,'Server '+i]);
+	tabs.push(['server'+i,'Interface '+i]);
 var sections = [['interface','Interface Configuration'],['conf', 'Peer Configuration'],['gen','Client Generation'],['peers','Peers']];
 
 function PeerGrid() {return this;}
