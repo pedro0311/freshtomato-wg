@@ -56,7 +56,7 @@ var serviceType = 'wgserver';
 var tabs =  [];
 for (i = 1; i <= WG_SERVER_COUNT; ++i)
 	tabs.push(['server'+i,'Server '+i]);
-var sections = [['interface','Interface Configuration'],['peers','Peers'],['gen','Client Generation']];
+var sections = [['interface','Interface Configuration'],['conf', 'Peer Configuration'],['gen','Client Generation'],['peers','Peers']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
@@ -810,6 +810,8 @@ function init() {
 				] },
 				{ title: 'IP/Netmask', name: 'wg_'+t+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_'+t+'_ip') },
 			]);
+			W('</div>');
+			W('<div id="'+t+'-conf">');
 			W('<div class="section-title">Peer Configuration</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Server', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
@@ -823,11 +825,6 @@ function init() {
 				{ title: 'Push LAN3 (br3) to peers', name: 'f_wg_'+t+'_lan3', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan3') == '1' },
 				{ title: 'Forward all peer traffic', name: 'f_wg_'+t+'_rgw', type: 'checkbox', value: eval('nvram.wg_'+t+'_rgw') == '1' },
 			]);
-			W('</div>');
-			W('<div id="'+t+'-peers">');
-			W('<div class="section-title">Peers</div>');
-			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
-			peerTables[i].setup();
 			W('</div>');
 			W('<div id="'+t+'-gen">');
 			W('<div class="section-title">Client Generation</div>');
@@ -856,6 +853,11 @@ function init() {
 				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 			]);
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
+			W('</div>');
+			W('<div id="'+t+'-peers">');
+			W('<div class="section-title">Peers</div>');
+			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
+			peerTables[i].setup();
 			W('</div>');
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>');
 			W('</div>');
