@@ -623,7 +623,7 @@ function CIDRToNetmask(bitCount) {
 }
 
 function verifyCIDR(cidr) {
-	return cidr.match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\/([1-2][0-9]|3[0-1])/)
+	return cidr.match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\/([1-2][0-9]|3[0-2])/)
 }
 
 function verifyFields(focused, quiet) {
@@ -812,7 +812,7 @@ function init() {
 			]);
 			W('<div class="section-title">Peer Configuration</div>');
 			createFieldTable('', [
-			{ title: 'Keepalive to Server', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
+				{ title: 'Keepalive to Server', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
 				{ title: 'Custom Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_endpoint') },
 				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_aip') },
 				{ title: 'DNS Servers', name: 'wg_'+t+'_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_dns') },
