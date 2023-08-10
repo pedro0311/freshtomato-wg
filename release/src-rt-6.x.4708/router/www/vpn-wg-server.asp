@@ -464,7 +464,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	);
 
 	if (dns != "")
-		content.push(`DNS = ${dns}`)
+		content.push(`DNS = ${dns}\n`)
 
 	/* build router peer */
 	var publickey_server = window.wireguard.generatePublicKey(eval('nvram.wg_server'+unit+'_key'));
