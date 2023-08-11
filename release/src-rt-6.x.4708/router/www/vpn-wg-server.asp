@@ -830,7 +830,7 @@ function init() {
 			W('<div class="section-title">Client Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
-				{ title: 'Send Keepalive to Client', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: true},
+				{ title: 'Send Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: true},
 				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
 				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
@@ -850,7 +850,7 @@ function init() {
 				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
 				{ title: 'IP', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
 				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', maxlen: 128, size: 64},
-				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
+				{ title: 'Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 			]);
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
 			W('</div>');
