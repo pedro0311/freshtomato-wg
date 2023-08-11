@@ -808,7 +808,7 @@ function init() {
 					{ title: '', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
 					{ title: '', custom: '<input type="button" value="Copy" onclick="copyServerPubKey('+(i+1)+')" id="wg_'+t+'_pubkey_copy">' },
 				] },
-				{ title: 'IP/Netmask', name: 'wg_'+t+'_ip', type: 'text', maxlen: 15, size: 17, value: eval('nvram.wg_'+t+'_ip') },
+				{ title: 'IP/Netmask', name: 'wg_'+t+'_ip', type: 'text', maxlen: 32, size: 17, value: eval('nvram.wg_'+t+'_ip') },
 			]);
 			W('</div>');
 			W('<div id="'+t+'-conf">');
@@ -830,18 +830,11 @@ function init() {
 			W('<div class="section-title">Client Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
-				{ title: 'Send Keepalive to Client', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: true},
+				{ title: 'Send Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: true},
 				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
 				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
 			W('<input type="button" value="Generate Client Config" onclick="generateClient('+(i+1)+')" id="wg_'+t+'_peer_gen">');
-			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
-			W('<img alt="wg_'+t+'_qrcode_img">');
-			W('<div id="wg_'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
-			W('Point your mobile phone camera<br>');
-			W('here above to connect automatically');
-			W('</div>');
-			W('</div>');
 			W('<div class="section-title">Peer Addition</div>');
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
@@ -850,9 +843,16 @@ function init() {
 				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
 				{ title: 'IP', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
 				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', maxlen: 128, size: 64},
-				{ title: 'Keepalive', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
+				{ title: 'Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 			]);
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
+			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
+			W('<img alt="wg_'+t+'_qrcode_img">');
+			W('<div id="wg_'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
+			W('Point your mobile phone camera<br>');
+			W('here above to connect automatically');
+			W('</div>');
+			W('</div>');
 			W('</div>');
 			W('<div id="'+t+'-peers">');
 			W('<div class="section-title">Peers</div>');
