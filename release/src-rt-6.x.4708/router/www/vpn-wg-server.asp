@@ -835,13 +835,6 @@ function init() {
 				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
 			W('<input type="button" value="Generate Client Config" onclick="generateClient('+(i+1)+')" id="wg_'+t+'_peer_gen">');
-			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
-			W('<img alt="wg_'+t+'_qrcode_img">');
-			W('<div id="wg_'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
-			W('Point your mobile phone camera<br>');
-			W('here above to connect automatically');
-			W('</div>');
-			W('</div>');
 			W('<div class="section-title">Peer Addition</div>');
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
@@ -853,6 +846,13 @@ function init() {
 				{ title: 'Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 			]);
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
+			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
+			W('<img alt="wg_'+t+'_qrcode_img">');
+			W('<div id="wg_'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
+			W('Point your mobile phone camera<br>');
+			W('here above to connect automatically');
+			W('</div>');
+			W('</div>');
 			W('</div>');
 			W('<div id="'+t+'-peers">');
 			W('<div class="section-title">Peers</div>');
