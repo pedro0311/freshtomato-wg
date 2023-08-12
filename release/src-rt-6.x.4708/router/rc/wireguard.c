@@ -17,7 +17,7 @@ void start_wg_eas()
 	int unit;
 
 	for (unit = 1; unit <= WG_INTERFACE_MAX; unit ++) {
-		if (atoi(getNVRAMVar("wg_int%d_eas", unit)) == 1) {
+		if (atoi(getNVRAMVar("wg_iface%d_eas", unit)) == 1) {
 			start_wireguard(unit);
 		}
 	}
@@ -39,8 +39,8 @@ void start_wireguard(int unit)
 	snprintf(iface, IF_SIZE, "wg%d", unit);
 
 	/* check if file is specified */
-	if(getNVRAMVar("wg_int%d_file", unit)[0] != '\0') {
-		wg_load_iface(iface, getNVRAMVar("wg_int%d_file", unit));
+	if(getNVRAMVar("wg_iface%d_file", unit)[0] != '\0') {
+		wg_load_iface(iface, getNVRAMVar("wg_iface%d_file", unit));
 	}
 	else {
 
@@ -51,25 +51,25 @@ void start_wireguard(int unit)
 		}
 
 		/* set interface address */
-		if (wg_set_iface_addr(iface, getNVRAMVar("wg_int%d_ip", unit))) {
+		if (wg_set_iface_addr(iface, getNVRAMVar("wg_iface%d_ip", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
 
 		/* set interface port */
-		if (wg_set_iface_port(iface, getNVRAMVar("wg_int%d_port", unit))) {
+		if (wg_set_iface_port(iface, getNVRAMVar("wg_iface%d_port", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
 
 		/* set interface private key */
-		if (wg_set_iface_privkey(iface, getNVRAMVar("wg_int%d_key", unit))) {
+		if (wg_set_iface_privkey(iface, getNVRAMVar("wg_iface%d_key", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
 
 		/* add stored peers */
-		nvp = nv = strdup(getNVRAMVar("wg_int%d_peers", unit));
+		nvp = nv = strdup(getNVRAMVar("wg_iface%d_peers", unit));
 		if (nv){
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
@@ -99,7 +99,7 @@ void start_wireguard(int unit)
 	}
 
 	/* set iptables rules */
-	if (wg_set_iptables(iface, getNVRAMVar("wg_int%d_port", unit))) {
+	if (wg_set_iptables(iface, getNVRAMVar("wg_iface%d_port", unit))) {
 		stop_wireguard(unit);
 		return;
 	}
@@ -118,7 +118,7 @@ void stop_wireguard(int unit)
     wg_remove_iface(iface);
 
 	/* remove iptables rules */
-	wg_remove_iptables(iface, getNVRAMVar("wg_int%d_port", unit));
+	wg_remove_iptables(iface, getNVRAMVar("wg_iface%d_port", unit));
 }
 
 void wg_setup_dirs() {
