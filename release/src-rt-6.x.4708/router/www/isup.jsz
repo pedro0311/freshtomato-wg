@@ -39,9 +39,9 @@ isup.pptpd = parseInt('<% psup("pptpd"); %>');
 
 /* WIREGUARD-BEGIN */
 var WG_SERVER_COUNT = 3;
-isup.wireguard1 = parseInt('<% wgstat("wgs1"); %>');
-isup.wireguard2 = parseInt('<% wgstat("wgs2"); %>');
-isup.wireguard3 = parseInt('<% wgstat("wgs3"); %>');
+isup.wireguard1 = parseInt('<% wgstat("wg1"); %>');
+isup.wireguard2 = parseInt('<% wgstat("wg2"); %>');
+isup.wireguard3 = parseInt('<% wgstat("wg3"); %>');
 /* WIREGUARD-END */
 
 /* NGINX-BEGIN */
