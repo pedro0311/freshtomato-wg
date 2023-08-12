@@ -38,7 +38,7 @@ isup.pptpd = parseInt('<% psup("pptpd"); %>');
 /* PPTPD-END */
 
 /* WIREGUARD-BEGIN */
-var WG_SERVER_COUNT = 3;
+var WG_INTERFACE_COUNT = 3;
 isup.wireguard1 = parseInt('<% wgstat("wg1"); %>');
 isup.wireguard2 = parseInt('<% wgstat("wg2"); %>');
 isup.wireguard3 = parseInt('<% wgstat("wg3"); %>');
