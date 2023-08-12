@@ -771,7 +771,7 @@ function init() {
 
 <!-- / / / -->
 
-<div class="section-title">Wireguard Interface Configuration</div>
+<div class="section-title">Wireguard Configuration</div>
 <div class="section">
 	<script>
 		tabCreate.apply(this, tabs);
@@ -859,7 +859,7 @@ function init() {
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
 			W('</div>');
-			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wg'+t+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>');
+			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard'+(i+1)+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>');
 			W('</div>');
 		}
 		
