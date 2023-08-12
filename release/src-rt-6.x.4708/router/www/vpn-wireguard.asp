@@ -49,9 +49,9 @@
 
 //	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_server1_eas,wg_server1_file,wg_server1_ip,wg_server1_aip,wg_server1_dns,wg_server1_ka,wg_server1_port,wg_server1_key,wg_server1_endpoint,wg_server1_lan,wg_server1_lan0,wg_server1_lan1,wg_server1_lan2,wg_server1_lan3,wg_server1_rgw,wg_server1_peers,wg_server2_eas,wg_server2_file,wg_server2_ip,wg_server2_aip,wg_server2_dns,wg_server2_ka,wg_server2_port,wg_server2_key,wg_server2_endpoint,wg_server2_lan,wg_server2_lan0,wg_server2_lan1,wg_server2_lan2,wg_server2_lan3,wg_server2_rgw,wg_server2_peers,wg_server3_eas,wg_server3_file,wg_server3_ip,wg_server3_aip,wg_server3_dns,wg_server3_ka,wg_server3_port,wg_server3_key,wg_server3_endpoint,wg_server3_lan,wg_server3_lan0,wg_server3_lan1,wg_server3_lan2,wg_server3_lan3,wg_server3_rgw,wg_server3_peers"); %>
 
-var cprefix = 'vpn_wg_server';
+var cprefix = 'vpn_wireguard';
 var changed = 0;
-var serviceType = 'wgserver';
+var serviceType = 'wireguard';
 
 var tabs =  [];
 for (i = 1; i <= WG_SERVER_COUNT; ++i)
@@ -134,11 +134,11 @@ function sectSelect(tab, section) {
 function updateForm(num) {
 	var fom = E('t_fom');
 
-	if (eval('isup.wgserver'+num) && fom._service.value.indexOf('server'+num) < 0) {
+	if (eval('isup.wireguard'+num) && fom._service.value.indexOf('server'+num) < 0) {
 		if (fom._service.value != '')
 			fom._service.value += ',';
 
-		fom._service.value += 'wgserver'+num+'-restart';
+		fom._service.value += 'wireguard'+num+'-restart';
 	}
 }
 
