@@ -10,21 +10,21 @@
 #define IF_SIZE			8
 #define PEER_COUNT		3
 
-#define WG_SERVER_MAX	3
+#define WG_INTERFACE_MAX	3
 
 void start_wg_eas()
 {
 	int unit;
 
-	for (unit = 1; unit <= WG_SERVER_MAX; unit ++) {
-		if (atoi(getNVRAMVar("wg_server%d_eas", unit)) == 1) {
-			start_wg_server(unit);
+	for (unit = 1; unit <= WG_INTERFACE_MAX; unit ++) {
+		if (atoi(getNVRAMVar("wg_int%d_eas", unit)) == 1) {
+			start_wireguard(unit);
 		}
 	}
 	
 }
 
-void start_wg_server(int unit)
+void start_wireguard(int unit)
 {
 	char *nv, *nvp, *b;
 	char *name, *key, *psk, *ip, *ka, *aip, *ep;
@@ -36,40 +36,40 @@ void start_wg_server(int unit)
 
     /* Determine interface */
 	memset(iface, 0, IF_SIZE);
-	snprintf(iface, IF_SIZE, "wgs%d", unit);
+	snprintf(iface, IF_SIZE, "wg%d", unit);
 
 	/* check if file is specified */
-	if(getNVRAMVar("wg_server%d_file", unit)[0] != '\0') {
-		wg_load_iface(iface, getNVRAMVar("wg_server%d_file", unit));
+	if(getNVRAMVar("wg_int%d_file", unit)[0] != '\0') {
+		wg_load_iface(iface, getNVRAMVar("wg_int%d_file", unit));
 	}
 	else {
 
 		/* create interface */
 		if (wg_create_iface(iface)) {
-			stop_wg_server(unit);
+			stop_wireguard(unit);
 			return;
 		}
 
 		/* set interface address */
-		if (wg_set_iface_addr(iface, getNVRAMVar("wg_server%d_ip", unit))) {
-			stop_wg_server(unit);
+		if (wg_set_iface_addr(iface, getNVRAMVar("wg_int%d_ip", unit))) {
+			stop_wireguard(unit);
 			return;
 		}
 
 		/* set interface port */
-		if (wg_set_iface_port(iface, getNVRAMVar("wg_server%d_port", unit))) {
-			stop_wg_server(unit);
+		if (wg_set_iface_port(iface, getNVRAMVar("wg_int%d_port", unit))) {
+			stop_wireguard(unit);
 			return;
 		}
 
 		/* set interface private key */
-		if (wg_set_iface_privkey(iface, getNVRAMVar("wg_server%d_key", unit))) {
-			stop_wg_server(unit);
+		if (wg_set_iface_privkey(iface, getNVRAMVar("wg_int%d_key", unit))) {
+			stop_wireguard(unit);
 			return;
 		}
 
 		/* add stored peers */
-		nvp = nv = strdup(getNVRAMVar("wg_server%d_peers", unit));
+		nvp = nv = strdup(getNVRAMVar("wg_int%d_peers", unit));
 		if (nv){
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
@@ -94,31 +94,31 @@ void start_wg_server(int unit)
 
 	/* bring up interface */
 	if (wg_set_iface_up(iface)) {
-		stop_wg_server(unit);
+		stop_wireguard(unit);
 		return;
 	}
 
 	/* set iptables rules */
-	if (wg_set_iptables(iface, getNVRAMVar("wg_server%d_port", unit))) {
-		stop_wg_server(unit);
+	if (wg_set_iptables(iface, getNVRAMVar("wg_int%d_port", unit))) {
+		stop_wireguard(unit);
 		return;
 	}
 }
 
-void stop_wg_server(int unit)
+void stop_wireguard(int unit)
 {
 	char iface[IF_SIZE];
     char buffer[BUF_SIZE];
 
     /* Determine interface */
 	memset(iface, 0, IF_SIZE);
-	snprintf(iface, IF_SIZE, "wgs%d", unit);
+	snprintf(iface, IF_SIZE, "wg%d", unit);
 
 	/* Remove interface */
     wg_remove_iface(iface);
 
 	/* remove iptables rules */
-	wg_remove_iptables(iface, getNVRAMVar("wg_server%d_port", unit));
+	wg_remove_iptables(iface, getNVRAMVar("wg_int%d_port", unit));
 }
 
 void wg_setup_dirs() {

@@ -577,8 +577,8 @@ extern int write_ovpn_resolv(FILE*);
 
 /* wireguard.c */
 #ifdef TCONFIG_WIREGUARD
-extern void start_wg_server(int unit);
-extern void stop_wg_server(int unit);
+extern void start_wireguard(int unit);
+extern void stop_wireguard(int unit);
 extern void wg_setup_dirs();
 extern int wg_create_iface(char *iface);
 extern int wg_flush_iface_addr(char *iface);
