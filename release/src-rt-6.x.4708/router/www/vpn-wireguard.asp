@@ -627,7 +627,7 @@ function verifyCIDR(cidr) {
 }
 
 function verifyFWMark(fwmark) {
-	return true;
+	return fwmark == '0' || fwmark.match(/[0-9A-Fa-f]{8}/);
 }
 
 function verifyFields(focused, quiet) {
@@ -670,6 +670,15 @@ function verifyFields(focused, quiet) {
 		}
 		else
 			ferror.clear(ip);
+
+		/* verify interface fwmark */
+		var fwmark = E('_wg_iface'+i+'_fwmark');
+		if (!verifyFWMark(fwmark.value)) {
+			ferror.set(fwmark, 'The interface FWMark must be a hexadecimal string of 8 characters', quiet || !ok);
+			ok = 0;
+		}
+		else
+			ferror.clear(fwmark);
 
 		/* verify keepalive to interface */
 		var keepalive = E('_wg_iface'+i+'_ka')
