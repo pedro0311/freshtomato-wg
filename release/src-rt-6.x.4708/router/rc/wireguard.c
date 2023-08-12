@@ -68,6 +68,11 @@ void start_wireguard(int unit)
 			return;
 		}
 
+		if (wg_set_iface_fwmark(iface, getNVRAMVar("wg_iface%d_fwmark", unit))) {
+			stop_wireguard(unit);
+			return;
+		}
+
 		/* add stored peers */
 		nvp = nv = strdup(getNVRAMVar("wg_iface%d_peers", unit));
 		if (nv){
@@ -327,6 +332,19 @@ int wg_set_iface_privkey(char *iface, char* privkey)
 
 	/* remove file for security */
 	remove(buffer);
+
+	return 0;
+}
+
+int wg_set_iface_fwmark(char *iface, char* fwmark)
+{
+	if (eval("/usr/sbin/wg", "set", iface, "fwmark", fwmark)){
+		logmsg(LOG_WARNING, "unable to set wireguard interface %s fwmark to %s!", iface, fwmark);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "wireguard interface %s has had its private key set", iface, fwmark);
+	}
 
 	return 0;
 }
