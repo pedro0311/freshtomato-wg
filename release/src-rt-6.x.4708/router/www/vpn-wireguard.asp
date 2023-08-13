@@ -47,7 +47,7 @@
 <script src="html5-qrcode.js"></script>
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_iface1_eas,wg_iface1_file,wg_iface1_ip,wg_iface1_fwmark,wg_iface1_preup,wg_iface1_postup,wg_iface1_predown,wg_iface1_postdown,wg_iface1_aip,wg_iface1_dns,wg_iface1_ka,wg_iface1_port,wg_iface1_key,wg_iface1_endpoint,wg_iface1_lan,wg_iface1_lan0,wg_iface1_lan1,wg_iface1_lan2,wg_iface1_lan3,wg_iface1_rgw,wg_iface1_peers,wg_iface2_eas,wg_iface2_file,wg_iface2_ip,wg_iface2_fwmark,wg_iface2_preup,wg_iface2_postup,wg_iface2_predown,wg_iface2_postdown,wg_iface2_aip,wg_iface2_dns,wg_iface2_ka,wg_iface2_port,wg_iface2_key,wg_iface2_endpoint,wg_iface2_lan,wg_iface2_lan0,wg_iface2_lan1,wg_iface2_lan2,wg_iface2_lan3,wg_iface2_rgw,wg_iface2_peers,wg_iface3_eas,wg_iface3_file,wg_iface3_ip,wg_iface3_fwmark,wg_iface3_preup,wg_iface3_postup,wg_iface3_predown,wg_iface3_postdown,wg_iface3_aip,wg_iface3_dns,wg_iface3_ka,wg_iface3_port,wg_iface3_key,wg_iface3_endpoint,wg_iface3_lan,wg_iface3_lan0,wg_iface3_lan1,wg_iface3_lan2,wg_iface3_lan3,wg_iface3_rgw,wg_iface3_peers"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_iface1_eas,wg_iface1_file,wg_iface1_ip,wg_iface1_fwmark,wg_iface1_mtu,wg_iface1_preup,wg_iface1_postup,wg_iface1_predown,wg_iface1_postdown,wg_iface1_aip,wg_iface1_dns,wg_iface1_ka,wg_iface1_port,wg_iface1_key,wg_iface1_endpoint,wg_iface1_lan,wg_iface1_lan0,wg_iface1_lan1,wg_iface1_lan2,wg_iface1_lan3,wg_iface1_rgw,wg_iface1_peers,wg_iface2_eas,wg_iface2_file,wg_iface2_ip,wg_iface2_fwmark,wg_iface2_mtu,wg_iface2_preup,wg_iface2_postup,wg_iface2_predown,wg_iface2_postdown,wg_iface2_aip,wg_iface2_dns,wg_iface2_ka,wg_iface2_port,wg_iface2_key,wg_iface2_endpoint,wg_iface2_lan,wg_iface2_lan0,wg_iface2_lan1,wg_iface2_lan2,wg_iface2_lan3,wg_iface2_rgw,wg_iface2_peers,wg_iface3_eas,wg_iface3_file,wg_iface3_ip,wg_iface3_fwmark,wg_iface3_mtu,wg_iface3_preup,wg_iface3_postup,wg_iface3_predown,wg_iface3_postdown,wg_iface3_aip,wg_iface3_dns,wg_iface3_ka,wg_iface3_port,wg_iface3_key,wg_iface3_endpoint,wg_iface3_lan,wg_iface3_lan0,wg_iface3_lan1,wg_iface3_lan2,wg_iface3_lan3,wg_iface3_rgw,wg_iface3_peers"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
@@ -709,6 +709,15 @@ function verifyFields(focused, quiet) {
 		else
 			ferror.clear(fwmark);
 
+		/* verify interface mtu */
+		var mtu = E('_wg_iface'+i+'_mtu');
+		if ((!mtu.value.match(/^ *[-\+]?\d+ *$/)) || (mtu.value < 0) || (mtu.value > 1500)) {
+			ferror.set(mtu, 'The interface MTU must be a integer between 0 and 1500', quiet || !ok);
+			ok = 0;
+		}
+		else
+			ferror.clear(mtu);
+
 		/* verify keepalive to interface */
 		var keepalive = E('_wg_iface'+i+'_ka')
 		if ((!keepalive.value.match(/^ *[-\+]?\d+ *$/)) || (keepalive.value < 0) || (keepalive.value > 128)) {
@@ -852,6 +861,7 @@ function init() {
 				] },
 				{ title: 'IP/Netmask', name: 'wg_'+t+'_ip', type: 'text', maxlen: 32, size: 17, value: eval('nvram.wg_'+t+'_ip') },
 				{ title: 'FWMark', name: 'wg_'+t+'_fwmark', type: 'text', maxlen: 8, size: 8, value: eval('nvram.wg_'+t+'_fwmark') },
+				{ title: 'MTU', name: 'wg_'+t+'_mtu', type: 'text', maxlen: 4, size: 4, value: eval('nvram.wg_'+t+'_mtu') },
 			]);
 			W('</div>');
 			W('<div id="'+t+'-scripts">');

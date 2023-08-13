@@ -68,7 +68,14 @@ void start_wireguard(int unit)
 			return;
 		}
 
+		/* set interface fwmark*/
 		if (wg_set_iface_fwmark(iface, getNVRAMVar("wg_iface%d_fwmark", unit))) {
+			stop_wireguard(unit);
+			return;
+		}
+
+		/* set interface mtu*/
+		if (wg_set_iface_mtu(iface, getNVRAMVar("wg_iface%d_mtu", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
@@ -359,7 +366,20 @@ int wg_set_iface_fwmark(char *iface, char* fwmark)
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "wireguard interface %s has had its private key set", iface, fwmark);
+		logmsg(LOG_DEBUG, "wireguard interface %s has had its fwmark set to %s", iface, fwmark);
+	}
+
+	return 0;
+}
+
+int wg_set_iface_mtu(char *iface, char* mtu)
+{
+	if (eval("/usr/sbin/ip", "link", "set", "dev", iface, "mtu", mtu)){
+		logmsg(LOG_WARNING, "unable to set wireguard interface %s mtu to %s!", iface, mtu);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "wireguard interface %s has had its mtu set to %s", iface, mtu);
 	}
 
 	return 0;
