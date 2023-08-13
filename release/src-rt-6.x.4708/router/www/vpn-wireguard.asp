@@ -663,7 +663,7 @@ function verifyFields(focused, quiet) {
 
 		/* autopopulate endpoint if it's empty */
 		var endpoint = E('_wg_iface'+i+'_endpoint');
-		if (endpoint.value = "")
+		if (endpoint.value == "")
 			endpoint.value = nvram.wan_ipaddr;
 
 		/* disable lan checkbox if lan is not in use */
