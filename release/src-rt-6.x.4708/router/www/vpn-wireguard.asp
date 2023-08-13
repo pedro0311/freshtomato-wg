@@ -47,7 +47,7 @@
 <script src="html5-qrcode.js"></script>
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_iface1_eas,wg_iface1_file,wg_iface1_ip,wg_iface1_aip,wg_iface1_dns,wg_iface1_ka,wg_iface1_port,wg_iface1_key,wg_iface1_endpoint,wg_iface1_lan,wg_iface1_lan0,wg_iface1_lan1,wg_iface1_lan2,wg_iface1_lan3,wg_iface1_rgw,wg_iface1_peers,wg_iface2_eas,wg_iface2_file,wg_iface2_ip,wg_iface2_aip,wg_iface2_dns,wg_iface2_ka,wg_iface2_port,wg_iface2_key,wg_iface2_endpoint,wg_iface2_lan,wg_iface2_lan0,wg_iface2_lan1,wg_iface2_lan2,wg_iface2_lan3,wg_iface2_rgw,wg_iface2_peers,wg_iface3_eas,wg_iface3_file,wg_iface3_ip,wg_iface3_aip,wg_iface3_dns,wg_iface3_ka,wg_iface3_port,wg_iface3_key,wg_iface3_endpoint,wg_iface3_lan,wg_iface3_lan0,wg_iface3_lan1,wg_iface3_lan2,wg_iface3_lan3,wg_iface3_rgw,wg_iface3_peers"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_iface1_eas,wg_iface1_file,wg_iface1_ip,wg_iface1_fwmark,wg_iface1_aip,wg_iface1_dns,wg_iface1_ka,wg_iface1_port,wg_iface1_key,wg_iface1_endpoint,wg_iface1_lan,wg_iface1_lan0,wg_iface1_lan1,wg_iface1_lan2,wg_iface1_lan3,wg_iface1_rgw,wg_iface1_peers,wg_iface2_eas,wg_iface2_file,wg_iface2_ip,wg_iface2_fwmark,wg_iface2_aip,wg_iface2_dns,wg_iface2_ka,wg_iface2_port,wg_iface2_key,wg_iface2_endpoint,wg_iface2_lan,wg_iface2_lan0,wg_iface2_lan1,wg_iface2_lan2,wg_iface2_lan3,wg_iface2_rgw,wg_iface2_peers,wg_iface3_eas,wg_iface3_file,wg_iface3_ip,wg_iface3_fwmark,wg_iface3_aip,wg_iface3_dns,wg_iface3_ka,wg_iface3_port,wg_iface3_key,wg_iface3_endpoint,wg_iface3_lan,wg_iface3_lan0,wg_iface3_lan1,wg_iface3_lan2,wg_iface3_lan3,wg_iface3_rgw,wg_iface3_peers"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
@@ -356,6 +356,24 @@ function addPeer(unit, quiet) {
 	}
 }
 
+function verifyClientGenFields(unit) {
+
+	/* verify interface has a valid private key */
+	if (!window.wireguard.validateBase64Key(eval('nvram.wg_iface'+unit+'_key'))) {
+		alert('The interface must have a valid private key before clients can be generated')
+		return false;
+	}
+
+	/* verify peer fwmark*/
+	var fwmark = E('_f_wg_iface'+unit+'_peer_fwmark').value;
+	if (!verifyFWMark(fwmark)) {
+		alert('The peer FWMark must be a hexadecimal string of 8 characters')
+		return false;
+	}
+
+	return true;
+}
+
 function generateClient(unit) {
 
 	/* check if changes have been made */
@@ -363,6 +381,10 @@ function generateClient(unit) {
 		alert('Changes have been made. You need to save before continue!');
 		return;
 	}
+
+	/* verify client gen fields have valid data */
+	if (!verifyClientGenFields(unit))
+		return;
 
 	/* Generate keys */
 	var keys = window.wireguard.generateKeypair();
@@ -450,6 +472,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	var port = eval('nvram.wg_iface'+unit+'_port');
 	var content = [];
 	var dns = eval('nvram.wg_iface'+unit+'_dns');
+	var fwmark = E('_f_wg_iface'+unit+'_peer_fwmark').value;
 
 	/* build interface section */
 	content.push("[Interface]\n");
@@ -464,7 +487,10 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	);
 
 	if (dns != "")
-		content.push(`DNS = ${dns}\n`)
+		content.push(`DNS = 0x${dns}\n`)
+
+	if (fwmark != "0")
+		content.push (`FwMark = ${fwmark}\n`);
 
 	/* build router peer */
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg_iface'+unit+'_key'));
@@ -626,6 +652,10 @@ function verifyCIDR(cidr) {
 	return cidr.match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\/([1-2][0-9]|3[0-2])/)
 }
 
+function verifyFWMark(fwmark) {
+	return fwmark == '0' || fwmark.match(/[0-9A-Fa-f]{8}/);
+}
+
 function verifyFields(focused, quiet) {
 	var ok = 1;
 
@@ -666,6 +696,15 @@ function verifyFields(focused, quiet) {
 		}
 		else
 			ferror.clear(ip);
+
+		/* verify interface fwmark */
+		var fwmark = E('_wg_iface'+i+'_fwmark');
+		if (!verifyFWMark(fwmark.value)) {
+			ferror.set(fwmark, 'The interface FWMark must be a hexadecimal string of 8 characters', quiet || !ok);
+			ok = 0;
+		}
+		else
+			ferror.clear(fwmark);
 
 		/* verify keepalive to interface */
 		var keepalive = E('_wg_iface'+i+'_ka')
@@ -809,6 +848,7 @@ function init() {
 					{ title: '', custom: '<input type="button" value="Copy" onclick="copyInterfacePubKey('+(i+1)+')" id="wg_'+t+'_pubkey_copy">' },
 				] },
 				{ title: 'IP/Netmask', name: 'wg_'+t+'_ip', type: 'text', maxlen: 32, size: 17, value: eval('nvram.wg_'+t+'_ip') },
+				{ title: 'FWMark', name: 'wg_'+t+'_fwmark', type: 'text', maxlen: 8, size: 8, value: eval('nvram.wg_'+t+'_fwmark') },
 			]);
 			W('</div>');
 			W('<div id="'+t+'-conf">');
@@ -831,6 +871,7 @@ function init() {
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
 				{ title: 'Send Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: false},
+				{ title: 'FWMark for this peer', name: 'f_wg_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
 				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
 				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
