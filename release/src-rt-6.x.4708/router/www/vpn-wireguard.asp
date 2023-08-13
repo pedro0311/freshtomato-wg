@@ -709,6 +709,15 @@ function verifyFields(focused, quiet) {
 		else
 			ferror.clear(fwmark);
 
+		/* verify interface mtu */
+		var mtu = E('_wg_iface'+i+'_mtu');
+		if ((!mtu.value.match(/^ *[-\+]?\d+ *$/)) || (mtu.value < 0) || (mtu.value > 1500)) {
+			ferror.set(mtu, 'The interface MTU must be a integer between 0 and 1500', quiet || !ok);
+			ok = 0;
+		}
+		else
+			ferror.clear(mtu);
+
 		/* verify keepalive to interface */
 		var keepalive = E('_wg_iface'+i+'_ka')
 		if ((!keepalive.value.match(/^ *[-\+]?\d+ *$/)) || (keepalive.value < 0) || (keepalive.value > 128)) {
