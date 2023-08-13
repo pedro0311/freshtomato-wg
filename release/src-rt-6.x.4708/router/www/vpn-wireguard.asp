@@ -356,6 +356,16 @@ function addPeer(unit, quiet) {
 	}
 }
 
+function verifyClientGenFields(unit) {
+	var fwmark = E('_f_wg_iface'+unit+'_peer_fwmark').value;
+	if (!verifyFWMark(fwmark)) {
+		alert('The peer FWMark must be a hexadecimal string of 8 characters')
+		return false;
+	}
+
+	return true;
+}
+
 function generateClient(unit) {
 
 	/* check if changes have been made */
@@ -363,6 +373,10 @@ function generateClient(unit) {
 		alert('Changes have been made. You need to save before continue!');
 		return;
 	}
+
+	/* verify client gen fields have valid data */
+	if (!verifyClientGenFields(unit))
+		return;
 
 	/* Generate keys */
 	var keys = window.wireguard.generateKeypair();
@@ -450,6 +464,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	var port = eval('nvram.wg_iface'+unit+'_port');
 	var content = [];
 	var dns = eval('nvram.wg_iface'+unit+'_dns');
+	var fwmark = E('_f_wg_iface'+unit+'_peer_fwmark').value;
 
 	/* build interface section */
 	content.push("[Interface]\n");
@@ -465,6 +480,9 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 
 	if (dns != "")
 		content.push(`DNS = ${dns}\n`)
+
+	if (fwmark != "0")
+		content.push (`FwMark = ${fwmark}\n`);
 
 	/* build router peer */
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg_iface'+unit+'_key'));
@@ -845,6 +863,7 @@ function init() {
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
 				{ title: 'Send Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: false},
+				{ title: 'FWMark for this peer', name: 'f_wg_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
 				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
 				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
