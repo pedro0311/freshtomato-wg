@@ -479,7 +479,7 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	);
 
 	if (dns != "")
-		content.push(`DNS = ${dns}\n`)
+		content.push(`DNS = 0x${dns}\n`)
 
 	if (fwmark != "0")
 		content.push (`FwMark = ${fwmark}\n`);

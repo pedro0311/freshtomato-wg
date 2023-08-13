@@ -338,6 +338,18 @@ int wg_set_iface_privkey(char *iface, char* privkey)
 
 int wg_set_iface_fwmark(char *iface, char* fwmark)
 {
+	int buffer_size = 10;
+	char buffer[buffer_size];
+	memset(buffer, 0, buffer_size);
+
+	if (fwmark[0] == '0' && fwmark[1] == '\0') {
+		snprintf(buffer, buffer_size, "%s", fwmark);
+	}
+	else {
+		snprintf(buffer, buffer_size, "0x%s", fwmark);
+	}
+
+
 	if (eval("/usr/sbin/wg", "set", iface, "fwmark", fwmark)){
 		logmsg(LOG_WARNING, "unable to set wireguard interface %s fwmark to %s!", iface, fwmark);
 		return -1;
