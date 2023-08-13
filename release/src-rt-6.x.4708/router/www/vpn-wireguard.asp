@@ -371,6 +371,12 @@ function verifyClientGenFields(unit) {
 		return false;
 	}
 
+	/* verify endpoint is populated */
+	if (eval('nvram.wg_iface'+unit+'_endpoint') == "") {
+		alert('The interface endpoint must be populated')
+		return false;
+	}
+
 	return true;
 }
 
