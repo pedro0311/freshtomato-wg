@@ -495,16 +495,8 @@ function generatePeerConfig(unit, name, privkey, psk, ip) {
 	/* build router peer */
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg_iface'+unit+'_key'));
 	var keepalive_interface = eval('nvram.wg_iface'+unit+'_ka');
-	var endpoint;
+	var endpoint = eval('nvram.wg_iface'+unit+'_endpoint') + ":" + eval('nvram.wg_iface'+unit+'_port');
 	var allowed_ips;
-
-	/* build endpoint */
-	if (eval('nvram.wg_iface'+unit+'_endpoint') != "") {
-		endpoint = eval('nvram.wg_iface'+unit+'_endpoint') + ":" + eval('nvram.wg_iface'+unit+'_port');
-	}
-	else {
-		endpoint = nvram.wan_ipaddr + ":" + eval('nvram.wg_iface'+unit+'_port');
-	}
 
 	/* build allowed ips for router peer */
 	if (eval('nvram.wg_iface'+unit+'_rgw') == "1") {
@@ -668,6 +660,11 @@ function verifyFields(focused, quiet) {
 			pubkey = "";
 		}
 		E('_wg_iface'+i+'_pubkey').value = pubkey;
+
+		/* autopopulate endpoint if it's empty */
+		var endpoint = E('_wg_iface'+i+'_endpoint');
+		if (endpoint.value = "")
+			endpoint.value = nvram.wan_ipaddr;
 
 		/* disable lan checkbox if lan is not in use */
 		for (let j = 0; j <= 3; ++j) {
