@@ -98,10 +98,12 @@ void start_wireguard(int unit)
 	}
 
 	/* bring up interface */
+	wg_iface_pre_up(unit);
 	if (wg_set_iface_up(iface)) {
 		stop_wireguard(unit);
 		return;
 	}
+	wg_iface_post_up(unit);
 
 	/* set iptables rules */
 	if (wg_set_iptables(iface, getNVRAMVar("wg_iface%d_port", unit))) {
@@ -120,7 +122,9 @@ void stop_wireguard(int unit)
 	snprintf(iface, IF_SIZE, "wg%d", unit);
 
 	/* Remove interface */
+	wg_iface_pre_down(unit);
     wg_remove_iface(iface);
+	wg_iface_post_down(unit);
 
 	/* remove iptables rules */
 	wg_remove_iptables(iface, getNVRAMVar("wg_iface%d_port", unit));
@@ -478,6 +482,66 @@ int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *pre
 	wg_pubkey(privkey, pubkey);
 
 	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey, keepalive, endpoint);
+}
+
+int wg_iface_script(int unit, char *script_name)
+{
+	int buffer_size = 32;
+	int path_size = 64;
+	char *script;
+	char buffer[buffer_size];
+	char path[path_size];
+	FILE *fp;
+
+	memset(buffer, 0, buffer_size);
+	snprintf(buffer, buffer_size, "wg_iface%d_%s", unit, script_name);
+
+	script = nvram_safe_get(buffer);
+
+	if (strcmp(script, "") != 0) {
+
+		memset(path, 0, path_size);
+		snprintf(path, path_size, WG_DIR"/scripts/wg%d-%s.sh", unit, script_name);
+
+		if (!(fp = fopen(path, "w"))) {
+			logmsg(LOG_WARNING, "unable to open %s for writing!", path);
+			return -1;
+		}
+		fprintf(fp, "%s\n", script);
+		fclose(fp);
+		chmod(path, 0700);
+
+		if (eval("/bin/sh", path)){
+			logmsg(LOG_WARNING, "unable to execute %s script for wireguard interface wg%d!", script_name, unit);
+			return -1;
+		}
+		else {
+			logmsg(LOG_DEBUG, "%s script for wireguard interface wg%d has executed successfully", script_name, unit);
+		}
+
+	}
+
+	return 0;
+}
+
+int wg_iface_pre_up(int unit)
+{
+	wg_iface_script(unit, "preup");
+}
+
+int wg_iface_post_up(int unit)
+{
+	wg_iface_script(unit, "postup");
+}
+
+int wg_iface_pre_down(int unit)
+{
+	wg_iface_script(unit, "predown");
+}
+
+int wg_iface_post_down(int unit)
+{
+	wg_iface_script(unit, "postdown");
 }
 
 int wg_set_iptables(char *iface, char *port)
