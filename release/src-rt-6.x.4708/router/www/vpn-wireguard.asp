@@ -357,6 +357,14 @@ function addPeer(unit, quiet) {
 }
 
 function verifyClientGenFields(unit) {
+
+	/* verify interface has a valid private key */
+	if (!window.wireguard.validateBase64Key(eval('nvram.wg_iface'+unit+'_key'))) {
+		alert('The interface must have a valid private key before clients can be generated')
+		return false;
+	}
+
+	/* verify peer fwmark*/
 	var fwmark = E('_f_wg_iface'+unit+'_peer_fwmark').value;
 	if (!verifyFWMark(fwmark)) {
 		alert('The peer FWMark must be a hexadecimal string of 8 characters')
