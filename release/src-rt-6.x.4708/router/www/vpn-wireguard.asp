@@ -670,7 +670,7 @@ function verifyFields(focused, quiet) {
 		var fom = E('t_fom');
 		var serveridx = focused.name.indexOf('iface');
 		if (serveridx >= 0) {
-			var num = focused.name.substring(serveridx + 6, serveridx + 7);
+			var num = focused.name.substring(serveridx + 5, serveridx + 6);
 
 			updateForm(num);
 
