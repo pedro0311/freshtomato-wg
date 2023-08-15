@@ -807,7 +807,7 @@ function save(nomsg) {
 		eval('fom.wg_iface'+i+'_rgw.value = fom._f_wg_iface'+i+'_rgw.checked ? 1 : 0');
 
 		if (E('_f_wg_iface'+i+'_dns').checked)
-			E('wg_iface_dns').value += ''+(i + 1)+',';
+			E('wg_iface_dns').value += ''+i+',';
 		
 	}
 
