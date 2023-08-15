@@ -735,6 +735,10 @@ void start_dnsmasq()
 	write_pptpd_dnsmasq_config(f);
 #endif
 
+#ifdef TCONFIG_WIREGUARD
+	write_wg_dnsmasq_config(f);
+#endif
+
 #ifdef TCONFIG_IPV6
 	if (ipv6_enabled()) {
 

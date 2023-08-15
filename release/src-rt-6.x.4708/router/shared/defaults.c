@@ -1645,6 +1645,7 @@ struct nvram_tuple router_defaults[] = {
 #endif /* TCONFIG_TINC */
 
 #ifdef TCONFIG_WIREGUARD
+	{"wg_iface_dns",		""				, 0},
 	{"wg_iface1_eas",		"0"				, 0 },
 	{"wg_iface1_file",		""				, 0 },
 	{"wg_iface1_key",		""				, 0 },
