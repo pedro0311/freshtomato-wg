@@ -290,6 +290,7 @@ function generateInterfaceKey(unit) {
 		var keys = window.wireguard.generateKeypair();
 		E('_wg_iface'+unit+'_key').value = keys.privateKey;
 		E('_wg_iface'+unit+'_pubkey').value = keys.publicKey;
+		updateForm(unit)
 	}
 }
 
