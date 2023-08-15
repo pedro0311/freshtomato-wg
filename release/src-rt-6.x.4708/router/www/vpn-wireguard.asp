@@ -47,7 +47,7 @@
 <script src="html5-qrcode.js"></script>
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_iface1_eas,wg_iface1_file,wg_iface1_ip,wg_iface1_fwmark,wg_iface1_mtu,wg_iface1_preup,wg_iface1_postup,wg_iface1_predown,wg_iface1_postdown,wg_iface1_aip,wg_iface1_dns,wg_iface1_ka,wg_iface1_port,wg_iface1_key,wg_iface1_endpoint,wg_iface1_lan,wg_iface1_lan0,wg_iface1_lan1,wg_iface1_lan2,wg_iface1_lan3,wg_iface1_rgw,wg_iface1_peers,wg_iface2_eas,wg_iface2_file,wg_iface2_ip,wg_iface2_fwmark,wg_iface2_mtu,wg_iface2_preup,wg_iface2_postup,wg_iface2_predown,wg_iface2_postdown,wg_iface2_aip,wg_iface2_dns,wg_iface2_ka,wg_iface2_port,wg_iface2_key,wg_iface2_endpoint,wg_iface2_lan,wg_iface2_lan0,wg_iface2_lan1,wg_iface2_lan2,wg_iface2_lan3,wg_iface2_rgw,wg_iface2_peers,wg_iface3_eas,wg_iface3_file,wg_iface3_ip,wg_iface3_fwmark,wg_iface3_mtu,wg_iface3_preup,wg_iface3_postup,wg_iface3_predown,wg_iface3_postdown,wg_iface3_aip,wg_iface3_dns,wg_iface3_ka,wg_iface3_port,wg_iface3_key,wg_iface3_endpoint,wg_iface3_lan,wg_iface3_lan0,wg_iface3_lan1,wg_iface3_lan2,wg_iface3_lan3,wg_iface3_rgw,wg_iface3_peers"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_iface_dns,wg_iface1_eas,wg_iface1_file,wg_iface1_ip,wg_iface1_fwmark,wg_iface1_mtu,wg_iface1_preup,wg_iface1_postup,wg_iface1_predown,wg_iface1_postdown,wg_iface1_aip,wg_iface1_dns,wg_iface1_ka,wg_iface1_port,wg_iface1_key,wg_iface1_endpoint,wg_iface1_lan,wg_iface1_lan0,wg_iface1_lan1,wg_iface1_lan2,wg_iface1_lan3,wg_iface1_rgw,wg_iface1_peers,wg_iface2_eas,wg_iface2_file,wg_iface2_ip,wg_iface2_fwmark,wg_iface2_mtu,wg_iface2_preup,wg_iface2_postup,wg_iface2_predown,wg_iface2_postdown,wg_iface2_aip,wg_iface2_dns,wg_iface2_ka,wg_iface2_port,wg_iface2_key,wg_iface2_endpoint,wg_iface2_lan,wg_iface2_lan0,wg_iface2_lan1,wg_iface2_lan2,wg_iface2_lan3,wg_iface2_rgw,wg_iface2_peers,wg_iface3_eas,wg_iface3_file,wg_iface3_ip,wg_iface3_fwmark,wg_iface3_mtu,wg_iface3_preup,wg_iface3_postup,wg_iface3_predown,wg_iface3_postdown,wg_iface3_aip,wg_iface3_dns,wg_iface3_ka,wg_iface3_port,wg_iface3_key,wg_iface3_endpoint,wg_iface3_lan,wg_iface3_lan0,wg_iface3_lan1,wg_iface3_lan2,wg_iface3_lan3,wg_iface3_rgw,wg_iface3_peers"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
@@ -178,6 +178,12 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	changed = 1;
 	var ok = 1;
 
+	/* When settings change, make sure we restart the right server */
+	for (var i = 0; i < tabs.length; ++i) {
+		if (peerTables[i] == this)
+			updateForm(i + 1);
+	}
+
 	var f = fields.getAll(row);
 	var data = this.fieldValuesToData(row)
 	var results = verifyPeerFieldData(data);
@@ -284,6 +290,7 @@ function generateInterfaceKey(unit) {
 		var keys = window.wireguard.generateKeypair();
 		E('_wg_iface'+unit+'_key').value = keys.privateKey;
 		E('_wg_iface'+unit+'_pubkey').value = keys.publicKey;
+		updateForm(unit)
 	}
 }
 
@@ -657,6 +664,27 @@ function verifyFWMark(fwmark) {
 function verifyFields(focused, quiet) {
 	var ok = 1;
 
+	/* When settings change, make sure we restart the right services */
+	if (focused) {
+		changed = 1;
+
+		var fom = E('t_fom');
+		var serveridx = focused.name.indexOf('iface');
+		if (serveridx >= 0) {
+			var num = focused.name.substring(serveridx + 5, serveridx + 6);
+
+			updateForm(num);
+
+			if (focused.name.indexOf('_dns') >= 0 && fom._service.value.indexOf('dnsmasq') < 0) {
+				if (fom._service.value != '')
+					fom._service.value += ',';
+
+				fom._service.value += 'dnsmasq-restart';
+			}
+
+		}
+	}
+
 	for (var i = 1; i <= WG_INTERFACE_COUNT; i++) {
 
 		/* calculate interface pubkey */
@@ -777,6 +805,9 @@ function save(nomsg) {
 		eval('fom.wg_iface'+i+'_lan2.value = fom._f_wg_iface'+i+'_lan2.checked ? 1 : 0');
 		eval('fom.wg_iface'+i+'_lan3.value = fom._f_wg_iface'+i+'_lan3.checked ? 1 : 0');
 		eval('fom.wg_iface'+i+'_rgw.value = fom._f_wg_iface'+i+'_rgw.checked ? 1 : 0');
+
+		if (E('_f_wg_iface'+i+'_dns').checked)
+			E('wg_iface_dns').value += ''+i+',';
 		
 	}
 
@@ -819,6 +850,7 @@ function init() {
 <!-- / / / -->
 
 <input type="hidden" name="_service" value="">
+<input type="hidden" name="wg_iface_dns" id="wg_iface_dns">
 
 <!-- / / / -->
 
@@ -880,6 +912,7 @@ function init() {
 				{ title: 'Custom Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_endpoint') },
 				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_aip') },
 				{ title: 'DNS Servers', name: 'wg_'+t+'_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_dns') },
+				{ title: 'Respond to DNS', name: 'f_wg_'+t+'_dns', type: 'checkbox', value: nvram.wg_iface_dns.indexOf(''+(i+1)) >= 0 },
 				{ title: 'Allow peers to communicate', name: 'f_wg_'+t+'_lan', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan') == '1'},
 				{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_'+t+'_lan0', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan0') == '1' },
 				{ title: 'Push LAN1 (br1) to peers', name: 'f_wg_'+t+'_lan1', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan1') == '1' },

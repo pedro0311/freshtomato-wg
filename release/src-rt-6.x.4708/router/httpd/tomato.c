@@ -1717,6 +1717,7 @@ static const nvset_t nvset_list[] = {
 
 #ifdef TCONFIG_WIREGUARD
 /* wireguard */
+    { "wg_iface_dns",			V_NONE				},
 	{ "wg_iface1_eas",			V_01				},
 	{ "wg_iface1_file",			V_TEXT(0, 64)		},
 	{ "wg_iface1_key",			V_TEXT(0, 44)		},

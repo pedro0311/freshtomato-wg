@@ -607,6 +607,7 @@ extern void start_wg_eas();
 extern int wg_pubkey(char *privkey, char *pubkey);
 extern int wg_save_iface(char *iface, char *file);
 extern int wg_load_iface(char *iface, char *file);
+extern void write_wg_dnsmasq_config(FILE* f);
 #endif
 
 /* tinc.c */

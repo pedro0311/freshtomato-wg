@@ -668,3 +668,20 @@ int wg_load_iface(char *iface, char *file)
 
 	return 0;
 }
+
+void write_wg_dnsmasq_config(FILE* f)
+{
+	char buf[24];
+	char *pos;
+	int cur;
+
+	/* add interfaces to dns config */
+	strlcpy(buf, nvram_safe_get("wg_iface_dns"), sizeof(buf));
+	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
+		cur = atoi(pos);
+		if (cur) {
+			logmsg(LOG_DEBUG, "*** %s: adding server %d interface to dns config", __FUNCTION__, cur);
+			fprintf(f, "interface=wg%d\n", cur);
+		}
+	}
+}
