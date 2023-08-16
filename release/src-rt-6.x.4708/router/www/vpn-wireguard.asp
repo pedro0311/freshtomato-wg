@@ -706,9 +706,30 @@ function verifyFields(focused, quiet) {
 
 	for (var i = 1; i <= WG_INTERFACE_COUNT; i++) {
 
+		/* autopopulate port if it's empty */
+		var port = E('_wg_iface'+i+'_port')
+		if (port.value == '') {
+			port.value = '' + 51819+i;
+			ferror.clear(port);
+		}
+		/* otherwise verify valid port */
+		else {
+			if (!port.value.match(/^ *[-\+]?\d+ *$/) || (port.value < 1) || (port.value > 65535)) {
+				ferror.set(port, 'The interface port must be a valid port', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(port);
+		}
+
+		/* autopopulate private key if it's empty */
+		var privkey = E('_wg_iface'+i+'_key');
+		if (privkey.value == "")
+			generateInterfaceKey(i);
+
 		/* calculate interface pubkey */
 		E('_wg_iface'+i+'_pubkey').disabled = true;
-		var pubkey = window.wireguard.generatePublicKey(E('_wg_iface'+i+'_key').value);
+		var pubkey = window.wireguard.generatePublicKey(privkey.value);
 		if(pubkey == false) {
 			pubkey = "";
 		}
@@ -738,41 +759,69 @@ function verifyFields(focused, quiet) {
 		else
 			ferror.clear(privkey);
 
-		/* verify interface CIDR address */
+		/* autopopulate IP if it's empty */
 		var ip = E('_wg_iface'+i+'_ip')
-		if (!verifyCIDR(ip.value)) {
-			ferror.set(ip, 'A valid CIDR address is required for the interface', quiet || !ok);
-			ok = 0;
-		}
-		else
+		if (ip.value == '') {
+			ip.value = '10.'+(10+i)+'.0.1/24';
 			ferror.clear(ip);
+		}
+		/* otherwise verify interface CIDR address */
+		else {
+			if (!verifyCIDR(ip.value)) {
+				ferror.set(ip, 'A valid CIDR address is required for the interface', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(ip);
+		}
 
-		/* verify interface fwmark */
+		/* autopopulate fwmark if it's empty */
 		var fwmark = E('_wg_iface'+i+'_fwmark');
-		if (!verifyFWMark(fwmark.value)) {
-			ferror.set(fwmark, 'The interface FWMark must be a hexadecimal string of 8 characters', quiet || !ok);
-			ok = 0;
-		}
-		else
+		if (fwmark.value == '') {
+			fwmark.value = '0';
 			ferror.clear(fwmark);
+		}
+		/* otherwise verify interface fwmark */
+		else {
+			if (!verifyFWMark(fwmark.value)) {
+				ferror.set(fwmark, 'The interface FWMark must be a hexadecimal string of 8 characters', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(fwmark);
+		}
 
-		/* verify interface mtu */
+		/* autopopulate mtu if it's empty */
 		var mtu = E('_wg_iface'+i+'_mtu');
-		if ((!mtu.value.match(/^ *[-\+]?\d+ *$/)) || (mtu.value < 0) || (mtu.value > 1500)) {
-			ferror.set(mtu, 'The interface MTU must be a integer between 0 and 1500', quiet || !ok);
-			ok = 0;
-		}
-		else
+		if (mtu.value == '') {
+			mtu.value = '1420';
 			ferror.clear(mtu);
-
-		/* verify keepalive to interface */
-		var keepalive = E('_wg_iface'+i+'_ka')
-		if ((!keepalive.value.match(/^ *[-\+]?\d+ *$/)) || (keepalive.value < 0) || (keepalive.value > 128)) {
-			ferror.set(keepalive, 'The keepalive value to the interface must be a number between 0 and 128', quiet || !ok);
-			ok = 0;
 		}
-		else
+		/* otherwise verify interface mtu */
+		else {
+			if ((!mtu.value.match(/^ *[-\+]?\d+ *$/)) || (mtu.value < 0) || (mtu.value > 1500)) {
+				ferror.set(mtu, 'The interface MTU must be a integer between 0 and 1500', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(mtu);
+		}
+
+		/* autopopulate keepalive if it's empty */
+		var keepalive = E('_wg_iface'+i+'_ka');
+		if (keepalive.value == '') {
+			keepalive.value = '0';
 			ferror.clear(keepalive);
+		}
+		/* otherwise verify interface keepalive */
+		else {
+			if ((!keepalive.value.match(/^ *[-\+]?\d+ *$/)) || (keepalive.value < 0) || (keepalive.value > 128)) {
+				ferror.set(keepalive, 'The keepalive value to the interface must be a number between 0 and 128', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(keepalive);
+		}
 
 		/* verify interface allowed ips */
 		var allowed_ips = E('_wg_iface'+i+'_aip')
