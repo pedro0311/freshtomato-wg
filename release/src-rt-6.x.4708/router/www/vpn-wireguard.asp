@@ -881,7 +881,7 @@ function init() {
 			W('<div class="section-title">Interface Configuration</div>');
 			createFieldTable('', [
 				{ title: 'Enable on Start', name: 'f_wg_'+t+'_eas', type: 'checkbox', value: eval('nvram.wg_'+t+'_eas') == '1' },
-				{ title: 'File to load interface from', name: 'wg_'+t+'_file', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_file') },
+				{ title: 'Config file', name: 'wg_'+t+'_file', type: 'text', placeholder: '(optional)', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_file') },
 				{ title: 'Port', name: 'wg_'+t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port') },
 				{ title: 'Private Key', multi: [
 					{ title: '', name: 'wg_'+t+'_key', type: 'password', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key'), peekaboo: 1 },
@@ -891,9 +891,10 @@ function init() {
 					{ title: '', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
 					{ title: '', custom: '<input type="button" value="Copy" onclick="copyInterfacePubKey('+(i+1)+')" id="wg_'+t+'_pubkey_copy">' },
 				] },
-				{ title: 'IP/Netmask', name: 'wg_'+t+'_ip', type: 'text', maxlen: 32, size: 17, value: eval('nvram.wg_'+t+'_ip') },
+				{ title: 'IP/Netmask CIDR', name: 'wg_'+t+'_ip', type: 'text', maxlen: 32, size: 17, value: eval('nvram.wg_'+t+'_ip') },
 				{ title: 'FWMark', name: 'wg_'+t+'_fwmark', type: 'text', maxlen: 8, size: 8, value: eval('nvram.wg_'+t+'_fwmark') },
 				{ title: 'MTU', name: 'wg_'+t+'_mtu', type: 'text', maxlen: 4, size: 4, value: eval('nvram.wg_'+t+'_mtu') },
+				{ title: 'Respond to DNS', name: 'f_wg_'+t+'_dns', type: 'checkbox', value: nvram.wg_iface_dns.indexOf(''+(i+1)) >= 0 },
 			]);
 			W('</div>');
 			W('<div id="'+t+'-scripts">');
@@ -912,7 +913,6 @@ function init() {
 				{ title: 'Custom Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_endpoint') },
 				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_aip') },
 				{ title: 'DNS Servers', name: 'wg_'+t+'_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_dns') },
-				{ title: 'Respond to DNS', name: 'f_wg_'+t+'_dns', type: 'checkbox', value: nvram.wg_iface_dns.indexOf(''+(i+1)) >= 0 },
 				{ title: 'Allow peers to communicate', name: 'f_wg_'+t+'_lan', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan') == '1'},
 				{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_'+t+'_lan0', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan0') == '1' },
 				{ title: 'Push LAN1 (br1) to peers', name: 'f_wg_'+t+'_lan1', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan1') == '1' },
