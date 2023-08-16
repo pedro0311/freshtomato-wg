@@ -67,6 +67,24 @@ for (i = 0; i < tabs.length; ++i) {
 	peerTables[i].interface_name = tabs[i][0];
 }
 
+ferror.show = function(e) {
+	if ((e = E(e)) == null) return;
+	if (!e._error_msg) return;
+	elem.addClass(e, 'error-focused');
+	var [tab, section] = locateElement(e);
+	tabSelect(tab);
+	sectSelect(section);
+	e.focus();
+	alert(e._error_msg);
+	elem.removeClass(e, 'error-focused');
+}
+
+function locateElement(e) {
+	while(e.id.indexOf('iface') < 0)
+		e = e.parentElement;
+	return e.id.split('-', 2);
+}
+
 function show() {
 	countButton += 1;
 	for (var i = 1; i <= WG_INTERFACE_COUNT; ++i) {
