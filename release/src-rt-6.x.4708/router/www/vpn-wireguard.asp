@@ -67,6 +67,25 @@ for (i = 0; i < tabs.length; ++i) {
 	peerTables[i].interface_name = tabs[i][0];
 }
 
+ferror.show = function(e) {
+	if ((e = E(e)) == null) return;
+	if (!e._error_msg) return;
+	elem.addClass(e, 'error-focused');
+	var [tab, section] = locateElement(e);
+	tabSelect(tab);
+	sectSelect(tab.substr(5)-1, section);
+	e.focus();
+	alert(e._error_msg);
+	elem.removeClass(e, 'error-focused');
+}
+
+function locateElement(e) {
+	do {
+		e = e.parentElement;
+	} while(e.id.indexOf('iface') < 0);
+	return e.id.split('-', 2);
+}
+
 function show() {
 	countButton += 1;
 	for (var i = 1; i <= WG_INTERFACE_COUNT; ++i) {
@@ -687,13 +706,21 @@ function verifyFields(focused, quiet) {
 
 	for (var i = 1; i <= WG_INTERFACE_COUNT; i++) {
 
-		/* calculate interface pubkey */
-		E('_wg_iface'+i+'_pubkey').disabled = true;
-		var pubkey = window.wireguard.generatePublicKey(E('_wg_iface'+i+'_key').value);
-		if(pubkey == false) {
-			pubkey = "";
+		/* autopopulate port if it's empty */
+		var port = E('_wg_iface'+i+'_port')
+		if (port.value == '') {
+			port.value = 51819+i;
+			ferror.clear(port);
 		}
-		E('_wg_iface'+i+'_pubkey').value = pubkey;
+		/* otherwise verify valid port */
+		else {
+			if (!port.value.match(/^ *[-\+]?\d+ *$/) || (port.value < 1) || (port.value > 65535)) {
+				ferror.set(port, 'The interface port must be a valid port', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(port);
+		}
 
 		/* autopopulate endpoint if it's empty */
 		var endpoint = E('_wg_iface'+i+'_endpoint');
@@ -710,8 +737,8 @@ function verifyFields(focused, quiet) {
 			}
 		}
 
-		/* verify interface public key */
-		var privkey = E('_wg_iface'+i+'_key')
+		/* verify interface private key */
+		var privkey = E('_wg_iface'+i+'_key');
 		if (privkey.value != '' && !window.wireguard.validateBase64Key(privkey.value)) {
 			ferror.set(privkey, 'A valid private key is required for the interface', quiet || !ok);
 			ok = 0;
@@ -719,41 +746,77 @@ function verifyFields(focused, quiet) {
 		else
 			ferror.clear(privkey);
 
-		/* verify interface CIDR address */
+		/* calculate interface pubkey */
+		E('_wg_iface'+i+'_pubkey').disabled = true;
+		var pubkey = window.wireguard.generatePublicKey(privkey.value);
+		if(pubkey == false) {
+			pubkey = "";
+		}
+		E('_wg_iface'+i+'_pubkey').value = pubkey;
+
+		/* autopopulate IP if it's empty */
 		var ip = E('_wg_iface'+i+'_ip')
-		if (!verifyCIDR(ip.value)) {
-			ferror.set(ip, 'A valid CIDR address is required for the interface', quiet || !ok);
-			ok = 0;
-		}
-		else
+		if (ip.value == '') {
+			ip.value = '10.'+(10+i)+'.0.1/24';
 			ferror.clear(ip);
+		}
+		/* otherwise verify interface CIDR address */
+		else {
+			if (!verifyCIDR(ip.value)) {
+				ferror.set(ip, 'A valid CIDR address is required for the interface', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(ip);
+		}
 
-		/* verify interface fwmark */
+		/* autopopulate fwmark if it's empty */
 		var fwmark = E('_wg_iface'+i+'_fwmark');
-		if (!verifyFWMark(fwmark.value)) {
-			ferror.set(fwmark, 'The interface FWMark must be a hexadecimal string of 8 characters', quiet || !ok);
-			ok = 0;
-		}
-		else
+		if (fwmark.value == '') {
+			fwmark.value = '0';
 			ferror.clear(fwmark);
+		}
+		/* otherwise verify interface fwmark */
+		else {
+			if (!verifyFWMark(fwmark.value)) {
+				ferror.set(fwmark, 'The interface FWMark must be a hexadecimal string of 8 characters', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(fwmark);
+		}
 
-		/* verify interface mtu */
+		/* autopopulate mtu if it's empty */
 		var mtu = E('_wg_iface'+i+'_mtu');
-		if ((!mtu.value.match(/^ *[-\+]?\d+ *$/)) || (mtu.value < 0) || (mtu.value > 1500)) {
-			ferror.set(mtu, 'The interface MTU must be a integer between 0 and 1500', quiet || !ok);
-			ok = 0;
-		}
-		else
+		if (mtu.value == '') {
+			mtu.value = '1420';
 			ferror.clear(mtu);
-
-		/* verify keepalive to interface */
-		var keepalive = E('_wg_iface'+i+'_ka')
-		if ((!keepalive.value.match(/^ *[-\+]?\d+ *$/)) || (keepalive.value < 0) || (keepalive.value > 128)) {
-			ferror.set(keepalive, 'The keepalive value to the interface must be a number between 0 and 128', quiet || !ok);
-			ok = 0;
 		}
-		else
+		/* otherwise verify interface mtu */
+		else {
+			if ((!mtu.value.match(/^ *[-\+]?\d+ *$/)) || (mtu.value < 0) || (mtu.value > 1500)) {
+				ferror.set(mtu, 'The interface MTU must be a integer between 0 and 1500', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(mtu);
+		}
+
+		/* autopopulate keepalive if it's empty */
+		var keepalive = E('_wg_iface'+i+'_ka');
+		if (keepalive.value == '') {
+			keepalive.value = '0';
 			ferror.clear(keepalive);
+		}
+		/* otherwise verify interface keepalive */
+		else {
+			if ((!keepalive.value.match(/^ *[-\+]?\d+ *$/)) || (keepalive.value < 0) || (keepalive.value > 128)) {
+				ferror.set(keepalive, 'The keepalive value to the interface must be a number between 0 and 128', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(keepalive);
+		}
 
 		/* verify interface allowed ips */
 		var allowed_ips = E('_wg_iface'+i+'_aip')
@@ -881,7 +944,7 @@ function init() {
 			W('<div class="section-title">Interface Configuration</div>');
 			createFieldTable('', [
 				{ title: 'Enable on Start', name: 'f_wg_'+t+'_eas', type: 'checkbox', value: eval('nvram.wg_'+t+'_eas') == '1' },
-				{ title: 'File to load interface from', name: 'wg_'+t+'_file', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_file') },
+				{ title: 'Config file', name: 'wg_'+t+'_file', type: 'text', placeholder: '(optional)', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_file') },
 				{ title: 'Port', name: 'wg_'+t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port') },
 				{ title: 'Private Key', multi: [
 					{ title: '', name: 'wg_'+t+'_key', type: 'password', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key'), peekaboo: 1 },
@@ -891,9 +954,10 @@ function init() {
 					{ title: '', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
 					{ title: '', custom: '<input type="button" value="Copy" onclick="copyInterfacePubKey('+(i+1)+')" id="wg_'+t+'_pubkey_copy">' },
 				] },
-				{ title: 'IP/Netmask', name: 'wg_'+t+'_ip', type: 'text', maxlen: 32, size: 17, value: eval('nvram.wg_'+t+'_ip') },
+				{ title: 'IP/Netmask CIDR', name: 'wg_'+t+'_ip', type: 'text', maxlen: 32, size: 17, value: eval('nvram.wg_'+t+'_ip') },
 				{ title: 'FWMark', name: 'wg_'+t+'_fwmark', type: 'text', maxlen: 8, size: 8, value: eval('nvram.wg_'+t+'_fwmark') },
 				{ title: 'MTU', name: 'wg_'+t+'_mtu', type: 'text', maxlen: 4, size: 4, value: eval('nvram.wg_'+t+'_mtu') },
+				{ title: 'Respond to DNS', name: 'f_wg_'+t+'_dns', type: 'checkbox', value: nvram.wg_iface_dns.indexOf(''+(i+1)) >= 0 },
 			]);
 			W('</div>');
 			W('<div id="'+t+'-scripts">');
@@ -912,7 +976,6 @@ function init() {
 				{ title: 'Custom Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_endpoint') },
 				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_aip') },
 				{ title: 'DNS Servers', name: 'wg_'+t+'_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_dns') },
-				{ title: 'Respond to DNS', name: 'f_wg_'+t+'_dns', type: 'checkbox', value: nvram.wg_iface_dns.indexOf(''+(i+1)) >= 0 },
 				{ title: 'Allow peers to communicate', name: 'f_wg_'+t+'_lan', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan') == '1'},
 				{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_'+t+'_lan0', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan0') == '1' },
 				{ title: 'Push LAN1 (br1) to peers', name: 'f_wg_'+t+'_lan1', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan1') == '1' },
