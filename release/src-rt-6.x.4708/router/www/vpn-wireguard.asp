@@ -738,7 +738,7 @@ function verifyFields(focused, quiet) {
 		}
 
 		/* verify interface private key */
-		var privkey = E('_wg_iface'+i+'_key').disabled = true;;
+		var privkey = E('_wg_iface'+i+'_key');
 		if (privkey.value != '' && !window.wireguard.validateBase64Key(privkey.value)) {
 			ferror.set(privkey, 'A valid private key is required for the interface', quiet || !ok);
 			ok = 0;
