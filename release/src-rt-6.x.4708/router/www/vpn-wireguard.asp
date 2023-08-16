@@ -73,15 +73,16 @@ ferror.show = function(e) {
 	elem.addClass(e, 'error-focused');
 	var [tab, section] = locateElement(e);
 	tabSelect(tab);
-	sectSelect(section);
+	sectSelect(tab, section);
 	e.focus();
 	alert(e._error_msg);
 	elem.removeClass(e, 'error-focused');
 }
 
 function locateElement(e) {
-	while(e.id.indexOf('iface') < 0)
+	do {
 		e = e.parentElement;
+	} while(e.id.indexOf('iface') < 0);
 	return e.id.split('-', 2);
 }
 
