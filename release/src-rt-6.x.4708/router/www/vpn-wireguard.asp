@@ -709,7 +709,7 @@ function verifyFields(focused, quiet) {
 		/* autopopulate port if it's empty */
 		var port = E('_wg_iface'+i+'_port')
 		if (port.value == '') {
-			port.value = '' + 51819+i;
+			port.value = 51819+i;
 			ferror.clear(port);
 		}
 		/* otherwise verify valid port */
@@ -721,19 +721,6 @@ function verifyFields(focused, quiet) {
 			else
 				ferror.clear(port);
 		}
-
-		/* autopopulate private key if it's empty */
-		var privkey = E('_wg_iface'+i+'_key');
-		if (privkey.value == "")
-			generateInterfaceKey(i);
-
-		/* calculate interface pubkey */
-		E('_wg_iface'+i+'_pubkey').disabled = true;
-		var pubkey = window.wireguard.generatePublicKey(privkey.value);
-		if(pubkey == false) {
-			pubkey = "";
-		}
-		E('_wg_iface'+i+'_pubkey').value = pubkey;
 
 		/* autopopulate endpoint if it's empty */
 		var endpoint = E('_wg_iface'+i+'_endpoint');
@@ -750,14 +737,21 @@ function verifyFields(focused, quiet) {
 			}
 		}
 
-		/* verify interface public key */
-		var privkey = E('_wg_iface'+i+'_key')
+		/* verify interface private key */
 		if (privkey.value != '' && !window.wireguard.validateBase64Key(privkey.value)) {
 			ferror.set(privkey, 'A valid private key is required for the interface', quiet || !ok);
 			ok = 0;
 		}
 		else
 			ferror.clear(privkey);
+
+		/* calculate interface pubkey */
+		E('_wg_iface'+i+'_pubkey').disabled = true;
+		var pubkey = window.wireguard.generatePublicKey(privkey.value);
+		if(pubkey == false) {
+			pubkey = "";
+		}
+		E('_wg_iface'+i+'_pubkey').value = pubkey;
 
 		/* autopopulate IP if it's empty */
 		var ip = E('_wg_iface'+i+'_ip')
