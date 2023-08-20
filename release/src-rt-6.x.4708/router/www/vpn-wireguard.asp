@@ -56,7 +56,7 @@ var serviceType = 'wireguard';
 var tabs =  [];
 for (i = 1; i <= WG_INTERFACE_COUNT; ++i)
 	tabs.push(['iface'+i,'wg'+i]);
-var sections = [['interface','Interface'],['scripts','Scripts'],['conf', 'Configuration'],['gen','Peer Config'],['peers','Peers']];
+var sections = [['interface','Interface'],['conf', 'Configuration'],['scripts','Scripts'],['gen','Peer Config'],['peers','Peers']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
@@ -1079,15 +1079,6 @@ function init() {
 				{ title: 'Respond to DNS', name: 'f_wg_'+t+'_dns', type: 'checkbox', value: nvram.wg_iface_dns.indexOf(''+(i+1)) >= 0 },
 			]);
 			W('</div>');
-			W('<div id="'+t+'-scripts">');
-			W('<div class="section-title">Custom Interface Scripts</div>');
-			createFieldTable('', [
-				{ title: 'Pre-Up Script', name: 'wg_'+t+'_preup', type: 'textarea', value: eval('nvram.wg_'+t+'_preup') },
-				{ title: 'Post-Up Script', name: 'wg_'+t+'_postup', type: 'textarea', value: eval('nvram.wg_'+t+'_postup') },
-				{ title: 'Pre-Down Script', name: 'wg_'+t+'_predown', type: 'textarea', value: eval('nvram.wg_'+t+'_predown') },
-				{ title: 'Post-Down Script', name: 'wg_'+t+'_postdown', type: 'textarea', value: eval('nvram.wg_'+t+'_postdown') },
-			]);
-			W('</div>');
 			W('<div id="'+t+'-conf">');
 			W('<div class="section-title">Peer Configuration</div>');
 			createFieldTable('', [
@@ -1101,6 +1092,15 @@ function init() {
 				{ title: 'Push LAN2 (br2) to peers', name: 'f_wg_'+t+'_lan2', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan2') == '1' },
 				{ title: 'Push LAN3 (br3) to peers', name: 'f_wg_'+t+'_lan3', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan3') == '1' },
 				{ title: 'Forward all peer traffic', name: 'f_wg_'+t+'_rgw', type: 'checkbox', value: eval('nvram.wg_'+t+'_rgw') == '1' },
+			]);
+			W('</div>');
+			W('<div id="'+t+'-scripts">');
+			W('<div class="section-title">Custom Interface Scripts</div>');
+			createFieldTable('', [
+				{ title: 'Pre-Up Script', name: 'wg_'+t+'_preup', type: 'textarea', value: eval('nvram.wg_'+t+'_preup') },
+				{ title: 'Post-Up Script', name: 'wg_'+t+'_postup', type: 'textarea', value: eval('nvram.wg_'+t+'_postup') },
+				{ title: 'Pre-Down Script', name: 'wg_'+t+'_predown', type: 'textarea', value: eval('nvram.wg_'+t+'_predown') },
+				{ title: 'Post-Down Script', name: 'wg_'+t+'_postdown', type: 'textarea', value: eval('nvram.wg_'+t+'_postdown') },
 			]);
 			W('</div>');
 			W('<div id="'+t+'-gen">');
