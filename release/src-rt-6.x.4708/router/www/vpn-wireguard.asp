@@ -195,6 +195,26 @@ PeerGrid.prototype.rpDel = function(e) {
 	this.rpHide();
 }
 
+PeerGrid.prototype.dataToFieldValues = function(data) {
+	fields = [];
+	fields.push(data[0] == 1);
+	for (i = 1; i < data.length; ++i) fields.push(data[i]);
+	return fields;
+}
+
+PeerGrid.prototype.fieldValuesToData = function(row) {
+	var e, i, data;
+
+	data = [];
+	e = fields.getAll(row);
+	if(e[0].checked)
+		data.push(1);
+	else
+		data.push(0);
+	for (i = 1; i < e.length; ++i) data.push(e[i].value);
+	return data;
+}
+
 PeerGrid.prototype.verifyFields = function(row, quiet) {
 
 	changed = 1;
@@ -479,6 +499,7 @@ function generateClient(unit) {
 	/* set fields with generated data */
 	E('_f_wg_iface'+unit+'_peer_privkey').value = keys.privateKey;
 	E('_f_wg_iface'+unit+'_peer_pubkey').value = keys.publicKey;
+	E('_f_wg_iface'+unit+'_peer_pubkey').disabled = true;
 	E('_f_wg_iface'+unit+'_peer_psk').value = psk;
 	E('_f_wg_iface'+unit+'_peer_ip').value = `${ip}/32`;
 	E('_f_wg_iface'+unit+'_peer_ka').value = keepalive;
