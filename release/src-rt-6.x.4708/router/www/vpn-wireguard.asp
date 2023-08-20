@@ -330,7 +330,7 @@ function addPeer(unit, quiet) {
 	var keepalive = E('_f_wg_iface'+unit+'_peer_ka');
 
 	var data = [
-		false,
+		0,
 		alias.value,
 		endpoint.value,
 		pubkey.value,
@@ -342,7 +342,7 @@ function addPeer(unit, quiet) {
 
 	/* figure out if we're storing the publc or private key */
 	if (window.wireguard.validateBase64Key(privkey.value)) {
-		data[0] = true;
+		data[0] = 1;
 		data[3] = privkey.value;
 	}
 
