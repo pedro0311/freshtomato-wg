@@ -844,7 +844,7 @@ function verifyFields(focused, quiet) {
 		var peer_pubkey = E('_f_wg_iface'+i+'_peer_pubkey');
 
 		/* if both private and public key fields are empty, make sure they're enabled */
-		if (! (peer_privkey.value || peer_pubkey.value)) {
+		if (! (window.wireguard.validateBase64Key(peer_privkey.value) || window.wireguard.validateBase64Key(peer_pubkey.value))) {
 			peer_privkey.disabled = false;
 			peer_pubkey.disabled = false;
 		}
@@ -862,8 +862,8 @@ function verifyFields(focused, quiet) {
 			}
 		}
 
-		/* if only public key is populated, lock the private key */
-		else if (!peer_privkey.value && peer_pubkey.value) {
+		/* if only public key is populated with a valid key, lock the private key */
+		else if (!peer_privkey.value && window.wireguard.validateBase64Key(peer_pubkey.value)) {
 			peer_pubkey.disabled = false;
 			peer_privkey.disabled = true;
 		}
