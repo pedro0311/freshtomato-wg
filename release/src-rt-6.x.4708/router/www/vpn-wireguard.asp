@@ -966,6 +966,9 @@ function save(nomsg) {
 
 	var fom = E('t_fom');
 	for (var i = 1; i <= WG_INTERFACE_COUNT; i++) {
+		
+		var privkey = E('_wg_iface'+i+'_key').value;
+		eval('nvram.wg_iface'+i+'_key = privkey');
 
 		var data = peerTables[i-1].getAllData();
 		var s = '';
