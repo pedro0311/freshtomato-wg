@@ -848,12 +848,13 @@ function verifyFields(focused, quiet) {
 			peer_privkey.disabled = false;
 			peer_pubkey.disabled = false;
 		}
-		
+
 		/* if only private key is populated, generate the public key and lock it (only if privkey is valid) */
 		else if (peer_privkey.value && !peer_pubkey.value) {
 			var pubkey_temp = window.wireguard.generatePublicKey(peer_privkey.value);
 			if(pubkey_temp == false) {
 				peer_pubkey.value = "";
+				peer_pubkey.disabled = false;
 			}
 			else {
 				peer_pubkey.value = pubkey_temp;
@@ -863,6 +864,7 @@ function verifyFields(focused, quiet) {
 
 		/* if only public key is populated, lock the private key */
 		else if (peer_privkey.value && !peer_pubkey.value) {
+			peer_pubkey.disabled = false;
 			peer_privkey.disabled = true;
 		}
 		
