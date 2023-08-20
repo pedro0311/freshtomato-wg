@@ -172,7 +172,7 @@ PeerGrid.prototype.setup = function() {
 		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 3 },
 	]);
-	this.headerSet(['Alias','Endpoint','Public Key','Preshared Key','IP','Allowed IPs','KA']);
+	this.headerSet(['Type', 'Alias','Endpoint','Public Key','Preshared Key','IP','Allowed IPs','KA']);
 	var nv = eval("nvram.wg_"+this.interface_name+"_peers.split('>')");
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
