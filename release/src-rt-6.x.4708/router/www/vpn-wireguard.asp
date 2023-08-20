@@ -863,7 +863,7 @@ function verifyFields(focused, quiet) {
 		}
 
 		/* if only public key is populated, lock the private key */
-		else if (peer_privkey.value && !peer_pubkey.value) {
+		else if (!peer_privkey.value && peer_pubkey.value) {
 			peer_pubkey.disabled = false;
 			peer_privkey.disabled = true;
 		}
