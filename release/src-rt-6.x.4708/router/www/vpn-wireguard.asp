@@ -252,28 +252,28 @@ function verifyPeerFieldData(data) {
 		results.push(true);
 	}
 
-	if (!window.wireguard.validateBase64Key(data[2]))
-		results[2] = false;
-
-	if (data[3] != '' && !window.wireguard.validateBase64Key(data[3])) 
+	if (!window.wireguard.validateBase64Key(data[3]))
 		results[3] = false;
 
-	if (!verifyCIDR(data[4]))
+	if (data[4] != '' && !window.wireguard.validateBase64Key(data[4])) 
 		results[4] = false;
+
+	if (!verifyCIDR(data[5]))
+		results[5] = false;
 	
-	if (data[5] != '') {
-		var cidrs = data[5].split(',')
+	if (data[6] != '') {
+		var cidrs = data[6].split(',')
 		for(var i = 0; i < cidrs.length; i++) {
 			var cidr = cidrs[i].trim();
 			if (!verifyCIDR(cidr)) {
-				results[5] = false;
+				results[6] = false;
 				break;
 			}
 		}
 	}
 	
-	if ((!data[6].match(/^ *[-\+]?\d+ *$/)) || (data[6] < 0) || (data[6] > 128)) 
-		results[6] = false;
+	if ((!data[7].match(/^ *[-\+]?\d+ *$/)) || (data[7] < 0) || (data[7] > 128)) 
+		results[7] = false;
 
 	return results;
 }
@@ -319,6 +319,7 @@ function addPeer(unit, quiet) {
 
 	var alias = E('_f_wg_iface'+unit+'_peer_alias');
 	var endpoint = E('_f_wg_iface'+unit+'_peer_ep');
+	var privkey = E('_f_wg_iface'+unit+'_peer_privkey');
 	var pubkey = E('_f_wg_iface'+unit+'_peer_pubkey');
 	var psk = E('_f_wg_iface'+unit+'_peer_psk');
 	var ip = E('_f_wg_iface'+unit+'_peer_ip');
@@ -838,6 +839,34 @@ function verifyFields(focused, quiet) {
 		else
 			ferror.clear(allowed_ips);
 
+		/* peer key checking stuff */
+		var peer_privkey = E('_f_wg_iface'+i+'_peer_privkey');
+		var peer_pubkey = E('_f_wg_iface'+i+'_peer_pubkey');
+
+		/* if both private and public key fields are empty, make sure they're enabled */
+		if (! (peer_privkey.value || peer_pubkey.value)) {
+			peer_privkey.disabled = false;
+			peer_pubkey.disabled = false;
+		}
+		
+		/* if only private key is populated, generate the public key and lock it (only if privkey is valid) */
+		else if (peer_privkey.value && !peer_pubkey.value) {
+			var pubkey_temp = window.wireguard.generatePublicKey(peer_privkey.value);
+			if(pubkey_temp == false) {
+				peer_pubkey.value = "";
+			}
+			else {
+				peer_pubkey.value = pubkey_temp;
+				peer_pubkey.disabled = true;
+			}
+		}
+
+		/* if only public key is populated, lock the private key */
+		else if (peer_privkey.value && !peer_pubkey.value) {
+			peer_privkey.disabled = true;
+		}
+		
+
 	}
 
 	return ok;
@@ -998,6 +1027,7 @@ function init() {
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
 				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
+				{ title: 'Private Key', name: 'f_wg_'+t+'_peer_privkey', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Public Key', name: 'f_wg_'+t+'_peer_pubkey', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
 				{ title: 'IP', name: 'f_wg_'+t+'_peer_ip', type: 'text', maxlen: 64, size: 64},
