@@ -196,10 +196,10 @@ PeerGrid.prototype.rpDel = function(e) {
 }
 
 PeerGrid.prototype.dataToFieldValues = function(data) {
-	fields = [];
-	fields.push(data[0] == 1);
-	for (i = 1; i < data.length; ++i) fields.push(data[i]);
-	return fields;
+	output = [];
+	output.push(data[0] == 1);
+	for (i = 1; i < data.length; ++i) output.push(data[i]);
+	return output;
 }
 
 PeerGrid.prototype.fieldValuesToData = function(row) {
@@ -412,7 +412,7 @@ function addPeer(unit, quiet) {
 		peerTables[unit-1].disableNewEditor(false);
 		peerTables[unit-1].resetNewEditor();
 
-		save();
+		
 	}
 }
 
@@ -966,7 +966,7 @@ function save(nomsg) {
 
 	var fom = E('t_fom');
 	for (var i = 1; i <= WG_INTERFACE_COUNT; i++) {
-		
+
 		var privkey = E('_wg_iface'+i+'_key').value;
 		eval('nvram.wg_iface'+i+'_key = privkey');
 
