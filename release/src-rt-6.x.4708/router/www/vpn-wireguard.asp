@@ -163,6 +163,7 @@ function updateForm(num) {
 
 PeerGrid.prototype.setup = function() {
 	this.init(this.interface_name+'-peers-grid', '', 50, [
+		{ type: 'checkbox', hidden: 1},
 		{ type: 'text', maxlen: 32 },
 		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 44 },
@@ -175,7 +176,9 @@ PeerGrid.prototype.setup = function() {
 	var nv = eval("nvram.wg_"+this.interface_name+"_peers.split('>')");
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
-		if (t.length == 7) {
+		if (t.length == 8) {
+			if (t[0])
+				t[3] = window.wireguard.generatePublicKey(t[3]);
 			this.insertData(-1, t);
 		}
 	}
@@ -207,40 +210,40 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	var data = this.fieldValuesToData(row)
 	var results = verifyPeerFieldData(data);
 	
-	if (!results[2]) {
-		ferror.set(f[2], 'A valid public key is required', quiet || !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(f[2]);
-
 	if (!results[3]) {
-		ferror.set(f[3], 'Preshared key is invalid', quiet || !ok);
+		ferror.set(f[3], 'A valid public key is required', quiet || !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(f[3]);
 
 	if (!results[4]) {
-		ferror.set(f[4], 'IP must be in CIDR notation', quiet || !ok);
+		ferror.set(f[4], 'Preshared key is invalid', quiet || !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(f[4]);
-	
+
 	if (!results[5]) {
-		ferror.set(f[5], 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
+		ferror.set(f[5], 'IP must be in CIDR notation', quiet || !ok);
 		ok = 0;
 	}
-	else 
+	else
 		ferror.clear(f[5]);
-
+	
 	if (!results[6]) {
-		ferror.set(f[6], 'Keepalive is not within range 0-128', quiet || !ok);
+		ferror.set(f[6], 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
 		ok = 0;
 	}
 	else 
 		ferror.clear(f[6]);
+
+	if (!results[7]) {
+		ferror.set(f[7], 'Keepalive is not within range 0-128', quiet || !ok);
+		ok = 0;
+	}
+	else 
+		ferror.clear(f[7]);
 
 	return ok;
 }
@@ -327,6 +330,7 @@ function addPeer(unit, quiet) {
 	var keepalive = E('_f_wg_iface'+unit+'_peer_ka');
 
 	var data = [
+		false,
 		alias.value,
 		endpoint.value,
 		pubkey.value,
@@ -336,37 +340,46 @@ function addPeer(unit, quiet) {
 		keepalive.value
 	];
 
+	/* figure out if we're storing the publc or private key */
+	if (window.wireguard.validateBase64Key(privkey.value)) {
+		data[0] = true;
+		data[3] = privkey.value;
+	}
+
 	var results = verifyPeerFieldData(data);
 
-	if (!results[2]) {
-		ferror.set(pubkey, 'A valid public key is required', quiet || !ok);
+	if (!results[3]) {
+		if (data[0])
+			ferror.set(privkey, 'A valid private key is required', quiet || !ok);
+		else
+			ferror.set(pubkey, 'A valid public key is required', quiet || !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(pubkey);
 
-	if (!results[3]) {
+	if (!results[4]) {
 		ferror.set(psk, 'Preshared key is invalid', quiet || !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(psk);
 
-	if (!results[4]) {
+	if (!results[5]) {
 		ferror.set(ip, 'IP is invalid', quiet || !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(ip);
 
-	if (!results[5]) {
+	if (!results[6]) {
 		ferror.set(allowedips, 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
 		ok = 0;
 	}
 	else 
 		ferror.clear(keepalive);
 
-	if (!results[6]) {
+	if (!results[7]) {
 		ferror.set(keepalive, 'Keepalive is not within range 0-128', quiet || !ok);
 		ok = 0;
 	}
@@ -464,19 +477,69 @@ function generateClient(unit) {
 		keepalive = 25;
 
 	/* set fields with generated data */
+	E('_f_wg_iface'+unit+'_peer_privkey').value = keys.privateKey;
 	E('_f_wg_iface'+unit+'_peer_pubkey').value = keys.publicKey;
 	E('_f_wg_iface'+unit+'_peer_psk').value = psk;
 	E('_f_wg_iface'+unit+'_peer_ip').value = `${ip}/32`;
 	E('_f_wg_iface'+unit+'_peer_ka').value = keepalive;
+	
+}
+
+function generateClientConfig(unit) {
+	
+	var alias = E('_f_wg_iface'+unit+'_peer_alias');
+	var endpoint = E('_f_wg_iface'+unit+'_peer_ep');
+	var privkey = E('_f_wg_iface'+unit+'_peer_privkey');
+	var psk = E('_f_wg_iface'+unit+'_peer_psk');
+	var ip = E('_f_wg_iface'+unit+'_peer_ip');
+	var allowedips = E('_f_wg_iface'+unit+'_peer_aip');
+	var keepalive = E('_f_wg_iface'+unit+'_peer_ka');
+
+	var data = [
+		true,
+		alias.value,
+		endpoint.value,
+		privkey.value,
+		psk.value,
+		ip.value,
+		allowedips.value,
+		keepalive.value
+	];
+
+	/* verify fields before generating config */
+	var ok = 1;
+	var results = verifyPeerFieldData(data);
+	if (!results[3]) {
+		ferror.set(privkey, 'A valid private key must be provided to generate a configuration file', !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(privkey);
+	if (!results[4]) {
+		ferror.set(psk, 'A valid PSK must be provided or left blank to generate a configuration file', !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(psk);
+	if (!results[5]) {
+		ferror.set(psk, 'A valid IP CIDR must be provided to generate a configuration file', !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(psk);
+
+	if (!ok)
+		return;
+	
 
 	/* generate config */
 	var alias = E('_f_wg_iface'+unit+'_peer_alias').value;
-	var content = generatePeerConfig(
+	var content = generateWGConfig(
 		unit,
-		alias,
-		keys.privateKey,
-		psk,
-		ip
+		data[1],
+		data[3],
+		data[4],
+		data[5],
 	);
 
 	/* download config file (if checked) */
@@ -496,10 +559,10 @@ function generateClient(unit) {
 			elem.display('wg_iface'+unit+'_qrcode', true);
 		}
 	}
-	
+
 }
 
-function generatePeerConfig(unit, name, privkey, psk, ip) {
+function generateWGConfig(unit, name, privkey, psk, ip) {
 	
 	var [interface_ip, interface_nm] = eval('nvram.wg_iface'+unit+'_ip.split("/", 2)');
 	var port = eval('nvram.wg_iface'+unit+'_port');
@@ -867,7 +930,6 @@ function verifyFields(focused, quiet) {
 			peer_pubkey.disabled = false;
 			peer_privkey.disabled = true;
 		}
-		
 
 	}
 
@@ -1036,7 +1098,10 @@ function init() {
 				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', maxlen: 128, size: 64},
 				{ title: 'Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 			]);
+			W('<div>');
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
+			W('<input type="button" value="Generate Config" onclick="generateClientConfig('+(i+1)+')" id="wg_'+t+'_peer_config">');
+			W('</div>');
 			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
 			W('<img alt="wg_'+t+'_qrcode_img">');
 			W('<div id="wg_'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
