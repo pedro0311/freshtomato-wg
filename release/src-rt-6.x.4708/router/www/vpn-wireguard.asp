@@ -411,9 +411,11 @@ function addPeer(unit, quiet) {
 		peerTables[unit-1].insertData(-1, data);
 		peerTables[unit-1].disableNewEditor(false);
 		peerTables[unit-1].resetNewEditor();
-
-		
+		var [tab, section] = locateElement(peerTables[unit-1]);
+		tabSelect(tab);
+		sectSelect(tab.substr(5)-1, section);
 	}
+
 }
 
 function verifyClientGenFields(unit) {
