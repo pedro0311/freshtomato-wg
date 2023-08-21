@@ -199,7 +199,7 @@ PeerGrid.prototype.dataToFieldValues = function(data) {
 
 	if (data[0] == 1) {
 		privkey = data[3];
-		pubkey = window.wiregurad.generatePublicKey(privkey);
+		pubkey = window.wireguard.generatePublicKey(privkey);
 	}
 	else {
 		privkey = "";
