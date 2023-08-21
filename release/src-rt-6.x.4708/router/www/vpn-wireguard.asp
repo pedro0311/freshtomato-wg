@@ -261,6 +261,13 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	var f = fields.getAll(row);
 	var data = this.fieldValuesToData(row)
 	var results = verifyPeerFieldData(data);
+
+	if (!results[2]) {
+		ferror.set(f[2], 'A valid private key is required', quiet || !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(f[2]);
 	
 	if (!results[3]) {
 		ferror.set(f[3], 'A valid public key is required', quiet || !ok);
@@ -302,10 +309,15 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 
 function verifyPeerFieldData(data) {
 
+	// this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','IP','Allowed IPs','KA']);
+
 	var results = [];
 	for (var i = 0; i < data.length; i++) {
 		results.push(true);
 	}
+
+	if (data[2] && !window.wireguard.validateBase64Key(data[2]))
+		results[2] = false;
 
 	if (!window.wireguard.validateBase64Key(data[3]))
 		results[3] = false;
@@ -382,9 +394,9 @@ function addPeer(unit, quiet) {
 	var keepalive = E('_f_wg_iface'+unit+'_peer_ka');
 
 	var data = [
-		0,
 		alias.value,
 		endpoint.value,
+		privkey.value,
 		pubkey.value,
 		psk.value,
 		ip.value,
@@ -400,15 +412,20 @@ function addPeer(unit, quiet) {
 
 	var results = verifyPeerFieldData(data);
 
+	if (!results[2]) {
+		ferror.set(privkey, 'A valid private key is required', quiet || !ok);	
+		ok = 0;
+	}
+	else
+		ferror.clear(privkey);
+
 	if (!results[3]) {
-		if (data[0])
-			ferror.set(privkey, 'A valid private key is required', quiet || !ok);
-		else
-			ferror.set(pubkey, 'A valid public key is required', quiet || !ok);
+		ferror.set(pubkey, 'A valid public key is required', quiet || !ok);	
 		ok = 0;
 	}
 	else
 		ferror.clear(pubkey);
+		
 
 	if (!results[4]) {
 		ferror.set(psk, 'Preshared key is invalid', quiet || !ok);
