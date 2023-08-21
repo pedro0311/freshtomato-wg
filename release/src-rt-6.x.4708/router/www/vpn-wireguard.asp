@@ -165,7 +165,7 @@ PeerGrid.prototype.setup = function() {
 	this.init(this.interface_name+'-peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
 		{ type: 'text', maxlen: 128 },
-		{ type: 'text', maxlen: 44 },
+		{ type: 'password', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 100 },
@@ -177,9 +177,8 @@ PeerGrid.prototype.setup = function() {
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
 		if (t.length == 8) {
-			if (t[0])
-				t[3] = window.wireguard.generatePublicKey(t[3]);
-			this.insertData(-1, t);
+			var data = dataToFieldValues(t)
+			this.insertData(-1, data);
 		}
 	}
 	this.showNewEditor();
