@@ -220,33 +220,6 @@ PeerGrid.prototype.dataToFieldValues = function(data) {
 	return values;
 }
 
-PeerGrid.prototype.fieldValuesToData = function(row) {
-	var e, i, key, type, data;
-
-	e = fields.getAll(row);
-	if(e[2]) {
-		type = 1;
-		key = e[2].value;
-	}
-	else {
-		type = 0;
-		key = e[3].value;
-	}
-
-	data = [
-		type,
-		e[0].value,
-		e[1].value,
-		key,
-		e[4].value,
-		e[5].value,
-		e[6].value,
-		e[7].value,
-	]
-
-	return data;
-}
-
 PeerGrid.prototype.verifyFields = function(row, quiet) {
 
 	changed = 1;
@@ -305,6 +278,48 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 		ferror.clear(f[7]);
 
 	return ok;
+}
+
+PeerGrid.prototype.getAllData = function() {
+	var i, max, data, temp, r, type;
+
+	temp = [];
+	max = this.footer ? this.footer.rowIndex : this.tb.rows.length;
+	for (i = this.header ? this.header.rowIndex + 1 : 0; i < max; ++i) {
+		r = this.tb.rows[i];
+		if ((r.style.display != 'none') && (r._data)) temp.push(r._data);
+	}
+
+	/* reformat the data to include one key and a flag specifying which type */
+	for (i = 0; i < data.length; ++i) {
+		data[i] = formatDataForNVRAM(data[i]);
+	}
+
+	return data;
+}
+
+function formatDataForNVRAM(data) {
+	var key, type;
+
+	if(data[2]) {
+		type = 1;
+		key = data[2];
+	}
+	else {
+		type = 0;
+		key = data[3];
+	}
+
+	data = [
+		type,
+		data[0],
+		data[1],
+		key,
+		data[4],
+		data[5],
+		data[6],
+		data[7],
+	]
 }
 
 function verifyPeerFieldData(data) {
