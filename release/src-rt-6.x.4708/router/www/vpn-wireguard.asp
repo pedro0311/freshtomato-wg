@@ -179,7 +179,28 @@ PeerGrid.prototype.setup = function() {
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
 		if (t.length == 8) {
-			var data = this.dataToFieldValues(t)
+			var data, pubkey, privkey;
+
+			if (t[0] == 1) {
+				privkey = t[3];
+				pubkey = window.wireguard.generatePublicKey(privkey);
+			}
+			else {
+				privkey = "";
+				pubkey = t[3];
+			}
+
+			data = [
+				t[1],
+				t[2],
+				privkey,
+				pubkey,
+				t[4],
+				t[5],
+				t[6],
+				t[7],
+			]
+
 			this.insertData(-1, data);
 		}
 	}
@@ -194,32 +215,6 @@ PeerGrid.prototype.rpDel = function(e) {
 	this.recolor();
 	this.resort();
 	this.rpHide();
-}
-
-PeerGrid.prototype.dataToFieldValues = function(data) {
-	var values, pubkey, privkey;
-
-	if (data[0] == 1) {
-		privkey = data[3];
-		pubkey = window.wireguard.generatePublicKey(privkey);
-	}
-	else {
-		privkey = "";
-		pubkey = data[3];
-	}
-
-	values = [
-		data[1],
-		data[2],
-		privkey,
-		pubkey,
-		data[4],
-		data[5],
-		data[6],
-		data[7],
-	]
-
-	return values;
 }
 
 PeerGrid.prototype.verifyFields = function(row, quiet) {
