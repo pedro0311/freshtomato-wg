@@ -163,16 +163,16 @@ function updateForm(num) {
 
 PeerGrid.prototype.setup = function() {
 	this.init(this.interface_name+'-peers-grid', '', 50, [
-		{ type: 'checkbox', hidden: 1},
 		{ type: 'text', maxlen: 32 },
 		{ type: 'text', maxlen: 128 },
+		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
 		{ type: 'text', maxlen: 100 },
 		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 3 },
 	]);
-	this.headerSet(['Type', 'Alias','Endpoint','Public Key','Preshared Key','IP','Allowed IPs','KA']);
+	this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','IP','Allowed IPs','KA']);
 	var nv = eval("nvram.wg_"+this.interface_name+"_peers.split('>')");
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
@@ -196,22 +196,55 @@ PeerGrid.prototype.rpDel = function(e) {
 }
 
 PeerGrid.prototype.dataToFieldValues = function(data) {
-	output = [];
-	output.push(data[0] == 1);
-	for (i = 1; i < data.length; ++i) output.push(data[i]);
-	return output;
+	var values, pubkey, privkey;
+
+	if (data[0] == 1) {
+		privkey = data[3];
+		pubkey = window.wiregurad.generatePublicKey(privkey);
+	}
+	else {
+		privkey = "";
+		pubkey = data[3];
+	}
+
+	values = [
+		data[1],
+		data[2],
+		privkey,
+		pubkey,
+		data[4],
+		data[5],
+		data[6],
+		data[7],
+	]
+
+	return values;
 }
 
 PeerGrid.prototype.fieldValuesToData = function(row) {
-	var e, i, data;
+	var e, i, key, type, data;
 
-	data = [];
 	e = fields.getAll(row);
-	if(e[0].checked)
-		data.push(1);
-	else
-		data.push(0);
-	for (i = 1; i < e.length; ++i) data.push(e[i].value);
+	if(e[2]) {
+		type = 1;
+		key = e[2].value;
+	}
+	else {
+		type = 0;
+		key = e[3].value;
+	}
+
+	data = [
+		type,
+		e[0].value,
+		e[1].value,
+		key,
+		e[4].value,
+		e[5].value,
+		e[6].value,
+		e[7].value,
+	]
+
 	return data;
 }
 
@@ -925,7 +958,7 @@ function verifyFields(focused, quiet) {
 		else
 			ferror.clear(allowed_ips);
 
-		/* peer key checking stuff */
+		/*** peer key checking stuff ***/
 		var peer_privkey = E('_f_wg_iface'+i+'_peer_privkey');
 		var peer_pubkey = E('_f_wg_iface'+i+'_peer_pubkey');
 
