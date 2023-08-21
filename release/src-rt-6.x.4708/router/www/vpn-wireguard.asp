@@ -322,6 +322,8 @@ function formatDataForNVRAM(data) {
 		data[6],
 		data[7],
 	]
+
+	return data;
 }
 
 function verifyPeerFieldData(data) {
