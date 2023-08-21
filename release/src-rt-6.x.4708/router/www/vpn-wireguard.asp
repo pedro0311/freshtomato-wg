@@ -404,12 +404,6 @@ function addPeer(unit, quiet) {
 		keepalive.value
 	];
 
-	/* figure out if we're storing the publc or private key */
-	if (window.wireguard.validateBase64Key(privkey.value)) {
-		data[0] = 1;
-		data[3] = privkey.value;
-	}
-
 	var results = verifyPeerFieldData(data);
 
 	if (!results[2]) {
