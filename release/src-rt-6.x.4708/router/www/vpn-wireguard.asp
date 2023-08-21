@@ -14,15 +14,17 @@
 <title>[<% ident(); %>] Wireguard</title>
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
+// this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','IP','Allowed IPs','KA']);
+
 <style>
-.co1, .co2, .co3, .co4, .co5, .co6 {
+.co1, .co2, .co3, .co4, .co5, .co6, .co7 {
 	max-width: 120px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.co7 {
+.co8 {
 	width: 32px;
   	white-space: nowrap;
   	overflow: hidden;
@@ -281,13 +283,13 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 }
 
 PeerGrid.prototype.getAllData = function() {
-	var i, max, data, temp, r, type;
+	var i, max, data, r, type;
 
-	temp = [];
+	data = [];
 	max = this.footer ? this.footer.rowIndex : this.tb.rows.length;
 	for (i = this.header ? this.header.rowIndex + 1 : 0; i < max; ++i) {
 		r = this.tb.rows[i];
-		if ((r.style.display != 'none') && (r._data)) temp.push(r._data);
+		if ((r.style.display != 'none') && (r._data)) data.push(r._data);
 	}
 
 	/* reformat the data to include one key and a flag specifying which type */
@@ -323,8 +325,6 @@ function formatDataForNVRAM(data) {
 }
 
 function verifyPeerFieldData(data) {
-
-	// this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','IP','Allowed IPs','KA']);
 
 	var results = [];
 	for (var i = 0; i < data.length; i++) {
