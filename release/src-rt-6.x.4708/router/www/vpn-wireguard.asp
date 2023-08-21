@@ -177,7 +177,7 @@ PeerGrid.prototype.setup = function() {
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
 		if (t.length == 8) {
-			var data = dataToFieldValues(t)
+			var data = this.dataToFieldValues(t)
 			this.insertData(-1, data);
 		}
 	}
