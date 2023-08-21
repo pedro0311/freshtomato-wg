@@ -27,7 +27,7 @@ void start_wg_eas()
 void start_wireguard(int unit)
 {
 	char *nv, *nvp, *b;
-	char *name, *key, *psk, *ip, *ka, *aip, *ep;
+	char *priv, *name, *key, *psk, *ip, *ka, *aip, *ep;
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
 
@@ -85,7 +85,7 @@ void start_wireguard(int unit)
 		if (nv){
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
-				if (vstrsep(b, "<", &name, &ep, &key, &psk, &ip, &aip, &ka) < 7)
+				if (vstrsep(b, "<", &priv, &name, &ep, &key, &psk, &ip, &aip, &ka) < 8)
 					continue;
 				
 				/* build peer allowed ips */
@@ -98,7 +98,12 @@ void start_wireguard(int unit)
 				}
 
 				/* add peer to interface */
-				wg_add_peer(iface, key, buffer, psk, ka, ep);
+				if (priv[0] == '1') {
+					wg_add_peer_privkey(iface, key, buffer, psk, ka, ep);
+				}
+				else {
+					wg_add_peer(iface, key, buffer, psk, ka, ep);
+				}
 
 			}
 		}

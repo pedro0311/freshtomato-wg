@@ -14,8 +14,6 @@
 <title>[<% ident(); %>] Wireguard</title>
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
-// this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','IP','Allowed IPs','KA']);
-
 <style>
 .co1, .co2, .co3, .co4, .co5, .co6, .co7 {
 	max-width: 120px;
