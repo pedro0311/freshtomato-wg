@@ -497,12 +497,6 @@ function verifyClientGenFields(unit) {
 
 function generateClient(unit) {
 
-	/* check if changes have been made */
-	if (changed) {
-		alert('Changes have been made. You need to save before continue!');
-		return;
-	}
-
 	/* verify client gen fields have valid data */
 	if (!verifyClientGenFields(unit))
 		return;
@@ -607,7 +601,7 @@ function generateClientConfig(unit) {
 	}
 	else
 		ferror.clear(psk);
-	
+
 	if (!results[5]) {
 		ferror.set(psk, 'A valid IP CIDR must be provided to generate a configuration file', !ok);
 		ok = 0;
