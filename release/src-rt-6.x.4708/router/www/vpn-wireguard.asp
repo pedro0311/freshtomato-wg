@@ -497,12 +497,6 @@ function verifyClientGenFields(unit) {
 
 function generateClient(unit) {
 
-	/* check if changes have been made */
-	if (changed) {
-		alert('Changes have been made. You need to save before continue!');
-		return;
-	}
-
 	/* verify client gen fields have valid data */
 	if (!verifyClientGenFields(unit))
 		return;
@@ -565,6 +559,7 @@ function generateClientConfig(unit) {
 	
 	var alias = E('_f_wg_iface'+unit+'_peer_alias');
 	var endpoint = E('_f_wg_iface'+unit+'_peer_ep');
+	var port = E('_f_wg_iface'+unit+'_peer_port');
 	var privkey = E('_f_wg_iface'+unit+'_peer_privkey');
 	var psk = E('_f_wg_iface'+unit+'_peer_psk');
 	var ip = E('_f_wg_iface'+unit+'_peer_ip');
@@ -585,18 +580,28 @@ function generateClientConfig(unit) {
 	/* verify fields before generating config */
 	var ok = 1;
 	var results = verifyPeerFieldData(data);
+
+	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
+		ferror.set(port, 'A valid port must be provided to generate the configuration file', !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(port);
+
 	if (!results[3]) {
 		ferror.set(privkey, 'A valid private key must be provided to generate a configuration file', !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(privkey);
+
 	if (!results[4]) {
 		ferror.set(psk, 'A valid PSK must be provided or left blank to generate a configuration file', !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(psk);
+
 	if (!results[5]) {
 		ferror.set(psk, 'A valid IP CIDR must be provided to generate a configuration file', !ok);
 		ok = 0;
@@ -615,7 +620,8 @@ function generateClientConfig(unit) {
 		data[1],
 		data[3],
 		data[4],
-		data[5],
+		data[5].split('/', 1)[0],
+		port.value
 	);
 
 	/* download config file (if checked) */
@@ -638,10 +644,9 @@ function generateClientConfig(unit) {
 
 }
 
-function generateWGConfig(unit, name, privkey, psk, ip) {
+function generateWGConfig(unit, name, privkey, psk, ip, port) {
 	
 	var [interface_ip, interface_nm] = eval('nvram.wg_iface'+unit+'_ip.split("/", 2)');
-	var port = eval('nvram.wg_iface'+unit+'_port');
 	var content = [];
 	var dns = eval('nvram.wg_iface'+unit+'_dns');
 	var fwmark = E('_f_wg_iface'+unit+'_peer_fwmark').value;
@@ -1169,6 +1174,7 @@ function init() {
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
 				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
+				{ title: 'Port', name: 'f_wg_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port')},
 				{ title: 'Private Key', name: 'f_wg_'+t+'_peer_privkey', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Public Key', name: 'f_wg_'+t+'_peer_pubkey', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
