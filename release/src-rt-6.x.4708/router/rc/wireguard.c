@@ -525,6 +525,7 @@ int wg_iface_script(int unit, char *script_name)
 
 	if (strcmp(script, "") != 0) {
 
+		/* build path */
 		memset(path, 0, path_size);
 		snprintf(path, path_size, WG_DIR"/scripts/wg%d-%s.sh", unit, script_name);
 
@@ -536,6 +537,19 @@ int wg_iface_script(int unit, char *script_name)
 		fclose(fp);
 		chmod(path, 0700);
 
+		/*sed replace %i with interface*/
+		memset(buffer, 0, buffer_size);
+		snprintf(buffer, buffer_size, "'s/%%i/wg%d/g'", unit);
+
+		if (eval("/bin/sed", "-i", buffer, path)){
+			logmsg(LOG_WARNING, "unable to substitute interface name in %s script for wireguard interface wg%d!", script_name, unit);
+			return -1;
+		}
+		else {
+			logmsg(LOG_DEBUG, "interface substitution in %s script for wireguard interface wg%d has executed successfully", script_name, unit);
+		}
+
+		/* run script */
 		if (eval("/bin/sh", path)){
 			logmsg(LOG_WARNING, "unable to execute %s script for wireguard interface wg%d!", script_name, unit);
 			return -1;
