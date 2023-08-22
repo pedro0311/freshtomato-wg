@@ -585,7 +585,7 @@ function generateClientConfig(unit) {
 
 	/* verify fields before generating config */
 	var ok = 1;
-	
+	var results = verifyPeerFieldData(data);
 
 	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
 		ferror.set(port, 'A valid port must be provided to generate the configuration file', !ok);
@@ -593,18 +593,21 @@ function generateClientConfig(unit) {
 	}
 	else
 		ferror.clear(port);
+
 	if (!results[3]) {
 		ferror.set(privkey, 'A valid private key must be provided to generate a configuration file', !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(privkey);
+
 	if (!results[4]) {
 		ferror.set(psk, 'A valid PSK must be provided or left blank to generate a configuration file', !ok);
 		ok = 0;
 	}
 	else
 		ferror.clear(psk);
+	
 	if (!results[5]) {
 		ferror.set(psk, 'A valid IP CIDR must be provided to generate a configuration file', !ok);
 		ok = 0;
