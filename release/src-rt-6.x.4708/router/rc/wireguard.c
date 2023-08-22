@@ -540,6 +540,7 @@ int wg_iface_script(int unit, char *script_name)
 		/*sed replace %i with interface*/
 		memset(buffer, 0, buffer_size);
 		snprintf(buffer, buffer_size, "'s/%%i/wg%d/g'", unit);
+		logmsg(LOG_WARNING, "!!!WG DEBUG!!!   %s", buffer);
 
 		if (eval("/bin/sed", "-i", buffer, path)){
 			logmsg(LOG_WARNING, "unable to substitute interface name in %s script for wireguard interface wg%d!", script_name, unit);
