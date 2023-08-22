@@ -620,7 +620,7 @@ function generateClientConfig(unit) {
 		data[1],
 		data[3],
 		data[4],
-		data[5],
+		data[5].split('/', 1)[0],
 		port.value
 	);
 
