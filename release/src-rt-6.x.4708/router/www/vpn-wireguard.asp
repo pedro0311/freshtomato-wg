@@ -506,7 +506,7 @@ function generateClient(unit) {
 	/* retrieve existing IPs of interface/peers to calculate new ip */
 	var [interface_ip, interface_nm] = eval('nvram.wg_iface'+unit+'_ip.split("/", 2)');
 	var existing_ips = peerTables[unit-1].getAllData();
-	existing_ips = existing_ips.map(x => x[5].ip.split('/',1)[0]);
+	existing_ips = existing_ips.map(x => x[5].split('/',1)[0]);
 	existing_ips.push(interface_ip);
 
 	/* calculate ip of new peer */
