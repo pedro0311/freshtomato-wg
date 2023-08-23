@@ -630,10 +630,8 @@ function generatePeerConfig(unit) {
 	if (E('_f_wg_iface'+unit+'_peer_qr_enable').checked) {
 		var qrcode = E('wg_iface'+unit+'_qrcode');
 		var qrcode_content = content.join('');
-		if (qrcode_content.length*8+20 < 4184) {
-			qrcode.replaceChild(showQRCode(qrcode_content, 40), qrcode.firstChild);
-			elem.display('wg_iface'+unit+'_qrcode', true);
-		}
+		qrcode.replaceChild(showQRCode(qrcode_content, 40), qrcode.firstChild);
+		elem.display('wg_iface'+unit+'_qrcode', true);
 	}
 
 }
