@@ -632,7 +632,7 @@ function generatePeerConfig(unit) {
 		var qrcode_content = content.join('');
 		var image = showQRCode(qrcode_content, 40);
 		image.style.maxWidth = "700px";
-		qrcode.replaceChild(, qrcode.firstChild);
+		qrcode.replaceChild(image, qrcode.firstChild);
 		elem.display('wg_iface'+unit+'_qrcode', true);
 	}
 
