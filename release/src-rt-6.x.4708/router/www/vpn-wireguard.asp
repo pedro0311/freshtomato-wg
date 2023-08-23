@@ -722,12 +722,12 @@ function generateWGConfig(unit, name, privkey, psk, ip, port) {
 
 	/* add remaining peers to config */
 	if (eval('nvram.wg_iface'+unit+'_lan') == "1") {
-		var interface_peers = parsePeers(eval('nvram.wg_iface'+unit+'_peers'))
+		var interface_peers = peerTables[unit-1].getAllData();
 		
 		for (var i = 0; i < interface_peers.length; ++i) {
 			var peer = interface_peers[i]
 
-			if (peer.key == window.wireguard.generatePublicKey(privkey)) {
+			if (peer[3] == window.wireguard.generatePublicKey(privkey)) {
 				continue;
 			}
 
@@ -737,23 +737,23 @@ function generateWGConfig(unit, name, privkey, psk, ip, port) {
 			);
 
 			if (peer.name != "")
-				content.push(`#Alias = ${peer.name}\n`,);
+				content.push(`#Alias = ${peer[0]}\n`,);
 
-			content.push(`PublicKey = ${peer.key}\n`,);
+			content.push(`PublicKey = ${peer[3]}\n`,);
 
 			if (peer.psk != "")
-				content.push(`PresharedKey = ${peer.psk}\n`,);
+				content.push(`PresharedKey = ${peer[4]}\n`,);
 
-			content.push(`AllowedIPs = ${peer.ip}`,);
+			content.push(`AllowedIPs = ${peer[5]}`,);
 			if (peer.allowed_ips != "")
-				content.push(`,${peer.allowed_ips}`,);
+				content.push(`,${peer[6]}`,);
 			content.push('\n');
 
 			if (peer.keepalive != "0")
-				content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
+				content.push(`PersistentKeepalive = ${peer.peer[7]}\n`,);
 
 			if (peer.endpoint != "")
-				content.push(`Endpoint = ${peer.endpoint}\n`);
+				content.push(`Endpoint = ${peer.peer[1]}\n`);
 			
 		}
 	}
@@ -768,29 +768,6 @@ function downloadConfig(content, name) {
 	link.download = name;
 	link.click();
 	URL.revokeObjectURL(link.href);
-}
-
-function parsePeers(peers_string) {
-	var nv = peers_string.split('>');
-	var output = [];
-	for (var i = 0; i < nv.length; ++i) {
-		if (nv[i] != "") {
-			var t = nv[i].split('<');
-			if (t.length == 7) {
-				var peer = {};
-				peer.name = t[0];
-				peer.endpoint = t[1];
-				peer.key = t[2];
-				peer.psk = t[3];
-				peer.ip = t[4];
-				peer.allowed_ips = t[5]
-				peer.keepalive = t[6];
-				
-				output.push(peer);
-			}
-		}
-	}
-	return output;
 }
 
 function netmaskToCIDR(mask) {
