@@ -64,7 +64,7 @@ function showQRCode(text) {
 	var padding = 10; // (white area around your QRCode)
 	var black = 'rgb(0,0,0)';
 	var white = 'rgb(255,255,255)';
-	var QRCodeVersion = 1;
+	var QRCodeVersion = 40;
 
 	for (var i = 0; i < VERSION_MAP.length; ++i) {
 		if (text.length < VERSION_MAP[i]) {
