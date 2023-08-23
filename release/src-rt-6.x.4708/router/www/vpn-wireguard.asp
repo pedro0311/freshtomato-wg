@@ -471,11 +471,11 @@ function addPeer(unit, quiet) {
 
 }
 
-function verifyClientGenFields(unit) {
+function verifyPeerGenFields(unit) {
 
 	/* verify interface has a valid private key */
 	if (!window.wireguard.validateBase64Key(eval('nvram.wg_iface'+unit+'_key'))) {
-		alert('The interface must have a valid private key before clients can be generated')
+		alert('The interface must have a valid private key before peers can be generated')
 		return false;
 	}
 
@@ -486,19 +486,13 @@ function verifyClientGenFields(unit) {
 		return false;
 	}
 
-	/* verify endpoint is populated */
-	if (eval('nvram.wg_iface'+unit+'_endpoint') == "") {
-		alert('The interface endpoint must be populated')
-		return false;
-	}
-
 	return true;
 }
 
-function generateClient(unit) {
+function generatePeer(unit) {
 
-	/* verify client gen fields have valid data */
-	if (!verifyClientGenFields(unit))
+	/* verify peer gen fields have valid data */
+	if (!verifyPeerGenFields(unit))
 		return;
 
 	/* Generate keys */
@@ -511,8 +505,8 @@ function generateClient(unit) {
 
 	/* retrieve existing IPs of interface/peers to calculate new ip */
 	var [interface_ip, interface_nm] = eval('nvram.wg_iface'+unit+'_ip.split("/", 2)');
-	var existing_ips = parsePeers(eval('nvram.wg_iface'+unit+'_peers'));
-	existing_ips = existing_ips.map(x => x.ip.split('/',1)[0]);
+	var existing_ips = peerTables[unit-1].getAllData();
+	existing_ips = existing_ips.map(x => x[5].split('/',1)[0]);
 	existing_ips.push(interface_ip);
 
 	/* calculate ip of new peer */
@@ -536,7 +530,7 @@ function generateClient(unit) {
 
 	/* return if we could not generate an IP */
 	if (ip == "") {
-		alert('Could not generate an IP for the client');
+		alert('Could not generate an IP for the peer');
 		return;
 	}
 
@@ -555,7 +549,7 @@ function generateClient(unit) {
 	
 }
 
-function generateClientConfig(unit) {
+function generatePeerConfig(unit) {
 	
 	var alias = E('_f_wg_iface'+unit+'_peer_alias');
 	var endpoint = E('_f_wg_iface'+unit+'_peer_ep');
@@ -626,7 +620,7 @@ function generateClientConfig(unit) {
 
 	/* download config file (if checked) */
 	if (E('_f_wg_iface'+unit+'_peer_save').checked) {
-		var filename = "client.conf";
+		var filename = "peer.conf";
 		if (alias != "")
 			filename = `${alias}.conf`;
 		downloadConfig(content, filename);
@@ -672,7 +666,10 @@ function generateWGConfig(unit, name, privkey, psk, ip, port) {
 	/* build router peer */
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg_iface'+unit+'_key'));
 	var keepalive_interface = eval('nvram.wg_iface'+unit+'_ka');
-	var endpoint = eval('nvram.wg_iface'+unit+'_endpoint') + ":" + eval('nvram.wg_iface'+unit+'_port');
+	var endpoint = eval('nvram.wg_iface'+unit+'_endpoint');
+	if (!endpoint)
+		endpoint = nvram.wan_ipaddr;
+	endpoint += ":" + eval('nvram.wg_iface'+unit+'_port');
 	var allowed_ips;
 
 	/* build allowed ips for router peer */
@@ -866,11 +863,6 @@ function verifyFields(focused, quiet) {
 			else
 				ferror.clear(port);
 		}
-
-		/* autopopulate endpoint if it's empty */
-		var endpoint = E('_wg_iface'+i+'_endpoint');
-		if (endpoint.value == "")
-			endpoint.value = nvram.wan_ipaddr;
 
 		/* disable lan checkbox if lan is not in use */
 		for (let j = 0; j <= 3; ++j) {
@@ -1141,7 +1133,7 @@ function init() {
 			W('<div class="section-title">Peer Configuration</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Router', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
-				{ title: 'Custom Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_endpoint') },
+				{ title: 'Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, placeholder: '(leave blank to use WAN IP)', value: eval('nvram.wg_'+t+'_endpoint') },
 				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_aip') },
 				{ title: 'DNS Servers', name: 'wg_'+t+'_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_dns') },
 				{ title: 'Allow peers to communicate', name: 'f_wg_'+t+'_lan', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan') == '1'},
@@ -1162,15 +1154,15 @@ function init() {
 			]);
 			W('</div>');
 			W('<div id="'+t+'-gen">');
-			W('<div class="section-title">Client Generation</div>');
+			W('<div class="section-title">Peer Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
 				{ title: 'Send Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: false},
-				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
-				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
-			W('<input type="button" value="Generate Client" onclick="generateClient('+(i+1)+')" id="wg_'+t+'_peer_gen">');
-			W('<div class="section-title">Peer Addition</div>');
+			W('<input type="button" value="Generate Peer" onclick="generatePeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
+			W('<br>');
+			W('<br>');
+			W('<div class="section-title">Peer Parameters</div>');
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
 				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
@@ -1182,10 +1174,12 @@ function init() {
 				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', maxlen: 128, size: 64},
 				{ title: 'Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
 				{ title: 'FWMark for this peer', name: 'f_wg_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
+				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
+				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
 			W('<div>');
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
-			W('<input type="button" value="Generate Config" onclick="generateClientConfig('+(i+1)+')" id="wg_'+t+'_peer_config">');
+			W('<input type="button" value="Generate Config" onclick="generatePeerConfig('+(i+1)+')" id="wg_'+t+'_peer_config">');
 			W('</div>');
 			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
 			W('<img alt="wg_'+t+'_qrcode_img">');
