@@ -631,7 +631,7 @@ function generatePeerConfig(unit) {
 		var qrcode = E('wg_iface'+unit+'_qrcode');
 		var qrcode_content = content.join('');
 		if (qrcode_content.length*8+20 < 4184) {
-			qrcode.replaceChild(showQRCode(qrcode_content), qrcode.firstChild);
+			qrcode.replaceChild(showQRCode(qrcode_content, 40), qrcode.firstChild);
 			elem.display('wg_iface'+unit+'_qrcode', true);
 		}
 	}

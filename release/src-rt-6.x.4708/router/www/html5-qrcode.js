@@ -12,14 +12,15 @@
 // First QRCode is rendered to a canvas.
 // The canvas is then turned to an image PNG
 // before being returned as an <img> tag.
-function showQRCode(text) {
+function showQRCode(text, QRCodeVersion) {
 
 
 	var dotsize = 5;  // size of box drawn on canvas
 	var padding = 10; // (white area around your QRCode)
 	var black = 'rgb(0,0,0)';
 	var white = 'rgb(255,255,255)';
-	var QRCodeVersion = 15; // 1-40 see http://www.denso-wave.com/qrcode/qrgene2-e.html
+	if ((!QRCodeVersion) || QRCodeVersion < 0 || QRCodeVersion > 40)
+		QRCodeVersion = 15;
 
 	var canvas = document.createElement('canvas');
 	var qrCanvasContext = canvas.getContext('2d');
