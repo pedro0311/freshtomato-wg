@@ -1162,7 +1162,9 @@ function init() {
 				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
 			W('<input type="button" value="Generate Peer" onclick="generatePeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
-			W('<div class="section-title">Peer Addition</div>');
+			W('<br>');
+			W('<br>');
+			W('<div class="section-title">Peer Parameters</div>');
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
 				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
