@@ -630,10 +630,10 @@ function generatePeerConfig(unit) {
 	if (E('_f_wg_iface'+unit+'_peer_qr_enable').checked) {
 		var qrcode = E('wg_iface'+unit+'_qrcode');
 		var qrcode_content = content.join('');
-		if (qrcode_content.length*8+20 < 4184) {
-			qrcode.replaceChild(showQRCode(qrcode_content), qrcode.firstChild);
-			elem.display('wg_iface'+unit+'_qrcode', true);
-		}
+		var image = showQRCode(qrcode_content, 40);
+		image.style.maxWidth = "700px";
+		qrcode.replaceChild(image, qrcode.firstChild);
+		elem.display('wg_iface'+unit+'_qrcode', true);
 	}
 
 }
@@ -724,12 +724,12 @@ function generateWGConfig(unit, name, privkey, psk, ip, port) {
 
 	/* add remaining peers to config */
 	if (eval('nvram.wg_iface'+unit+'_lan') == "1") {
-		var interface_peers = parsePeers(eval('nvram.wg_iface'+unit+'_peers'))
+		var interface_peers = peerTables[unit-1].getAllData();
 		
 		for (var i = 0; i < interface_peers.length; ++i) {
 			var peer = interface_peers[i]
 
-			if (peer.key == window.wireguard.generatePublicKey(privkey)) {
+			if (peer[3] == window.wireguard.generatePublicKey(privkey)) {
 				continue;
 			}
 
@@ -738,24 +738,27 @@ function generateWGConfig(unit, name, privkey, psk, ip, port) {
 				"[Peer]\n",
 			);
 
-			if (peer.name != "")
-				content.push(`#Alias = ${peer.name}\n`,);
+			if (peer[1] != "")
+				content.push(`#Alias = ${peer[1]}\n`,);
 
-			content.push(`PublicKey = ${peer.key}\n`,);
+			if (peer[0] == 1)
+				content.push(`PublicKey = ${window.wireguard.generatePublicKey(peer[3])}\n`,);
+			else
+				content.push(`PublicKey = ${peer[3]}\n`,);
 
-			if (peer.psk != "")
-				content.push(`PresharedKey = ${peer.psk}\n`,);
+			if (peer[4] != "")
+				content.push(`PresharedKey = ${peer[4]}\n`,);
 
-			content.push(`AllowedIPs = ${peer.ip}`,);
-			if (peer.allowed_ips != "")
-				content.push(`,${peer.allowed_ips}`,);
+			content.push(`AllowedIPs = ${peer[5]}`,);
+			if (peer[6] != "")
+				content.push(`,${peer[6]}`,);
 			content.push('\n');
 
-			if (peer.keepalive != "0")
-				content.push(`PersistentKeepalive = ${peer.keepalive}\n`,);
+			if (peer[7] != "0")
+				content.push(`PersistentKeepalive = ${peer[7]}\n`,);
 
-			if (peer.endpoint != "")
-				content.push(`Endpoint = ${peer.endpoint}\n`);
+			if (peer[1] != "")
+				content.push(`Endpoint = ${peer[1]}\n`);
 			
 		}
 	}
@@ -770,29 +773,6 @@ function downloadConfig(content, name) {
 	link.download = name;
 	link.click();
 	URL.revokeObjectURL(link.href);
-}
-
-function parsePeers(peers_string) {
-	var nv = peers_string.split('>');
-	var output = [];
-	for (var i = 0; i < nv.length; ++i) {
-		if (nv[i] != "") {
-			var t = nv[i].split('<');
-			if (t.length == 7) {
-				var peer = {};
-				peer.name = t[0];
-				peer.endpoint = t[1];
-				peer.key = t[2];
-				peer.psk = t[3];
-				peer.ip = t[4];
-				peer.allowed_ips = t[5]
-				peer.keepalive = t[6];
-				
-				output.push(peer);
-			}
-		}
-	}
-	return output;
 }
 
 function netmaskToCIDR(mask) {
@@ -1182,7 +1162,7 @@ function init() {
 			W('<input type="button" value="Generate Config" onclick="generatePeerConfig('+(i+1)+')" id="wg_'+t+'_peer_config">');
 			W('</div>');
 			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
-			W('<img alt="wg_'+t+'_qrcode_img">');
+			W('<img alt="wg_'+t+'_qrcode_img" style="max-width: 100px;">');
 			W('<div id="wg_'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
 			W('Point your mobile phone camera<br>');
 			W('here above to connect automatically');
