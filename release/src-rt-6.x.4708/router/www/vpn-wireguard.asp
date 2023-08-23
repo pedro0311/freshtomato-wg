@@ -738,10 +738,13 @@ function generateWGConfig(unit, name, privkey, psk, ip, port) {
 				"[Peer]\n",
 			);
 
-			if (peer[0] != "")
-				content.push(`#Alias = ${peer[0]}\n`,);
+			if (peer[1] != "")
+				content.push(`#Alias = ${peer[1]}\n`,);
 
-			content.push(`PublicKey = ${peer[3]}\n`,);
+			if (peer[0] == 1)
+				content.push(`PublicKey = ${window.wireguard.generatePublicKey(peer[3])}\n`,);
+			else
+				content.push(`PublicKey = ${peer[3]}\n`,);
 
 			if (peer[4] != "")
 				content.push(`PresharedKey = ${peer[4]}\n`,);
