@@ -736,23 +736,23 @@ function generateWGConfig(unit, name, privkey, psk, ip, port) {
 				"[Peer]\n",
 			);
 
-			if (peer.name != "")
+			if (peer[0] != "")
 				content.push(`#Alias = ${peer[0]}\n`,);
 
 			content.push(`PublicKey = ${peer[3]}\n`,);
 
-			if (peer.psk != "")
+			if (peer[4] != "")
 				content.push(`PresharedKey = ${peer[4]}\n`,);
 
 			content.push(`AllowedIPs = ${peer[5]}`,);
-			if (peer.allowed_ips != "")
+			if (peer[6] != "")
 				content.push(`,${peer[6]}`,);
 			content.push('\n');
 
-			if (peer.keepalive != "0")
+			if (peer[7] != "0")
 				content.push(`PersistentKeepalive = ${peer[7]}\n`,);
 
-			if (peer.endpoint != "")
+			if (peer[1] != "")
 				content.push(`Endpoint = ${peer[1]}\n`);
 			
 		}
