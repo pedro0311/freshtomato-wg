@@ -486,12 +486,6 @@ function verifyClientGenFields(unit) {
 		return false;
 	}
 
-	/* verify endpoint is populated */
-	if (eval('nvram.wg_iface'+unit+'_endpoint') == "") {
-		alert('The interface endpoint must be populated')
-		return false;
-	}
-
 	return true;
 }
 
@@ -672,7 +666,10 @@ function generateWGConfig(unit, name, privkey, psk, ip, port) {
 	/* build router peer */
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg_iface'+unit+'_key'));
 	var keepalive_interface = eval('nvram.wg_iface'+unit+'_ka');
-	var endpoint = eval('nvram.wg_iface'+unit+'_endpoint') + ":" + eval('nvram.wg_iface'+unit+'_port');
+	var endpoint = eval('nvram.wg_iface'+unit+'_endpoint');
+	if (!endpoint)
+		endpoint = nvram.wan_ipaddr;
+	endpoint += ":" + eval('nvram.wg_iface'+unit+'_port');
 	var allowed_ips;
 
 	/* build allowed ips for router peer */
@@ -866,11 +863,6 @@ function verifyFields(focused, quiet) {
 			else
 				ferror.clear(port);
 		}
-
-		/* autopopulate endpoint if it's empty */
-		var endpoint = E('_wg_iface'+i+'_endpoint');
-		if (endpoint.value == "")
-			endpoint.value = nvram.wan_ipaddr;
 
 		/* disable lan checkbox if lan is not in use */
 		for (let j = 0; j <= 3; ++j) {
@@ -1141,7 +1133,7 @@ function init() {
 			W('<div class="section-title">Peer Configuration</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Router', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
-				{ title: 'Custom Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_endpoint') },
+				{ title: 'Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, placeholder: '(leave blank to use WAN IP)', value: eval('nvram.wg_'+t+'_endpoint') },
 				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_aip') },
 				{ title: 'DNS Servers', name: 'wg_'+t+'_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_dns') },
 				{ title: 'Allow peers to communicate', name: 'f_wg_'+t+'_lan', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan') == '1'},
