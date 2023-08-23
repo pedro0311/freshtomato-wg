@@ -471,11 +471,11 @@ function addPeer(unit, quiet) {
 
 }
 
-function verifyClientGenFields(unit) {
+function verifyPeerGenFields(unit) {
 
 	/* verify interface has a valid private key */
 	if (!window.wireguard.validateBase64Key(eval('nvram.wg_iface'+unit+'_key'))) {
-		alert('The interface must have a valid private key before clients can be generated')
+		alert('The interface must have a valid private key before peers can be generated')
 		return false;
 	}
 
@@ -489,10 +489,10 @@ function verifyClientGenFields(unit) {
 	return true;
 }
 
-function generateClient(unit) {
+function generatePeer(unit) {
 
-	/* verify client gen fields have valid data */
-	if (!verifyClientGenFields(unit))
+	/* verify peer gen fields have valid data */
+	if (!verifyPeerGenFields(unit))
 		return;
 
 	/* Generate keys */
@@ -530,7 +530,7 @@ function generateClient(unit) {
 
 	/* return if we could not generate an IP */
 	if (ip == "") {
-		alert('Could not generate an IP for the client');
+		alert('Could not generate an IP for the peer');
 		return;
 	}
 
@@ -549,7 +549,7 @@ function generateClient(unit) {
 	
 }
 
-function generateClientConfig(unit) {
+function generatePeerConfig(unit) {
 	
 	var alias = E('_f_wg_iface'+unit+'_peer_alias');
 	var endpoint = E('_f_wg_iface'+unit+'_peer_ep');
@@ -620,7 +620,7 @@ function generateClientConfig(unit) {
 
 	/* download config file (if checked) */
 	if (E('_f_wg_iface'+unit+'_peer_save').checked) {
-		var filename = "client.conf";
+		var filename = "peer.conf";
 		if (alias != "")
 			filename = `${alias}.conf`;
 		downloadConfig(content, filename);
@@ -1154,14 +1154,14 @@ function init() {
 			]);
 			W('</div>');
 			W('<div id="'+t+'-gen">');
-			W('<div class="section-title">Client Generation</div>');
+			W('<div class="section-title">Peer Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
 				{ title: 'Send Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: false},
 				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
 				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
-			W('<input type="button" value="Generate Client" onclick="generateClient('+(i+1)+')" id="wg_'+t+'_peer_gen">');
+			W('<input type="button" value="Generate Peer" onclick="generatePeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
 			W('<div class="section-title">Peer Addition</div>');
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
@@ -1177,7 +1177,7 @@ function init() {
 			]);
 			W('<div>');
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
-			W('<input type="button" value="Generate Config" onclick="generateClientConfig('+(i+1)+')" id="wg_'+t+'_peer_config">');
+			W('<input type="button" value="Generate Config" onclick="generatePeerConfig('+(i+1)+')" id="wg_'+t+'_peer_config">');
 			W('</div>');
 			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
 			W('<img alt="wg_'+t+'_qrcode_img">');
