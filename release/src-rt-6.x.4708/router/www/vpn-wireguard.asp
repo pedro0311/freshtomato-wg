@@ -750,10 +750,10 @@ function generateWGConfig(unit, name, privkey, psk, ip, port) {
 			content.push('\n');
 
 			if (peer.keepalive != "0")
-				content.push(`PersistentKeepalive = ${peer.peer[7]}\n`,);
+				content.push(`PersistentKeepalive = ${peer[7]}\n`,);
 
 			if (peer.endpoint != "")
-				content.push(`Endpoint = ${peer.peer[1]}\n`);
+				content.push(`Endpoint = ${peer[1]}\n`);
 			
 		}
 	}
@@ -1157,7 +1157,7 @@ function init() {
 			W('<input type="button" value="Generate Config" onclick="generatePeerConfig('+(i+1)+')" id="wg_'+t+'_peer_config">');
 			W('</div>');
 			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
-			W('<img alt="wg_'+t+'_qrcode_img">');
+			W('<img alt="wg_'+t+'_qrcode_img" style="max-width: 100px;">');
 			W('<div id="wg_'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
 			W('Point your mobile phone camera<br>');
 			W('here above to connect automatically');
