@@ -699,8 +699,9 @@ void write_wg_dnsmasq_config(FILE* f)
 static inline void encode_base64(char dest[static 4], const uint8_t src[static 3])
 {
 	const uint8_t input[] = { (src[0] >> 2) & 63, ((src[0] << 4) | (src[1] >> 4)) & 63, ((src[1] << 2) | (src[2] >> 6)) & 63, src[2] & 63 };
+	unsigned int i;
 
-	for (unsigned int i = 0; i < 4; ++i)
+	for (i = 0; i < 4; ++i)
 		dest[i] = input[i] + 'A'
 			  + (((25 - input[i]) >> 8) & 6)
 			  - (((51 - input[i]) >> 8) & 75)
@@ -723,8 +724,9 @@ void key_to_base64(char base64[static WG_KEY_LEN_BASE64], const uint8_t key[stat
 static inline int decode_base64(const char src[static 4])
 {
 	int val = 0;
+	unsigned int i;
 
-	for (unsigned int i = 0; i < 4; ++i)
+	for (i = 0; i < 4; ++i)
 		val |= (-1
 			    + ((((('A' - 1) - src[i]) & (src[i] - ('Z' + 1))) >> 8) & (src[i] - 64))
 			    + ((((('a' - 1) - src[i]) & (src[i] - ('z' + 1))) >> 8) & (src[i] - 70))
