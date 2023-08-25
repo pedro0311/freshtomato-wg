@@ -202,7 +202,10 @@ PeerGrid.prototype.setup = function() {
 			this.insertData(-1, data);
 		}
 	}
-	this.showNewEditor();
+}
+
+PeerGrid.prototype.edit = function(cell) {
+	
 }
 
 PeerGrid.prototype.rpDel = function(e) {
