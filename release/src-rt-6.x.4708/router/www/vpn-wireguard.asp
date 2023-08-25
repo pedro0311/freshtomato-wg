@@ -65,6 +65,7 @@ var peerTables = [];
 for (i = 0; i < tabs.length; ++i) {
 	peerTables.push(new PeerGrid());
 	peerTables[i].interface_name = tabs[i][0];
+	peerTables[i].unit = i+1;
 }
 
 ferror.show = function(e) {
@@ -206,6 +207,33 @@ PeerGrid.prototype.setup = function() {
 
 PeerGrid.prototype.edit = function(cell) {
 	
+	var row = PR(cell);
+	var data = this.fieldValuesToData(fields.getAll(row.rowIndex));
+
+	var alias = E('_f_wg_iface'+this.unit+'_peer_alias');
+	var endpoint = E('_f_wg_iface'+this.unit+'_peer_ep');
+	var port = E('_f_wg_iface'+this.unit+'_peer_port');
+	var privkey = E('_f_wg_iface'+this.unit+'_peer_privkey');
+	var pubkey = E('_f_wg_iface'+this.unit+'_peer_pubkey');
+	var psk = E('_f_wg_iface'+this.unit+'_peer_psk');
+	var ip = E('_f_wg_iface'+this.unit+'_peer_ip');
+	var allowedips = E('_f_wg_iface'+this.unit+'_peer_aip');
+	var keepalive = E('_f_wg_iface'+this.unit+'_peer_ka');
+	var fwmark = E('_f_wg_iface'+this.unit+'_peer_fwmark');
+	
+	alias.value = data[0];
+	endpoint.value = data[1];
+	port.value = eval('nvarm.wg_'+this.interface_name+'_port');
+	privkey.value = data[2];
+	pubkey.value = data[3];
+	psk.value = data[4];
+	ip.value = data[5];
+	allowedips.value = data[6];
+	keepalive.value = data[7];
+	fwmark.value = 0;
+
+	var button = E('wg_iface'+this.unit+'_peer_gen');
+
 }
 
 PeerGrid.prototype.rpDel = function(e) {
