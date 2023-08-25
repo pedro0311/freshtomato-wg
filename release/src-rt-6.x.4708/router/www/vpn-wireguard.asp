@@ -174,6 +174,7 @@ PeerGrid.prototype.setup = function() {
 		{ type: 'text', maxlen: 3 },
 	]);
 	this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','IP','Allowed IPs','KA']);
+	this.disableNewEditor(true);
 	var nv = eval("nvram.wg_"+this.interface_name+"_peers.split('>')");
 	for (var i = 0; i < nv.length; ++i) {
 		var t = nv[i].split('<');
@@ -427,12 +428,14 @@ function addPeer(unit, quiet) {
 
 	var alias = E('_f_wg_iface'+unit+'_peer_alias');
 	var endpoint = E('_f_wg_iface'+unit+'_peer_ep');
+	var port = E('_f_wg_iface'+unit+'_peer_port');
 	var privkey = E('_f_wg_iface'+unit+'_peer_privkey');
 	var pubkey = E('_f_wg_iface'+unit+'_peer_pubkey');
 	var psk = E('_f_wg_iface'+unit+'_peer_psk');
 	var ip = E('_f_wg_iface'+unit+'_peer_ip');
 	var allowedips = E('_f_wg_iface'+unit+'_peer_aip');
 	var keepalive = E('_f_wg_iface'+unit+'_peer_ka');
+	var fwmark = E('_f_wg_iface'+this.unit+'_peer_fwmark');
 
 	var data = [
 		alias.value,
@@ -494,9 +497,17 @@ function addPeer(unit, quiet) {
 		changed = 1;
 		peerTables[unit-1].insertData(-1, data);
 		peerTables[unit-1].disableNewEditor(true);
-		var [tab, section] = locateElement(peerTables[unit-1].tb);
-		tabSelect(tab);
-		sectSelect(tab.substr(5)-1, section);
+
+		alias.value = '';
+		endpoint.value = '';
+		port.value = eval('nvarm.wg_'+this.interface_name+'_port');
+		privkey.value = '';
+		pubkey.value = '';
+		psk.value = '';
+		ip.value = '';
+		allowedips.value = '';
+		keepalive.value = 0;
+		fwmark.value = 0;
 	}
 
 }
