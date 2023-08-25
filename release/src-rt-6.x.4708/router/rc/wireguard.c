@@ -1,5 +1,5 @@
 #include "rc.h"
-#include "curve25519-fiat32.h"
+#include "curve25519.h"
 
 /* needed by logmsg() */
 #define LOGMSG_DISABLE	DISABLE_SYSLOG_OSM
