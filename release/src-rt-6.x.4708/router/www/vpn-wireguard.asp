@@ -56,7 +56,7 @@ var serviceType = 'wireguard';
 var tabs =  [];
 for (i = 1; i <= WG_INTERFACE_COUNT; ++i)
 	tabs.push(['iface'+i,'wg'+i]);
-var sections = [['interface','Interface'],['conf', 'Configuration'],['scripts','Scripts'],['gen','Peer Config'],['peers','Peers']];
+var sections = [['interface','Interface'],['conf', 'Configuration'],['scripts','Scripts'],['peers','Peers']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
@@ -1133,7 +1133,10 @@ function init() {
 				{ title: 'Post-Down Script', name: 'wg_'+t+'_postdown', type: 'textarea', value: eval('nvram.wg_'+t+'_postdown') },
 			]);
 			W('</div>');
-			W('<div id="'+t+'-gen">');
+			W('<div id="'+t+'-peers">');
+			W('<div class="section-title">Peers</div>');
+			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
+			peerTables[i].setup();
 			W('<div class="section-title">Peer Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
@@ -1169,10 +1172,6 @@ function init() {
 			W('</div>');
 			W('</div>');
 			W('</div>');
-			W('<div id="'+t+'-peers">');
-			W('<div class="section-title">Peers</div>');
-			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
-			peerTables[i].setup();
 			W('</div>');
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard'+(i+1)+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>');
 			W('</div>');
