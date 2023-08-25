@@ -1137,6 +1137,7 @@ function init() {
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
+			W('<br>');
 			W('<div class="section-title">Peer Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
