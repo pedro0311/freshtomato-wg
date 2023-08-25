@@ -11,6 +11,10 @@
  */
 
 typedef __uint128_t u128;
+typedef u_int64_t u64;
+typedef u_int32_t u32;
+typedef u_int16_t u16;
+typedef u_int8_t u8;
 
 static __always_inline u64 u64_eq_mask(u64 a, u64 b)
 {

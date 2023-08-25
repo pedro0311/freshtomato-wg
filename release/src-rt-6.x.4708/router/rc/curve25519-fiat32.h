@@ -16,6 +16,11 @@
  * fe limbs are bounded by 1.125*2^26,1.125*2^25,1.125*2^26,1.125*2^25,etc.
  * Multiplication and carrying produce fe from fe_loose.
  */
+typedef u_int64_t u64;
+typedef u_int32_t u32;
+typedef u_int16_t u16;
+typedef u_int8_t u8;
+
 typedef struct fe { u32 v[10]; } fe;
 
 /* fe_loose limbs are bounded by 3.375*2^26,3.375*2^25,3.375*2^26,3.375*2^25,etc
