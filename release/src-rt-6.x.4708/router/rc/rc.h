@@ -577,6 +577,8 @@ extern int write_ovpn_resolv(FILE*);
 
 /* wireguard.c */
 #ifdef TCONFIG_WIREGUARD
+#define WG_KEY_LEN 32
+#define WG_KEY_LEN_BASE64 ((((WG_KEY_LEN) + 2) / 3) * 4 + 1)
 extern void start_wireguard(int unit);
 extern void stop_wireguard(int unit);
 extern void wg_setup_dirs();
@@ -608,6 +610,8 @@ extern int wg_pubkey(char *privkey, char *pubkey);
 extern int wg_save_iface(char *iface, char *file);
 extern int wg_load_iface(char *iface, char *file);
 extern void write_wg_dnsmasq_config(FILE* f);
+extern void key_to_base64(char base64[static WG_KEY_LEN_BASE64], const uint8_t key[static WG_KEY_LEN]);
+extern bool key_from_base64(uint8_t key[static WG_KEY_LEN], const char *base64);
 #endif
 
 /* tinc.c */
