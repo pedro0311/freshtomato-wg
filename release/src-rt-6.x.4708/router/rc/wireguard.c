@@ -760,3 +760,15 @@ bool key_from_base64(uint8_t key[static WG_KEY_LEN], const char *base64)
 
 	return 1 & ((ret - 1) >> 8);
 }
+
+void curve25519_generate_public(uint8_t pub[static CURVE25519_KEY_SIZE], const uint8_t secret[static CURVE25519_KEY_SIZE])
+{
+	static const uint8_t basepoint[CURVE25519_KEY_SIZE] __aligned(sizeof(uintptr_t)) = { 9 };
+
+	curve25519(pub, secret, basepoint);
+}
+
+void curve25519(uint8_t mypublic[static CURVE25519_KEY_SIZE], const uint8_t secret[static CURVE25519_KEY_SIZE], const uint8_t basepoint[static CURVE25519_KEY_SIZE])
+{
+	curve25519_generic(mypublic, secret, basepoint);
+}
