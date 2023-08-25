@@ -579,7 +579,6 @@ extern int write_ovpn_resolv(FILE*);
 #ifdef TCONFIG_WIREGUARD
 #define WG_KEY_LEN 32
 #define WG_KEY_LEN_BASE64 ((((WG_KEY_LEN) + 2) / 3) * 4 + 1)
-enum curve25519_lengths { CURVE25519_KEY_SIZE = 32 };
 extern void start_wireguard(int unit);
 extern void stop_wireguard(int unit);
 extern void wg_setup_dirs();
