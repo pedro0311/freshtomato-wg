@@ -1176,7 +1176,6 @@ function init() {
 			W('</div>');
 			W('</div>');
 			W('</div>');
-			W('</div>');
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard'+(i+1)+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+(i+1)+'"></div>');
 			W('</div>');
 		}
