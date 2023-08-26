@@ -224,7 +224,7 @@ PeerGrid.prototype.edit = function(cell) {
 	
 	alias.value = data[0];
 	endpoint.value = data[1];
-	port.value = eval('nvarm.wg_'+this.interface_name+'_port');
+	port.value = eval('nvram.wg_'+this.interface_name+'_port');
 	privkey.value = data[2];
 	pubkey.value = data[3];
 	psk.value = data[4];
@@ -500,7 +500,7 @@ function addPeer(unit, quiet) {
 
 		alias.value = '';
 		endpoint.value = '';
-		port.value = eval('nvarm.wg_'+this.interface_name+'_port');
+		port.value = eval('nvram.wg_'+this.interface_name+'_port');
 		privkey.value = '';
 		pubkey.value = '';
 		psk.value = '';
