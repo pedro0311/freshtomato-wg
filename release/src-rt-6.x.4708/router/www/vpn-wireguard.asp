@@ -435,7 +435,7 @@ function addPeer(unit, quiet) {
 	var ip = E('_f_wg_iface'+unit+'_peer_ip');
 	var allowedips = E('_f_wg_iface'+unit+'_peer_aip');
 	var keepalive = E('_f_wg_iface'+unit+'_peer_ka');
-	var fwmark = E('_f_wg_iface'+this.unit+'_peer_fwmark');
+	var fwmark = E('_f_wg_iface'+unit+'_peer_fwmark');
 
 	var data = [
 		alias.value,
