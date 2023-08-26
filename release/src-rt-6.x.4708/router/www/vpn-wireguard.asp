@@ -235,7 +235,7 @@ PeerGrid.prototype.edit = function(cell) {
 
 	var button = E('wg_'+this.interface_name+'_peer_add');
 	button.value = 'Save to Peers';
-	button.setAttribute('onclick', 'editPeer('+unit+', '+row.rowIndex+')');
+	button.setAttribute('onclick', 'editPeer('+this.unit+', '+row.rowIndex+')');
 
 }
 
