@@ -239,14 +239,18 @@ PeerGrid.prototype.edit = function(cell) {
 
 }
 
-PeerGrid.prototype.rpDel = function(e) {
+PeerGrid.prototype.rowDel = function(e) {
 	changed = 1;
-	e = PR(e);
 	TGO(e).moving = null;
 	e.parentNode.removeChild(e);
 	this.recolor();
 	this.resort();
 	this.rpHide();
+}
+
+PeerGrid.prototype.rpDel = function(e) {
+	e = PR(e);
+	this.rowDel(e);
 }
 
 PeerGrid.prototype.verifyFields = function(row, quiet) {
@@ -589,7 +593,7 @@ function editPeer(unit, rowIndex, quiet) {
 		changed = 1;
 		var table = peerTables[unit-1];
 		var row = peerTables[unit-1].tb.firstChild.rows[rowIndex];
-		table.rpDel(row.ref)
+		table.rpDel(row);
 		table.insertData(rowIndex, data);
 		table.disableNewEditor(true);
 
