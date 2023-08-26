@@ -209,7 +209,7 @@ PeerGrid.prototype.setup = function() {
 PeerGrid.prototype.edit = function(cell) {
 	
 	var row = PR(cell);
-	var data = this.fieldValuesToData(fields.getAll(row.rowIndex));
+	var data = row.getRowData();
 
 	var alias = E('_f_wg_iface'+this.unit+'_peer_alias');
 	var endpoint = E('_f_wg_iface'+this.unit+'_peer_ep');
