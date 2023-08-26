@@ -233,7 +233,9 @@ PeerGrid.prototype.edit = function(cell) {
 	keepalive.value = data[7];
 	fwmark.value = 0;
 
-	var button = E('wg_iface'+this.unit+'_peer_gen');
+	var button = E('wg_'+this.interface_name+'_peer_add');
+	button.value = 'Save to Peers';
+	button.setAttribute('onclick', 'editPeer('+unit+', '+row.rowIndex+')');
 
 }
 
@@ -511,6 +513,103 @@ function addPeer(unit, quiet) {
 	}
 
 }
+
+function editPeer(unit, rowIndex, quiet) {
+
+	var ok = 1;
+
+	var alias = E('_f_wg_iface'+unit+'_peer_alias');
+	var endpoint = E('_f_wg_iface'+unit+'_peer_ep');
+	var port = E('_f_wg_iface'+unit+'_peer_port');
+	var privkey = E('_f_wg_iface'+unit+'_peer_privkey');
+	var pubkey = E('_f_wg_iface'+unit+'_peer_pubkey');
+	var psk = E('_f_wg_iface'+unit+'_peer_psk');
+	var ip = E('_f_wg_iface'+unit+'_peer_ip');
+	var allowedips = E('_f_wg_iface'+unit+'_peer_aip');
+	var keepalive = E('_f_wg_iface'+unit+'_peer_ka');
+	var fwmark = E('_f_wg_iface'+unit+'_peer_fwmark');
+
+	var data = [
+		alias.value,
+		endpoint.value,
+		privkey.value,
+		pubkey.value,
+		psk.value,
+		ip.value,
+		allowedips.value,
+		keepalive.value
+	];
+
+	var results = verifyPeerFieldData(data);
+
+	if (!results[2]) {
+		ferror.set(privkey, 'A valid private key is required', quiet || !ok);	
+		ok = 0;
+	}
+	else
+		ferror.clear(privkey);
+
+	if (!results[3]) {
+		ferror.set(pubkey, 'A valid public key is required', quiet || !ok);	
+		ok = 0;
+	}
+	else
+		ferror.clear(pubkey);
+		
+
+	if (!results[4]) {
+		ferror.set(psk, 'Preshared key is invalid', quiet || !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(psk);
+
+	if (!results[5]) {
+		ferror.set(ip, 'IP is invalid', quiet || !ok);
+		ok = 0;
+	}
+	else
+		ferror.clear(ip);
+
+	if (!results[6]) {
+		ferror.set(allowedips, 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
+		ok = 0;
+	}
+	else 
+		ferror.clear(keepalive);
+
+	if (!results[7]) {
+		ferror.set(keepalive, 'Keepalive is not within range 0-128', quiet || !ok);
+		ok = 0;
+	}
+	else 
+		ferror.clear(keepalive);
+
+	if(ok) {
+		changed = 1;
+		var table = peerTables[unit-1];
+		var row = peerTables[unit-1].tb.firstChild.rows[rowIndex];
+		table.rpDel(row.ref)
+		table.insertData(rowIndex, data);
+		table.disableNewEditor(true);
+
+		alias.value = '';
+		endpoint.value = '';
+		port.value = eval('nvram.wg_iface'+unit+'_port');
+		privkey.value = '';
+		pubkey.value = '';
+		psk.value = '';
+		ip.value = '';
+		allowedips.value = '';
+		keepalive.value = 0;
+		fwmark.value = 0;
+
+		var button = E('wg_iface'+unit+'_peer_add');
+		button.value = 'Add to Peers';
+		button.setAttribute('onclick', 'addPeer('+unit+')');
+	}
+
+	}
 
 function verifyPeerGenFields(unit) {
 
@@ -1203,7 +1302,7 @@ function init() {
 				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
 			W('<div>');
-			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_gen">');
+			W('<input type="button" value="Add to Peers" onclick="addPeer('+(i+1)+')" id="wg_'+t+'_peer_add">');
 			W('<input type="button" value="Generate Config" onclick="generatePeerConfig('+(i+1)+')" id="wg_'+t+'_peer_config">');
 			W('</div>');
 			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
