@@ -500,7 +500,7 @@ function addPeer(unit, quiet) {
 
 		alias.value = '';
 		endpoint.value = '';
-		port.value = eval('nvram.wg_'+this.interface_name+'_port');
+		port.value = eval('nvram.wg_iface'+unit+'_port');
 		privkey.value = '';
 		pubkey.value = '';
 		psk.value = '';
