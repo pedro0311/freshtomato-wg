@@ -1255,9 +1255,9 @@ function init() {
 			W('<br>');
 			W('<div class="section-title">Peer Configuration</div>');
 			createFieldTable('', [
-				{ title: 'Keepalive to Router', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
+				{ title: 'Keepalive to Router', name: 'wg_'+t+'_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
 				{ title: 'Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, placeholder: '(leave blank to use WAN IP)', value: eval('nvram.wg_'+t+'_endpoint') },
-				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', placeholder: "(CIDR format)", maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_aip') },
+				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', placeholder: "(CIDR format)", maxlen: 128, size: 64, suffix: '&nbsp;<small>comma separated<\/small>', value: eval('nvram.wg_'+t+'_aip') },
 				{ title: 'DNS Servers', name: 'wg_'+t+'_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_dns') },
 				{ title: 'Allow peers to communicate', name: 'f_wg_'+t+'_lan', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan') == '1'},
 				{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_'+t+'_lan0', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan0') == '1' },
@@ -1298,8 +1298,8 @@ function init() {
 				{ title: 'Public Key', name: 'f_wg_'+t+'_peer_pubkey', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Interface IP', name: 'f_wg_'+t+'_peer_ip', type: 'text', placeholder: "(CIDR format)", maxlen: 64, size: 64},
-				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', placeholder: "(CIDR format)", maxlen: 128, size: 64},
-				{ title: 'Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka', type: 'text', maxlen: 2, size: 4, value: "0"},
+				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', placeholder: "(CIDR format)", suffix: '&nbsp;<small>comma separated<\/small>', maxlen: 128, size: 64},
+				{ title: 'Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: "0"},
 				{ title: 'FWMark for this peer', name: 'f_wg_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
 				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
 				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
