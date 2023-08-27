@@ -56,7 +56,7 @@ var serviceType = 'wireguard';
 var tabs =  [];
 for (i = 1; i <= WG_INTERFACE_COUNT; ++i)
 	tabs.push(['iface'+i,'wg'+i]);
-var sections = [['interface','Interface'],['conf', 'Configuration'],['scripts','Scripts'],['peers','Peers']];
+var sections = [['interface','Interface'],['scripts','Scripts'],['peers','Peers']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
@@ -1252,8 +1252,8 @@ function init() {
 				{ title: 'MTU', name: 'wg_'+t+'_mtu', type: 'text', maxlen: 4, size: 4, value: eval('nvram.wg_'+t+'_mtu') },
 				{ title: 'Respond to DNS', name: 'f_wg_'+t+'_dns', type: 'checkbox', value: nvram.wg_iface_dns.indexOf(''+(i+1)) >= 0 },
 			]);
-			W('</div>');
-			W('<div id="'+t+'-conf">');
+			W('<br>');
+			W('<br>');
 			W('<div class="section-title">Peer Configuration</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Router', name: 'wg_'+t+'_ka', type: 'text', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
