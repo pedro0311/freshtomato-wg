@@ -17,7 +17,7 @@ void start_wg_eas()
 {
 	int unit;
 
-	for (unit = 1; unit <= WG_INTERFACE_MAX; unit ++) {
+	for (unit = 0; unit < WG_INTERFACE_MAX; unit ++) {
 		if (atoi(getNVRAMVar("wg_iface%d_eas", unit)) == 1) {
 			start_wireguard(unit);
 		}
