@@ -15,11 +15,15 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-.co1, .co2, .co3, .co4, .co5, .co6, .co7 {
+.co1, .co2, .co4, .co6, .co7 {
 	max-width: 120px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.co3, .co5 {
+	display: none;
 }
 
 .co8 {
@@ -168,7 +172,7 @@ PeerGrid.prototype.setup = function() {
 		{ type: 'text', maxlen: 128 },
 		{ type: 'password', maxlen: 44 },
 		{ type: 'text', maxlen: 44 },
-		{ type: 'text', maxlen: 44 },
+		{ type: 'password', maxlen: 44 },
 		{ type: 'text', maxlen: 100 },
 		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 3 },
