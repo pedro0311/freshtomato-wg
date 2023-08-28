@@ -56,7 +56,7 @@ var serviceType = 'wireguard';
 var tabs =  [];
 for (i = 1; i <= WG_INTERFACE_COUNT; ++i)
 	tabs.push(['iface'+i,'wg'+i]);
-var sections = [['interface','Interface'],['scripts','Scripts'],['peers','Peers']];
+var sections = [['config','Configuration'],['scripts','Scripts'],['peers','Peers']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
@@ -1233,8 +1233,8 @@ function init() {
 			}
 			W('<\/ul><div class="tabs-bottom"><\/div>');
 
-			W('<div id="'+t+'-interface">');
-			W('<div class="section-title">Interface Configuration</div>');
+			W('<div id="'+t+'-config">');
+			W('<div class="section-title">Interface</div>');
 			createFieldTable('', [
 				{ title: 'Enable on Start', name: 'f_wg_'+t+'_eas', type: 'checkbox', value: eval('nvram.wg_'+t+'_eas') == '1' },
 				{ title: 'Config file', name: 'wg_'+t+'_file', type: 'text', placeholder: '(optional)', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_file') },
@@ -1253,7 +1253,7 @@ function init() {
 				{ title: 'Respond to DNS', name: 'f_wg_'+t+'_dns', type: 'checkbox', value: nvram.wg_iface_dns.indexOf(''+(i+1)) >= 0 },
 			]);
 			W('<br>');
-			W('<div class="section-title">Peer Configuration</div>');
+			W('<div class="section-title">Peer</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Router', name: 'wg_'+t+'_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
 				{ title: 'Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, placeholder: '(leave blank to use WAN IP)', value: eval('nvram.wg_'+t+'_endpoint') },
