@@ -15,8 +15,7 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-.co1, .co2, .co4, .co6, .co7 {
-	max-width: 120px;
+.co1, .co2, .co3, .co4, .co5, .co6, .co7, .co8 {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -26,11 +25,24 @@
 	display: none;
 }
 
+.co1 {
+  	width: 10%;
+}
+
+.co2 {
+  	width: 15%;
+}
+
+.co4 {
+ 	 width: 40%;
+}
+
+.co6, .co7 {
+  	width: 15%;
+}
+
 .co8 {
-	width: 32px;
-  	white-space: nowrap;
-  	overflow: hidden;
-  	text-overflow: ellipsis;
+  	width: 5%;
 }
 
 .qrcode {
