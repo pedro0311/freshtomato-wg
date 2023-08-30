@@ -942,7 +942,9 @@ function updateStatus(unit) {
 
 	cmd = new XmlHttp();
 	cmd.onCompleted = function(text, xml) {
-		displayStatus(unit, text);
+		var cmdresult;
+		eval(text);
+		displayStatus(unit, cmdresult);
 	}
 	cmd.onError = function(x) {
 		var text = 'ERROR: '+x;
