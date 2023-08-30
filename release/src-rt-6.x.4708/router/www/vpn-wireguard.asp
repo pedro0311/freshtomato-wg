@@ -72,7 +72,7 @@ var serviceType = 'wireguard';
 var tabs =  [];
 for (i = 0; i < WG_INTERFACE_COUNT; ++i)
 	tabs.push(['iface'+i,'wg'+i]);
-var sections = [['config','Configuration'],['scripts','Scripts'],['peers','Peers']];
+var sections = [['config','Configuration'],['scripts','Scripts'],['peers','Peers'],['status','Status']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
