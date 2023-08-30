@@ -45,6 +45,10 @@
   	width: 5%;
 }
 
+.status-result {
+    padding: 10px;
+}
+
 .qrcode {
 	display: grid;
 	width: 100%;
@@ -1384,7 +1388,7 @@ function init() {
 			W('<div id="'+t+'-status">');
 			W('<input type="button" value="Update Status" onclick="updateStatus('+i+')" id="wg_'+t+'_status_update">');
 			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
-			W('<pre id="wg_'+t+'_result"><\/pre>');
+			W('<pre id="wg_'+t+'_result" class="status-result"><\/pre>');
 			W('</div>');
 
 
