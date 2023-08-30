@@ -959,8 +959,8 @@ function spin(x, which) {
 }
 
 function displayStatus(unit, text) {
-	elem.setInnerHTML(result, '<tt>'+escapeText(text)+'<\/tt>');
-	spin(0, 'statusWait');
+	elem.setInnerHTML(E('wg_iface'+unit+'_result')), '<tt>'+escapeText(text)+'<\/tt>');
+	spin(0, 'wg_iface'+unit+'_status_wait');
 }
 
 function netmaskToCIDR(mask) {
