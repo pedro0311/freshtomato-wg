@@ -45,6 +45,10 @@
   	width: 5%;
 }
 
+.status-result {
+    padding: 10px;
+}
+
 .qrcode {
 	display: grid;
 	width: 100%;
@@ -72,7 +76,7 @@ var serviceType = 'wireguard';
 var tabs =  [];
 for (i = 0; i < WG_INTERFACE_COUNT; ++i)
 	tabs.push(['iface'+i,'wg'+i]);
-var sections = [['config','Configuration'],['scripts','Scripts'],['peers','Peers']];
+var sections = [['config','Configuration'],['scripts','Scripts'],['peers','Peers'],['status','Status']];
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
@@ -935,6 +939,44 @@ function downloadConfig(content, name) {
 	URL.revokeObjectURL(link.href);
 }
 
+function updateStatus(unit) {
+	var result = E('wg_iface'+unit+'_result');
+	elem.setInnerHTML(result, '');
+	spin(1, 'wg_iface'+unit+'_status_wait');
+
+	cmd = new XmlHttp();
+	cmd.onCompleted = function(text, xml) {
+		var cmdresult;
+		eval(text);
+		displayStatus(unit, cmdresult);
+	}
+	cmd.onError = function(x) {
+		var text = 'ERROR: '+x;
+		displayStatus(unit, text);
+	}
+
+	var c = '/usr/sbin/wg show wg'+unit+'\n';
+
+	cmd.post('shell.cgi', 'action=execute&command='+escapeCGI(c.replace(/\r/g, '')));
+}
+
+function spin(x, which) {
+	E(which).style.display = (x ? 'inline-block' : 'none');
+}
+
+function displayStatus(unit, text) {
+	elem.setInnerHTML(E('wg_iface'+unit+'_result'), '<tt>'+escapeText(text)+'<\/tt>');
+	spin(0, 'wg_iface'+unit+'_status_wait');
+}
+
+function escapeText(s) {
+	function esc(c) {
+		return '&#'+c.charCodeAt(0)+';';
+	}
+
+	return s.replace(/[&"'<>]/g, esc).replace(/\n/g, ' <br>').replace(/ /g, '&nbsp;');
+}
+
 function netmaskToCIDR(mask) {
 	var maskNodes = mask.match(/(\d+)/g);
 	var cidr = 0;
@@ -1249,6 +1291,8 @@ function init() {
 			}
 			W('<\/ul><div class="tabs-bottom"><\/div>');
 
+
+
 			W('<div id="'+t+'-config">');
 			W('<div class="section-title">Interface</div>');
 			createFieldTable('', [
@@ -1283,6 +1327,9 @@ function init() {
 				{ title: 'Forward all peer traffic', name: 'f_wg_'+t+'_rgw', type: 'checkbox', value: eval('nvram.wg_'+t+'_rgw') == '1' },
 			]);
 			W('</div>');
+
+
+
 			W('<div id="'+t+'-scripts">');
 			W('<div class="section-title">Custom Interface Scripts</div>');
 			createFieldTable('', [
@@ -1292,6 +1339,9 @@ function init() {
 				{ title: 'Post-Down Script', name: 'wg_'+t+'_postdown', type: 'textarea', value: eval('nvram.wg_'+t+'_postdown') },
 			]);
 			W('</div>');
+
+
+
 			W('<div id="'+t+'-peers">');
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
@@ -1332,6 +1382,17 @@ function init() {
 			W('</div>');
 			W('</div>');
 			W('</div>');
+
+
+			
+			W('<div id="'+t+'-status">');
+			W('<input type="button" value="Update Status" onclick="updateStatus('+i+')" id="wg_'+t+'_status_update">');
+			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
+			W('<pre id="wg_'+t+'_result" class="status-result"><\/pre>');
+			W('</div>');
+
+
+
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard'+i+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+i+'"></div>');
 			W('</div>');
 		}
