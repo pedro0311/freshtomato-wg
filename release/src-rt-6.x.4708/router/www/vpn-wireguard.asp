@@ -981,7 +981,7 @@ function updateStatus(unit) {
 	cmd.onCompleted = function(text, xml) {
 		var cmdresult;
 		eval(text);
-		var [interface, peers] = decodeDump(cmdresult);
+		var [iface, peers] = decodeDump(cmdresult);
 		displayStatus(unit, cmdresult);
 	}
 	cmd.onError = function(x) {
@@ -1007,8 +1007,8 @@ function decodeDump(dump) {
 		'fwmark': sections[3]
 	};
 
-	for (var line in lines) {
-		line = line.split('\t');
+	for (var i in lines) {
+		var line = lines[i].split('\t');
 		var peer = {
 			'pubkey': line[0],
 			'psk': line[1],
@@ -1022,7 +1022,7 @@ function decodeDump(dump) {
 		peers.push(peer);
 	}
 
-	return [interface, peers];
+	return [iface, peers];
 }
 
 function spin(x, which) {
