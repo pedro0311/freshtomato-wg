@@ -1072,6 +1072,8 @@ function encodeStatus(iface, peers) {
 	// add peer statuses
 	for (var i = 0; i < peers.length; ++i) {
 		var peer = peers[i];
+		if (!peer)
+			continue;
 		output +='\n';
 		output += 'peer: '+peer.pubkey+'\n';
 		if (peer.alias)
