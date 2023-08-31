@@ -21,28 +21,24 @@
 	text-overflow: ellipsis;
 }
 
-.co3, .co5 {
+.co3, .co5, .co7, .co8 {
 	display: none;
 }
 
 .co1 {
-  	width: 10%;
+	width: 21%;
 }
 
 .co2 {
-  	width: 15%;
+	width: 21%;
 }
 
 .co4 {
- 	 width: 40%;
+	width: 40%;
 }
 
-.co6, .co7 {
-  	width: 15%;
-}
-
-.co8 {
-  	width: 5%;
+.co6 {
+	width: 18%;
 }
 
 .status-result {
@@ -349,6 +345,43 @@ PeerGrid.prototype.getAllData = function() {
 	}
 
 	return data;
+}
+
+PeerGrid.prototype.rpMouIn = function(evt) {
+	var e, x, ofs, me, s, n;
+
+	if ((evt = checkEvent(evt)) == null) return;
+
+	me = TGO(evt.target);
+	if (me.isEditing()) return;
+	if (me.moving) return;
+
+	me.rpHide();
+	e = document.createElement('div');
+	e.tgo = me;
+	e.ref = evt.target;
+	e.setAttribute('id', 'tg-row-panel');
+
+	n = 0;
+	s = '';
+	if (me.canMove) {
+		s = '<img src="rpu.gif" onclick="this.parentNode.tgo.rpUp(this.parentNode.ref)" title="Move Up"><img src="rpd.gif" onclick="this.parentNode.tgo.rpDn(this.parentNode.ref)" title="Move Down"><img src="rpm.gif" onclick="this.parentNode.tgo.rpMo(this,this.parentNode.ref)" title="Move">';
+		n += 3;
+	}
+	if (me.canDelete) {
+		s += '<img src="rpx.gif" onclick="this.parentNode.tgo.rpDel(this.parentNode.ref)" title="Delete">';
+		++n;
+	}
+	x = PR(evt.target);
+	x = x.cells[x.cells.length - 3];
+	ofs = elem.getOffset(x);
+	n *= 18;
+	e.style.left = (ofs.x + x.offsetWidth - n) + 'px';
+	e.style.top = ofs.y + 'px';
+	e.style.width = n + 'px';
+	e.innerHTML = s;
+
+	document.body.appendChild(e);
 }
 
 function formatDataForNVRAM(data) {
