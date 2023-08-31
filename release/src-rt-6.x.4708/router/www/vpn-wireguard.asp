@@ -1068,6 +1068,7 @@ function encodeStatus(iface, peers) {
 	if (iface.fwmark)
 		output += '  fwmark: '+iface.fwmark+'\n';
 
+	// add peer statuses
 	for (var i in peers) {
 		var peer = peers[i];
 		output +='\n';
@@ -1080,7 +1081,7 @@ function encodeStatus(iface, peers) {
 			output += '  endpoint: '+peer.endpoint+'\n';
 		output += '  allowed ips: '+peer.allowed_ips+'\n';
 		if (peer.handshake) {
-			output += '  latest handshake: '+peer.hanshake+' seconds ago\n';
+			output += '  latest handshake: '+peer.handshake+' seconds ago\n';
 			output += '  transfer: '+peer.rx+' B received, '+peer.tx+' B sent\n';
 		}
 		if (peer.keepalive)
