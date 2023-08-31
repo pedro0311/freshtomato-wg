@@ -21,12 +21,12 @@
 	text-overflow: ellipsis;
 }
 
-.co3, .co5 {
+.co3, .co5, .co7, .co8 {
 	display: none;
 }
 
 .co1 {
-  	width: 10%;
+  	width: 15%;
 }
 
 .co2 {
@@ -37,12 +37,8 @@
  	 width: 40%;
 }
 
-.co6, .co7 {
-  	width: 15%;
-}
-
-.co8 {
-  	width: 5%;
+.co6 {
+  	width: 30%;
 }
 
 .status-result {
