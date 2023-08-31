@@ -981,6 +981,7 @@ function updateStatus(unit) {
 	cmd.onCompleted = function(text, xml) {
 		var cmdresult;
 		eval(text);
+		var [interface, peers] = decodeDump(cmdresult);
 		displayStatus(unit, cmdresult);
 	}
 	cmd.onError = function(x) {
@@ -988,9 +989,40 @@ function updateStatus(unit) {
 		displayStatus(unit, text);
 	}
 
-	var c = '/usr/sbin/wg show wg'+unit+'\n';
+	var c = '/usr/sbin/wg show wg'+unit+'\n dump';
 
 	cmd.post('shell.cgi', 'action=execute&command='+escapeCGI(c.replace(/\r/g, '')));
+}
+
+function decodeDump(dump) {
+	var iface;
+	var peers = [];
+	var lines = dump.split('\n');
+
+	var sections = lines.shift().split('\t');
+	iface = {
+		'privkey': sections[0],
+		'pubkey': sections[1],
+		'port': sections[2],
+		'fwmark': sections[3]
+	};
+
+	for (var line in lines) {
+		line = line.split('\t');
+		var peer = {
+			'pubkey': line[0],
+			'psk': line[1],
+			'endpoint': line[2],
+			'allowed-ips': line[3],
+			'handshake': line[4],
+			'rx': line[5],
+			'tx': line[6],
+			'keepalive': line[7]
+		};
+		peers.push(peer);
+	}
+
+	return [interface, peers];
 }
 
 function spin(x, which) {
