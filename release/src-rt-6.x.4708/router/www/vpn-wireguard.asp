@@ -1004,7 +1004,7 @@ function updateStatus(unit) {
 		eval(text);
 		var [iface, peers] = decodeDump(cmdresult, unit);
 		var output = encodeStatus(iface, peers);
-		displayStatus(unit, cmdresult);
+		displayStatus(unit, output);
 	}
 	cmd.onError = function(x) {
 		var text = 'ERROR: '+x;
