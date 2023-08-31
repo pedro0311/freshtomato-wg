@@ -402,6 +402,7 @@ function decodePeers(unit) {
 
 		}
 	}
+	return peers;
 }
 
 function encodePeers(data) {
