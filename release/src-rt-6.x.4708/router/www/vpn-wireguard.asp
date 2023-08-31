@@ -1032,7 +1032,7 @@ function decodeDump(dump, unit) {
 
 	var nvram_peers = decodePeers(unit);
 
-	for (var i in lines) {
+	for (var i = 0; i < lines.length; ++i) {
 		var line = lines[i].split('\t');
 		var peer = {
 			'alias': null,
@@ -1045,7 +1045,7 @@ function decodeDump(dump, unit) {
 			'tx': line[6] == '0' ? null : line[6],
 			'keepalive': line[7] == 'off' ? null : line[7]
 		};
-		for (var j in nvram_peers) {
+		for (var j = 0; j < nvram_peers.length; ++j) {
 			var nvram_peer = nvram_peers[j];
 			if (nvram_peer.pubkey == peer.pubkey && nvram_peer.alias != "") {
 				peer.alias = nvram_peer.alias;
@@ -1069,7 +1069,7 @@ function encodeStatus(iface, peers) {
 		output += '  fwmark: '+iface.fwmark+'\n';
 
 	// add peer statuses
-	for (var i in peers) {
+	for (var i = 0; i < peers.length; ++i) {
 		var peer = peers[i];
 		output +='\n';
 		output += 'peer: '+peer.pubkey+'\n';
