@@ -191,35 +191,23 @@ PeerGrid.prototype.setup = function() {
 	]);
 	this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','Interface IP','Allowed IPs','KA']);
 	this.disableNewEditor(true);
-	var nv = eval("nvram.wg_"+this.interface_name+"_peers.split('>')");
-	for (var i = 0; i < nv.length; ++i) {
-		var t = nv[i].split('<');
-		if (t.length == 8) {
-			var data, pubkey, privkey;
 
-			if (t[0] == 1) {
-				privkey = t[3];
-				pubkey = window.wireguard.generatePublicKey(privkey);
-			}
-			else {
-				privkey = "";
-				pubkey = t[3];
-			}
-
-			data = [
-				t[1],
-				t[2],
-				privkey,
-				pubkey,
-				t[4],
-				t[5],
-				t[6],
-				t[7],
-			]
-
-			this.insertData(-1, data);
-		}
+	var peers = decodePeers(this.unit);
+	for (var i in peers) {
+		var peer = peers[i];
+		var data = [
+			peer.alias,
+			peer.endpoint,
+			peer.privkey,
+			peer.pubkey,
+			peer.psk,
+			peer.ip,
+			peer.allowed_ips,
+			peer.keepalive
+		];
+		this.insertData(-1, data);
 	}
+		
 }
 
 PeerGrid.prototype.edit = function(cell) {
@@ -341,7 +329,7 @@ PeerGrid.prototype.getAllData = function() {
 
 	/* reformat the data to include one key and a flag specifying which type */
 	for (i = 0; i < data.length; ++i) {
-		data[i] = formatDataForNVRAM(data[i]);
+		data[i] = encodePeers(data[i]);
 	}
 
 	return data;
@@ -384,7 +372,39 @@ PeerGrid.prototype.rpMouIn = function(evt) {
 	document.body.appendChild(e);
 }
 
-function formatDataForNVRAM(data) {
+function decodePeers(unit) {
+	var peers = []
+	var nv = eval("nvram.wg_iface"+unit+"_peers.split('>')");
+	for (var i = 0; i < nv.length; ++i) {
+		var t = nv[i].split('<');
+		if (t.length == 8) {
+			var data, pubkey, privkey;
+
+			if (t[0] == 1) {
+				privkey = t[3];
+				pubkey = window.wireguard.generatePublicKey(privkey);
+			}
+			else {
+				privkey = "";
+				pubkey = t[3];
+			}
+
+			peers.push({
+				'alias': t[1],
+				'endpoint': t[2],
+				'privkey': privkey,
+				'pubkey': pubkey,
+				'psk': t[4],
+				'ip': t[5],
+				'allowed_ips': t[6],
+				'keepalive': t[7],
+			});
+
+		}
+	}
+}
+
+function encodePeers(data) {
 	var key, type;
 
 	if(data[2]) {
@@ -981,7 +1001,8 @@ function updateStatus(unit) {
 	cmd.onCompleted = function(text, xml) {
 		var cmdresult;
 		eval(text);
-		var [iface, peers] = decodeDump(cmdresult);
+		var [iface, peers] = decodeDump(cmdresult, unit);
+		var output = encodeStatus(iface, peers);
 		displayStatus(unit, cmdresult);
 	}
 	cmd.onError = function(x) {
@@ -994,35 +1015,79 @@ function updateStatus(unit) {
 	cmd.post('shell.cgi', 'action=execute&command='+escapeCGI(c.replace(/\r/g, '')));
 }
 
-function decodeDump(dump) {
+function decodeDump(dump, unit) {
 	var iface;
 	var peers = [];
 	var lines = dump.split('\n');
 
 	var sections = lines.shift().split('\t');
 	iface = {
+		'name': 'wg'+unit,
+		'alias': 'Router',
 		'privkey': sections[0],
 		'pubkey': sections[1],
 		'port': sections[2],
-		'fwmark': sections[3]
+		'fwmark': sections[3] == 'off' ? null : sections[3]
 	};
+
+	var nvram_peers = decodePeers(unit);
 
 	for (var i in lines) {
 		var line = lines[i].split('\t');
 		var peer = {
+			'alias': null,
 			'pubkey': line[0],
-			'psk': line[1],
-			'endpoint': line[2],
-			'allowed-ips': line[3],
-			'handshake': line[4],
-			'rx': line[5],
-			'tx': line[6],
-			'keepalive': line[7]
+			'psk': line[1] == '(none)' ? null : line[1],
+			'endpoint': line[2] == '(none)' ? null : line[2],
+			'allowed_ips': line[3],
+			'handshake': line[4] == '0' ? null : line[4],
+			'rx': line[5] == '0' ? null : line[5],
+			'tx': line[6] == '0' ? null : line[6],
+			'keepalive': line[7] == 'off' ? null : line[7]
 		};
+		for (var j in nvram_peers) {
+			var nvram_peer = nvram_peers[j];
+			if (nvram_peer.pubkey == peer.pubkey && nvram_peer.alias != "") {
+				peer.alias = nvram_peer.alias;
+				break;
+			}
+		}
 		peers.push(peer);
 	}
 
 	return [iface, peers];
+}
+
+function encodeStatus(iface, peers) {
+
+	// add interface status
+	var output = 'interface: '+iface.name+'\n';
+	output += '  alias: '+iface.alias+'\n';
+	output += '  public key: '+iface.pubkey+'\n';
+	output += '  listening port: '+iface.port+'\n';
+	if (iface.fwmark)
+		output += '  fwmark: '+iface.fwmark+'\n';
+
+	for (var i in peers) {
+		var peer = peers[i];
+		output +='\n';
+		output += 'peer: '+peer.pubkey+'\n';
+		if (peer.alias)
+			output += '  alias: '+peer.alias+'\n';
+		if (peer.psk)
+			output += '  preshared key: (hidden)\n';
+		if (peer.endpoint)
+			output += '  endpoint: '+peer.endpoint+'\n';
+		output += '  allowed ips: '+peer.allowed_ips+'\n';
+		if (peer.handshake) {
+			output += '  latest handshake: '+peer.hanshake+' seconds ago\n';
+			output += '  transfer: '+peer.rx+' B received, '+peer.tx+' B sent\n';
+		}
+		if (peer.keepalive)
+			output += '  persistent keepalive: every '+peer.keepalive+' seconds\n';
+	}
+
+	return output;
 }
 
 function spin(x, which) {
