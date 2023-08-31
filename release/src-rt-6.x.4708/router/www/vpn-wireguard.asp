@@ -989,7 +989,7 @@ function updateStatus(unit) {
 		displayStatus(unit, text);
 	}
 
-	var c = '/usr/sbin/wg show wg'+unit+'\n dump';
+	var c = '/usr/sbin/wg show wg'+unit+' dump\n';
 
 	cmd.post('shell.cgi', 'action=execute&command='+escapeCGI(c.replace(/\r/g, '')));
 }
