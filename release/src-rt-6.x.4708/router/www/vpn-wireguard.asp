@@ -1034,7 +1034,8 @@ function decodeDump(dump, unit) {
 	var nvram_peers = decodePeers(unit);
 
 	for (var i = 0; i < lines.length; ++i) {
-		if (!line)
+		var line = lines[i];
+		if (line == "")
 			continue;
 		var line = lines[i].split('\t');
 		var peer = {
