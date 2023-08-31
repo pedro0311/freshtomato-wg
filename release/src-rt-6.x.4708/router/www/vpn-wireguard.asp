@@ -193,7 +193,7 @@ PeerGrid.prototype.setup = function() {
 	this.disableNewEditor(true);
 
 	var peers = decodePeers(this.unit);
-	for (var i in peers) {
+	for (var i = 0; i < peers.length; ++i) {
 		var peer = peers[i];
 		var data = [
 			peer.alias,
