@@ -1034,6 +1034,8 @@ function decodeDump(dump, unit) {
 	var nvram_peers = decodePeers(unit);
 
 	for (var i = 0; i < lines.length; ++i) {
+		if (!line)
+			continue;
 		var line = lines[i].split('\t');
 		var peer = {
 			'alias': null,
@@ -1072,8 +1074,6 @@ function encodeStatus(iface, peers) {
 	// add peer statuses
 	for (var i = 0; i < peers.length; ++i) {
 		var peer = peers[i];
-		if (!peer)
-			continue;
 		output +='\n';
 		output += 'peer: '+peer.pubkey+'\n';
 		if (peer.alias)
