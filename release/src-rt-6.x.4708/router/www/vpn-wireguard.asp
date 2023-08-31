@@ -1051,8 +1051,8 @@ function decodeDump(dump, unit) {
 			'endpoint': line[2] == '(none)' ? null : line[2],
 			'allowed_ips': line[3],
 			'handshake': line[4] == '0' ? null : line[4],
-			'rx': line[5] == '0' ? null : line[5],
-			'tx': line[6] == '0' ? null : line[6],
+			'rx': line[5],
+			'tx': line[6],
 			'keepalive': line[7] == 'off' ? null : line[7]
 		};
 		for (var j = 0; j < nvram_peers.length; ++j) {
