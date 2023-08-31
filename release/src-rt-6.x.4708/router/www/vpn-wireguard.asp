@@ -26,19 +26,19 @@
 }
 
 .co1 {
-  	width: 15%;
+	width: 21%;
 }
 
 .co2 {
-  	width: 15%;
+	width: 21%;
 }
 
 .co4 {
- 	 width: 40%;
+	width: 40%;
 }
 
 .co6 {
-  	width: 30%;
+	width: 18%;
 }
 
 .status-result {
