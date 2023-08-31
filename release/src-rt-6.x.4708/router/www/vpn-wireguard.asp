@@ -1001,9 +1001,15 @@ function updateStatus(unit) {
 	cmd = new XmlHttp();
 	cmd.onCompleted = function(text, xml) {
 		var cmdresult;
+		var output;
 		eval(text);
-		var [iface, peers] = decodeDump(cmdresult, unit);
-		var output = encodeStatus(iface, peers);
+		if (cmdresult == "Unable to access interface: No such device\n" || cmdresult == "Unable to access interface: Protocol not supported\n") {
+			output = 'ERROR: Wireguard device wg'+unit+' does not exist!';
+		}
+		else {
+			var [iface, peers] = decodeDump(cmdresult, unit);
+			output = encodeStatus(iface, peers);
+		}
 		displayStatus(unit, output);
 	}
 	cmd.onError = function(x) {
