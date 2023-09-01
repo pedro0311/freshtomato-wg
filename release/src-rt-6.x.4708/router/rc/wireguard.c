@@ -162,16 +162,6 @@ void wg_setup_dirs() {
 	if(mkdir_if_none(WG_DIR"/keys")) {
 		chmod(WG_DIR"/keys", (S_IRUSR | S_IWUSR | S_IXUSR));
 	}
-
-	/* script to enable IPv6 forwarding */
-	if(!(f_exists(WG_DIR"/scripts/ipv6-forward.sh"))){
-		if((fp = fopen(WG_DIR"/scripts/ipv6-forward.sh", "w"))) {
-			fprintf(fp, "#!/bin/sh\n"
-						"/bin/echo 1 > /proc/sys/net/ipv6/conf/all/forwarding\n");
-			fclose(fp);
-			chmod(WG_DIR"/scripts/ipv6-forward.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
-		}
-	}
 	
 	/* script to generate public keys from private keys */
 	if(!(f_exists(WG_DIR"/scripts/pubkey.sh"))){
@@ -249,11 +239,6 @@ void wg_cleanup_dirs() {
 int wg_create_iface(char *iface)
 {
 	FILE *fp;
-
-	/* enable IPv6 forwarding */
-	if(eval("/bin/sh", WG_DIR"/scripts/ipv6-forward.sh")) {
-		logmsg(LOG_WARNING, "Unable to enable forwarding for IPv6!");
-	}
 
     /* Make sure module is loaded */
     modprobe("wireguard");
