@@ -197,7 +197,7 @@ StatusRefresh.prototype.setup = function() {
 
 	this.actionURL = 'shell.cgi';
 	this.postData = 'action=execute&command='+escapeCGI('/usr/sbin/wg show wg'+this.unit+' dump\n'.replace(/\r/g, ''));
-	this.refreshTime = refreshTime * 1000;
+	this.refreshTime = 5 * 1000;
 	this.cookieTag = 'wg_'+this.interface_name+'_refresh';
 	this.dontuseButton = 0;
 	this.timer = new TomatoTimer(THIS(this, this.start));
