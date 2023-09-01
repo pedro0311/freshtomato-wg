@@ -310,34 +310,48 @@ StatusRefresh.prototype.updateUI = function(mode) {
 }
 
 StatusRefresh.prototype.initPage = function(delay, refresh) {
-		var e, v;
+	var e, v;
 
-		e = E('wg_'+this.interface_name+'_status_refresh_time');
-		if (((this.cookieTag) && (e != null)) && ((v = cookie.get(this.cookieTag)) != null) && (!isNaN(v *= 1))) {
-			e.value = Math.abs(v);
-			if (v > 0)
-				v = v * 1000;
-		}
-		else if (refresh) {
-			v = refresh * 1000;
-			if ((e != null) && (this.dontuseButton != 1))
-				e.value = refresh;
-		}
-		else
-			v = 0;
-
-		if (delay < 0) {
-			v = -delay;
-			this.once = 1;
-		}
-
-		if (v > 0) {
-			this.running = 1;
-			this.refreshTime = v;
-			this.timer.start(delay);
-			this.updateUI('wait');
-		}
+	e = E('wg_'+this.interface_name+'_status_refresh_time');
+	if (((this.cookieTag) && (e != null)) && ((v = cookie.get(this.cookieTag)) != null) && (!isNaN(v *= 1))) {
+		e.value = Math.abs(v);
+		if (v > 0)
+			v = v * 1000;
 	}
+	else if (refresh) {
+		v = refresh * 1000;
+		if ((e != null) && (this.dontuseButton != 1))
+			e.value = refresh;
+	}
+	else
+		v = 0;
+
+	if (delay < 0) {
+		v = -delay;
+		this.once = 1;
+	}
+
+	if (v > 0) {
+		this.running = 1;
+		this.refreshTime = v;
+		this.timer.start(delay);
+		this.updateUI('wait');
+	}
+}
+
+StatusRefresh.prototype.refresh = function(text) {
+	var cmdresult;
+	var output;
+	eval(text);
+	if (cmdresult == "Unable to access interface: No such device\n" || cmdresult == "Unable to access interface: Protocol not supported\n") {
+		output = 'ERROR: Wireguard device wg'+unit+' does not exist!';
+	}
+	else {
+		var [iface, peers] = decodeDump(cmdresult, unit);
+		output = encodeStatus(iface, peers);
+	}
+	displayStatus(unit, output);
+}
 
 PeerGrid.prototype.setup = function() {
 	this.init(this.interface_name+'-peers-grid', '', 50, [
@@ -1712,9 +1726,8 @@ function init() {
 			W('<img src="spin.gif" id="wg_'+t+'_status_refresh_spinner" alt=""> ');
 			genStdTimeList('wg_'+t+'_status_refresh_time', 'One off', 0);
 			W('<input type="button" value="Refresh" onclick="toggleRefresh('+i+')" id="wg_'+t+'_status_refresh_button"></div>');
-			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
+			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="display:none;vertical-align:top"><\/div>');
 			statRefreshes[i].setup();
-			statRefreshes[i].initPage(3000, 3);
 			W('<pre id="wg_'+t+'_result" class="status-result"><\/pre>');
 			W('</div>');
 
