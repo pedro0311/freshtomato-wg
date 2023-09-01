@@ -1106,16 +1106,16 @@ function encodeStatus(iface, peers) {
 function formatBytes(bytes) {
 	var output;
 
-	if (peer.rx < 1024)
-		output = peer.rx+' B';
-	else if (peer.rx < 1024 * 1024)
-		output = Math.floor(peer.rx/1024)+' KB';
-	else if (peer.rx < 1024 * 1024 * 1024)
-		output = Math.floor(peer.rx/(1024*1024))+' MB';
-	else if (peer.rx < 1024 * 1024 * 1024 * 1024)
-		output = Math.floor(peer.rx/(1024*1024*1024))+' GB';
+	if (bytes < 1024)
+		output = bytes+' B';
+	else if (bytes < 1024 * 1024)
+		output = Math.floor(bytes/1024)+' KB';
+	else if (bytes < 1024 * 1024 * 1024)
+		output = Math.floor(bytes/(1024*1024))+' MB';
+	else if (bytes < 1024 * 1024 * 1024 * 1024)
+		output = Math.floor(bytes/(1024*1024*1024))+' GB';
 	else
-		output = Math.floor(peer.rx/(1024*1024*1024*1024))+' TB';
+		output = Math.floor(bytes/(1024*1024*1024*1024))+' TB';
 
 	return output;
 }
