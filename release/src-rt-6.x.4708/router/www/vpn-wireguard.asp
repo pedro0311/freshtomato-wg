@@ -1091,12 +1091,31 @@ function encodeStatus(iface, peers) {
 			output += '  endpoint: '+peer.endpoint+'\n';
 		output += '  allowed ips: '+peer.allowed_ips+'\n';
 		if (peer.handshake) {
-			output += '  latest handshake: '+peer.handshake+' seconds ago\n';
-			output += '  transfer: '+peer.rx+' B received, '+peer.tx+' B sent\n';
+			var seconds = Math.floor(Date.now()/1000 - peer.handshake);
+			output += '  latest handshake: '+seconds+' seconds ago\n';
+			output += '  transfer: '+formatBytes(peer.rx)+' received, '+formatBytes(peer.tx)+' sent\n';
 		}
 		if (peer.keepalive)
 			output += '  persistent keepalive: every '+peer.keepalive+' seconds\n';
+			
 	}
+
+	return output;
+}
+
+function formatBytes(bytes) {
+	var output;
+
+	if (peer.rx < 1024)
+		output = peer.rx+' B';
+	else if (peer.rx < 1024 * 1024)
+		output = Math.floor(peer.rx/1024)+' KB';
+	else if (peer.rx < 1024 * 1024 * 1024)
+		output = Math.floor(peer.rx/(1024*1024))+' MB';
+	else if (peer.rx < 1024 * 1024 * 1024 * 1024)
+		output = Math.floor(peer.rx/(1024*1024*1024))+' GB';
+	else
+		output = Math.floor(peer.rx/(1024*1024*1024*1024))+' TB';
 
 	return output;
 }
