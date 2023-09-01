@@ -198,7 +198,7 @@ StatusRefresh.prototype.setup = function() {
 	this.actionURL = 'shell.cgi';
 	this.postData = 'action=execute&command='+escapeCGI('/usr/sbin/wg show wg'+this.unit+' dump\n'.replace(/\r/g, ''));
 	this.refreshTime = 5 * 1000;
-	this.cookieTag = 'wg_'+this.interface_name+'_refresh';
+	this.cookieTag = 'wg_iface'+this.unit+'_refresh';
 	this.dontuseButton = 0;
 	this.timer = new TomatoTimer(THIS(this, this.start));
 }
@@ -206,7 +206,7 @@ StatusRefresh.prototype.setup = function() {
 StatusRefresh.prototype.start = function() {
 	var e;
 
-	if ((e = E('wg_'+this.interface_name+'_status_refresh_time')) != null) {
+	if ((e = E('wg_iface'+this.unit+'_status_refresh_time')) != null) {
 		if (this.cookieTag)
 			cookie.set(this.cookieTag, e.value);
 
@@ -216,7 +216,7 @@ StatusRefresh.prototype.start = function() {
 
 	this.updateUI('start');
 
-	if ((e = E('wg_'+this.interface_name+'_status_refresh_button')) != null) {
+	if ((e = E('wg_iface'+this.unit+'_status_refresh_button')) != null) {
 		if (e.value == 'Refresh')
 			this.once = 1;
 	}
@@ -297,14 +297,14 @@ StatusRefresh.prototype.updateUI = function(mode) {
 	if (this.dontuseButton != 1) {
 		b = (mode != 'stop') && (this.refreshTime > 0);
 
-		if ((e = E('wg_'+this.interface_name+'_status_refresh_button')) != null) {
+		if ((e = E('wg_iface'+this.unit+'_status_refresh_button')) != null) {
 			e.value = b ? 'Stop' : 'Refresh';
 			((mode == 'start') && (!b) ? e.setAttribute('disabled', 'disabled') : e.removeAttribute('disabled'));
 		}
 
-		if ((e = E('wg_'+this.interface_name+'_status_refresh_time')) != null)
+		if ((e = E('wg_iface'+this.unit+'_status_refresh_time')) != null)
 			((!b) ? e.removeAttribute('disabled') : e.setAttribute('disabled', 'disabled'));
-		if ((e = E('wg_'+this.interface_name+'_status_refresh_spinner')) != null)
+		if ((e = E('wg_iface'+this.unit+'_status_refresh_spinner')) != null)
 			e.style.display = (b ? 'inline-block' : 'none');
 	}
 }
@@ -312,7 +312,7 @@ StatusRefresh.prototype.updateUI = function(mode) {
 StatusRefresh.prototype.initPage = function(delay, refresh) {
 	var e, v;
 
-	e = E('wg_'+this.interface_name+'_status_refresh_time');
+	e = E('wg_iface'+this.unit+'_status_refresh_time');
 	if (((this.cookieTag) && (e != null)) && ((v = cookie.get(this.cookieTag)) != null) && (!isNaN(v *= 1))) {
 		e.value = Math.abs(v);
 		if (v > 0)
