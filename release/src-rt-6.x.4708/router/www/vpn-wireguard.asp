@@ -84,13 +84,27 @@ for (i = 0; i < tabs.length; ++i) {
 	peerTables[i].unit = i;
 }
 
+function StatusRefresh() {return this;}
+StatusRefresh.prototype = new TomatoRefresh;
+
+var statRefreshes = [];
+for (i = 0; i < tabs.length; ++i) {
+	statRefreshes.push(new StatusRefresh());
+	statRefreshes[i].interface_name = tabs[i][0];
+	statRefreshes[i].unit = i;
+}
+
+function toggleRefresh(unit) {
+	statRefreshes[unit].toggle();
+}
+
 ferror.show = function(e) {
 	if ((e = E(e)) == null) return;
 	if (!e._error_msg) return;
 	elem.addClass(e, 'error-focused');
 	var [tab, section] = locateElement(e);
 	tabSelect(tab);
-	sectSelect(tab.substr(5)-1, section);
+	sectSelect(tab.substr(5), section);
 	e.focus();
 	alert(e._error_msg);
 	elem.removeClass(e, 'error-focused');
@@ -117,6 +131,8 @@ function show() {
 			e.disabled = 0;
 			E('spin'+i).style.display = 'none';
 		}
+		if (!statRefreshes[i].running)
+			statRefreshes[i].updateUI('stop');
 	}
 }
 
@@ -178,6 +194,167 @@ function updateForm(num) {
 	}
 }
 
+StatusRefresh.prototype.setup = function() {
+	var e, v;
+
+	this.actionURL = 'shell.cgi';
+	this.postData = 'action=execute&command='+escapeCGI('/usr/sbin/wg show wg'+this.unit+' dump\n'.replace(/\r/g, ''));
+	this.refreshTime = 5 * 1000;
+	this.cookieTag = 'wg_iface'+this.unit+'_refresh';
+	this.dontuseButton = 0;
+	this.timer = new TomatoTimer(THIS(this, this.start));
+}
+
+StatusRefresh.prototype.start = function() {
+	var e;
+
+	if ((e = E('wg_iface'+this.unit+'_status_refresh_time')) != null) {
+		if (this.cookieTag)
+			cookie.set(this.cookieTag, e.value);
+
+		if (this.dontuseButton != 1)
+			this.refreshTime = e.value * 1000;
+	}
+
+	this.updateUI('start');
+
+	if ((e = E('wg_iface'+this.unit+'_status_refresh_button')) != null) {
+		if (e.value == 'Refresh')
+			this.once = 1;
+	}
+
+	e = undefined;
+
+	this.running = 1;
+	if ((this.http = new XmlHttp()) == null) {
+		reloadPage();
+		return;
+	}
+
+	this.http.parent = this;
+
+	this.http.onCompleted = function(text, xml) {
+		var p = this.parent;
+
+		if (p.cookieTag)
+			cookie.unset(p.cookieTag + '-error');
+		if (!p.running) {
+			p.stop();
+			return;
+		}
+
+		p.refresh(text);
+
+		if ((p.refreshTime > 0) && (!p.once)) {
+			p.updateUI('wait');
+			p.timer.start(Math.round(p.refreshTime));
+		}
+		else
+			p.stop();
+
+		p.errors = 0;
+	}
+
+	this.http.onError = function(ex) {
+		var p = this.parent;
+		if ((!p) || (!p.running))
+			return;
+
+		p.timer.stop();
+
+		if (++p.errors <= 3) {
+			p.updateUI('wait');
+			p.timer.start(3000);
+			return;
+		}
+
+		if (p.cookieTag) {
+			var e = cookie.get(p.cookieTag + '-error') * 1;
+			if (isNaN(e))
+				e = 0;
+			else
+				++e;
+
+			cookie.unset(p.cookieTag);
+			cookie.set(p.cookieTag + '-error', e, 1);
+			if (e >= 3) {
+				alert('XMLHTTP: ' + ex);
+				return;
+			}
+		}
+
+		setTimeout(reloadPage, 2000);
+	}
+
+	this.errors = 0;
+	this.http.post(this.actionURL, this.postData);
+}
+
+StatusRefresh.prototype.updateUI = function(mode) {
+	var e, b;
+
+	if (typeof(E) == 'undefined') /* for a bizzare bug... */
+		return;
+
+	if (this.dontuseButton != 1) {
+		b = (mode != 'stop') && (this.refreshTime > 0);
+
+		if ((e = E('wg_iface'+this.unit+'_status_refresh_button')) != null) {
+			e.value = b ? 'Stop' : 'Refresh';
+			((mode == 'start') && (!b) ? e.setAttribute('disabled', 'disabled') : e.removeAttribute('disabled'));
+		}
+
+		if ((e = E('wg_iface'+this.unit+'_status_refresh_time')) != null)
+			((!b) ? e.removeAttribute('disabled') : e.setAttribute('disabled', 'disabled'));
+		if ((e = E('wg_iface'+this.unit+'_status_refresh_spinner')) != null)
+			e.style.display = (b ? 'inline-block' : 'none');
+	}
+}
+
+StatusRefresh.prototype.initPage = function(delay, refresh) {
+	var e, v;
+
+	e = E('wg_iface'+this.unit+'_status_refresh_time');
+	if (((this.cookieTag) && (e != null)) && ((v = cookie.get(this.cookieTag)) != null) && (!isNaN(v *= 1))) {
+		e.value = Math.abs(v);
+		if (v > 0)
+			v = v * 1000;
+	}
+	else if (refresh) {
+		v = refresh * 1000;
+		if ((e != null) && (this.dontuseButton != 1))
+			e.value = refresh;
+	}
+	else
+		v = 0;
+
+	if (delay < 0) {
+		v = -delay;
+		this.once = 1;
+	}
+
+	if (v > 0) {
+		this.running = 1;
+		this.refreshTime = v;
+		this.timer.start(delay);
+		this.updateUI('wait');
+	}
+}
+
+StatusRefresh.prototype.refresh = function(text) {
+	var cmdresult;
+	var output;
+	eval(text);
+	if (cmdresult == "Unable to access interface: No such device\n" || cmdresult == "Unable to access interface: Protocol not supported\n") {
+		output = 'ERROR: Wireguard device wg'+this.unit+' does not exist!';
+	}
+	else {
+		var [iface, peers] = decodeDump(cmdresult, this.unit);
+		output = encodeStatus(iface, peers);
+	}
+	displayStatus(this.unit, output);
+}
+
 PeerGrid.prototype.setup = function() {
 	this.init(this.interface_name+'-peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
@@ -191,35 +368,23 @@ PeerGrid.prototype.setup = function() {
 	]);
 	this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','Interface IP','Allowed IPs','KA']);
 	this.disableNewEditor(true);
-	var nv = eval("nvram.wg_"+this.interface_name+"_peers.split('>')");
-	for (var i = 0; i < nv.length; ++i) {
-		var t = nv[i].split('<');
-		if (t.length == 8) {
-			var data, pubkey, privkey;
 
-			if (t[0] == 1) {
-				privkey = t[3];
-				pubkey = window.wireguard.generatePublicKey(privkey);
-			}
-			else {
-				privkey = "";
-				pubkey = t[3];
-			}
-
-			data = [
-				t[1],
-				t[2],
-				privkey,
-				pubkey,
-				t[4],
-				t[5],
-				t[6],
-				t[7],
-			]
-
-			this.insertData(-1, data);
-		}
+	var peers = decodePeers(this.unit);
+	for (var i = 0; i < peers.length; ++i) {
+		var peer = peers[i];
+		var data = [
+			peer.alias,
+			peer.endpoint,
+			peer.privkey,
+			peer.pubkey,
+			peer.psk,
+			peer.ip,
+			peer.allowed_ips,
+			peer.keepalive
+		];
+		this.insertData(-1, data);
 	}
+		
 }
 
 PeerGrid.prototype.edit = function(cell) {
@@ -341,7 +506,7 @@ PeerGrid.prototype.getAllData = function() {
 
 	/* reformat the data to include one key and a flag specifying which type */
 	for (i = 0; i < data.length; ++i) {
-		data[i] = formatDataForNVRAM(data[i]);
+		data[i] = encodePeers(data[i]);
 	}
 
 	return data;
@@ -384,7 +549,40 @@ PeerGrid.prototype.rpMouIn = function(evt) {
 	document.body.appendChild(e);
 }
 
-function formatDataForNVRAM(data) {
+function decodePeers(unit) {
+	var peers = []
+	var nv = eval("nvram.wg_iface"+unit+"_peers.split('>')");
+	for (var i = 0; i < nv.length; ++i) {
+		var t = nv[i].split('<');
+		if (t.length == 8) {
+			var data, pubkey, privkey;
+
+			if (t[0] == 1) {
+				privkey = t[3];
+				pubkey = window.wireguard.generatePublicKey(privkey);
+			}
+			else {
+				privkey = "";
+				pubkey = t[3];
+			}
+
+			peers.push({
+				'alias': t[1],
+				'endpoint': t[2],
+				'privkey': privkey,
+				'pubkey': pubkey,
+				'psk': t[4],
+				'ip': t[5],
+				'allowed_ips': t[6],
+				'keepalive': t[7],
+			});
+
+		}
+	}
+	return peers;
+}
+
+function encodePeers(data) {
 	var key, type;
 
 	if(data[2]) {
@@ -980,17 +1178,123 @@ function updateStatus(unit) {
 	cmd = new XmlHttp();
 	cmd.onCompleted = function(text, xml) {
 		var cmdresult;
+		var output;
 		eval(text);
-		displayStatus(unit, cmdresult);
+		if (cmdresult == "Unable to access interface: No such device\n" || cmdresult == "Unable to access interface: Protocol not supported\n") {
+			output = 'ERROR: Wireguard device wg'+unit+' does not exist!';
+		}
+		else {
+			var [iface, peers] = decodeDump(cmdresult, unit);
+			output = encodeStatus(iface, peers);
+		}
+		displayStatus(unit, output);
 	}
 	cmd.onError = function(x) {
 		var text = 'ERROR: '+x;
 		displayStatus(unit, text);
 	}
 
-	var c = '/usr/sbin/wg show wg'+unit+'\n';
+	var c = '/usr/sbin/wg show wg'+unit+' dump\n';
 
 	cmd.post('shell.cgi', 'action=execute&command='+escapeCGI(c.replace(/\r/g, '')));
+}
+
+function decodeDump(dump, unit) {
+	var iface;
+	var peers = [];
+	var lines = dump.split('\n');
+
+	var sections = lines.shift().split('\t');
+	iface = {
+		'name': 'wg'+unit,
+		'alias': 'Router',
+		'privkey': sections[0],
+		'pubkey': sections[1],
+		'port': sections[2],
+		'fwmark': sections[3] == 'off' ? null : sections[3]
+	};
+
+	var nvram_peers = decodePeers(unit);
+
+	for (var i = 0; i < lines.length; ++i) {
+		var line = lines[i];
+		if (line == "")
+			continue;
+		var line = lines[i].split('\t');
+		var peer = {
+			'alias': null,
+			'pubkey': line[0],
+			'psk': line[1] == '(none)' ? null : line[1],
+			'endpoint': line[2] == '(none)' ? null : line[2],
+			'allowed_ips': line[3],
+			'handshake': line[4] == '0' ? null : line[4],
+			'rx': line[5],
+			'tx': line[6],
+			'keepalive': line[7] == 'off' ? null : line[7]
+		};
+		for (var j = 0; j < nvram_peers.length; ++j) {
+			var nvram_peer = nvram_peers[j];
+			if (nvram_peer.pubkey == peer.pubkey && nvram_peer.alias != "") {
+				peer.alias = nvram_peer.alias;
+				break;
+			}
+		}
+		peers.push(peer);
+	}
+
+	return [iface, peers];
+}
+
+function encodeStatus(iface, peers) {
+
+	// add interface status
+	var output = 'interface: '+iface.name+'\n';
+	output += '  alias: '+iface.alias+'\n';
+	output += '  public key: '+iface.pubkey+'\n';
+	output += '  listening port: '+iface.port+'\n';
+	if (iface.fwmark)
+		output += '  fwmark: '+iface.fwmark+'\n';
+
+	// add peer statuses
+	for (var i = 0; i < peers.length; ++i) {
+		var peer = peers[i];
+		output +='\n';
+		output += 'peer: '+peer.pubkey+'\n';
+		if (peer.alias)
+			output += '  alias: '+peer.alias+'\n';
+		if (peer.psk)
+			output += '  preshared key: (hidden)\n';
+		if (peer.endpoint)
+			output += '  endpoint: '+peer.endpoint+'\n';
+		output += '  allowed ips: '+peer.allowed_ips+'\n';
+		if (peer.handshake) {
+			var seconds = Math.floor(Date.now()/1000 - peer.handshake);
+			output += '  latest handshake: '+seconds+' seconds ago\n';
+			output += '  transfer: '+formatBytes(peer.rx)+' received, '+formatBytes(peer.tx)+' sent\n';
+		}
+		if (peer.keepalive)
+			output += '  persistent keepalive: every '+peer.keepalive+' seconds\n';
+			
+	}
+
+	return output;
+}
+
+function formatBytes(bytes) {
+	var output;
+
+	if (bytes < 1024)
+		output = bytes+' B';
+	else if (bytes < 1024 * 1024)
+		output = Math.floor(bytes/1024)+' KB';
+	else if (bytes < 1024 * 1024 * 1024)
+		output = Math.floor(bytes/(1024*1024))+' MB';
+	else if (bytes < 1024 * 1024 * 1024 * 1024)
+		output = Math.floor(bytes/(1024*1024*1024))+' GB';
+	else
+		output = Math.floor(bytes/(1024*1024*1024*1024))+' TB';
+
+	return output;
 }
 
 function spin(x, which) {
@@ -1419,8 +1723,14 @@ function init() {
 
 			
 			W('<div id="'+t+'-status">');
-			W('<input type="button" value="Update Status" onclick="updateStatus('+i+')" id="wg_'+t+'_status_update">');
+			
+			W('<div style="text-align:right">');
+			W('<img src="spin.gif" id="wg_'+t+'_status_refresh_spinner" alt=""> ');
+			genStdTimeList('wg_'+t+'_status_refresh_time', 'One off', 0);
+			W('<input type="button" value="Refresh" onclick="toggleRefresh('+i+')" id="wg_'+t+'_status_refresh_button"></div>');
 			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
+			statRefreshes[i].setup();
+			statRefreshes[i].initPage(3000, 3);
 			W('<pre id="wg_'+t+'_result" class="status-result"><\/pre>');
 			W('</div>');
 
