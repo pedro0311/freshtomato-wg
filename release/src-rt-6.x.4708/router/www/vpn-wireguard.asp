@@ -131,6 +131,8 @@ function show() {
 			e.disabled = 0;
 			E('spin'+i).style.display = 'none';
 		}
+		if (!statRefreshes[i].running)
+			statRefreshes[i].updateUI('stop');
 	}
 }
 
@@ -1726,8 +1728,9 @@ function init() {
 			W('<img src="spin.gif" id="wg_'+t+'_status_refresh_spinner" alt=""> ');
 			genStdTimeList('wg_'+t+'_status_refresh_time', 'One off', 0);
 			W('<input type="button" value="Refresh" onclick="toggleRefresh('+i+')" id="wg_'+t+'_status_refresh_button"></div>');
-			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="display:none;vertical-align:top"><\/div>');
+			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
 			statRefreshes[i].setup();
+			statRefreshes[i].initPage(3000, 3);
 			W('<pre id="wg_'+t+'_result" class="status-result"><\/pre>');
 			W('</div>');
 
