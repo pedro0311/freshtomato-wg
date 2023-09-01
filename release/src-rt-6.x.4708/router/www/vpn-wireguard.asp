@@ -203,6 +203,142 @@ StatusRefresh.prototype.setup = function() {
 	this.timer = new TomatoTimer(THIS(this, this.start));
 }
 
+StatusRefresh.prototype.start = function() {
+	var e;
+
+	if ((e = E('wg_'+this.interface_name+'_status_refresh_time')) != null) {
+		if (this.cookieTag)
+			cookie.set(this.cookieTag, e.value);
+
+		if (this.dontuseButton != 1)
+			this.refreshTime = e.value * 1000;
+	}
+
+	this.updateUI('start');
+
+	if ((e = E('wg_'+this.interface_name+'_status_refresh_button')) != null) {
+		if (e.value == 'Refresh')
+			this.once = 1;
+	}
+
+	e = undefined;
+
+	this.running = 1;
+	if ((this.http = new XmlHttp()) == null) {
+		reloadPage();
+		return;
+	}
+
+	this.http.parent = this;
+
+	this.http.onCompleted = function(text, xml) {
+		var p = this.parent;
+
+		if (p.cookieTag)
+			cookie.unset(p.cookieTag + '-error');
+		if (!p.running) {
+			p.stop();
+			return;
+		}
+
+		p.refresh(text);
+
+		if ((p.refreshTime > 0) && (!p.once)) {
+			p.updateUI('wait');
+			p.timer.start(Math.round(p.refreshTime));
+		}
+		else
+			p.stop();
+
+		p.errors = 0;
+	}
+
+	this.http.onError = function(ex) {
+		var p = this.parent;
+		if ((!p) || (!p.running))
+			return;
+
+		p.timer.stop();
+
+		if (++p.errors <= 3) {
+			p.updateUI('wait');
+			p.timer.start(3000);
+			return;
+		}
+
+		if (p.cookieTag) {
+			var e = cookie.get(p.cookieTag + '-error') * 1;
+			if (isNaN(e))
+				e = 0;
+			else
+				++e;
+
+			cookie.unset(p.cookieTag);
+			cookie.set(p.cookieTag + '-error', e, 1);
+			if (e >= 3) {
+				alert('XMLHTTP: ' + ex);
+				return;
+			}
+		}
+
+		setTimeout(reloadPage, 2000);
+	}
+
+	this.errors = 0;
+	this.http.post(this.actionURL, this.postData);
+}
+
+StatusRefresh.prototype.updateUI = function(mode) {
+	var e, b;
+
+	if (typeof(E) == 'undefined') /* for a bizzare bug... */
+		return;
+
+	if (this.dontuseButton != 1) {
+		b = (mode != 'stop') && (this.refreshTime > 0);
+
+		if ((e = E('wg_'+this.interface_name+'_status_refresh_button')) != null) {
+			e.value = b ? 'Stop' : 'Refresh';
+			((mode == 'start') && (!b) ? e.setAttribute('disabled', 'disabled') : e.removeAttribute('disabled'));
+		}
+
+		if ((e = E('wg_'+this.interface_name+'_status_refresh_time')) != null)
+			((!b) ? e.removeAttribute('disabled') : e.setAttribute('disabled', 'disabled'));
+		if ((e = E('wg_'+this.interface_name+'_status_refresh_spinner')) != null)
+			e.style.display = (b ? 'inline-block' : 'none');
+	}
+}
+
+StatusRefresh.prototype.initPage = function(delay, refresh) {
+		var e, v;
+
+		e = E('wg_'+this.interface_name+'_status_refresh_time');
+		if (((this.cookieTag) && (e != null)) && ((v = cookie.get(this.cookieTag)) != null) && (!isNaN(v *= 1))) {
+			e.value = Math.abs(v);
+			if (v > 0)
+				v = v * 1000;
+		}
+		else if (refresh) {
+			v = refresh * 1000;
+			if ((e != null) && (this.dontuseButton != 1))
+				e.value = refresh;
+		}
+		else
+			v = 0;
+
+		if (delay < 0) {
+			v = -delay;
+			this.once = 1;
+		}
+
+		if (v > 0) {
+			this.running = 1;
+			this.refreshTime = v;
+			this.timer.start(delay);
+			this.updateUI('wait');
+		}
+	}
+
 PeerGrid.prototype.setup = function() {
 	this.init(this.interface_name+'-peers-grid', '', 50, [
 		{ type: 'text', maxlen: 32 },
