@@ -84,6 +84,20 @@ for (i = 0; i < tabs.length; ++i) {
 	peerTables[i].unit = i;
 }
 
+function StatusRefresh() {return this;}
+StatusRefresh.prototype = new TomatoRefresh;
+
+var statRefreshes = [];
+for (i = 0; i < tabs.length; ++i) {
+	statRefreshes.push(new StatusRefresh());
+	statRefreshes[i].interface_name = tabs[i][0];
+	statRefreshes[i].unit = i;
+}
+
+function toggleRefresh(unit) {
+	statRefreshes[unit].toggle();
+}
+
 ferror.show = function(e) {
 	if ((e = E(e)) == null) return;
 	if (!e._error_msg) return;
@@ -176,6 +190,17 @@ function updateForm(num) {
 
 		fom._service.value += 'wireguard'+num+'-restart';
 	}
+}
+
+StatusRefresh.prototype.setup = function() {
+	var e, v;
+
+	this.actionURL = 'shell.cgi';
+	this.postData = 'action=execute&command='+escapeCGI('/usr/sbin/wg show wg'+this.unit+' dump\n'.replace(/\r/g, ''));
+	this.refreshTime = refreshTime * 1000;
+	this.cookieTag = 'wg_'+this.interface_name+'_refresh';
+	this.dontuseButton = 0;
+	this.timer = new TomatoTimer(THIS(this, this.start));
 }
 
 PeerGrid.prototype.setup = function() {
@@ -1546,7 +1571,11 @@ function init() {
 
 			
 			W('<div id="'+t+'-status">');
-			W('<input type="button" value="Update Status" onclick="updateStatus('+i+')" id="wg_'+t+'_status_update">');
+			statRefreshes[i].setup();
+			W('<div style="text-align:right">');
+			W('<img src="spin.gif" id="wg_'+t+'_status_refresh_spinner" alt=""> ');
+			genStdTimeList('wg_'+t+'_status_refresh_time', 'One off', 0);
+			W('<input type="button" value="Refresh" onclick="toggleRefresh('+i+')" id="wg_'+t+'_status_refresh_button"></div>');
 			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
 			W('<pre id="wg_'+t+'_result" class="status-result"><\/pre>');
 			W('</div>');
