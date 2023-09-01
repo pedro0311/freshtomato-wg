@@ -350,7 +350,7 @@ StatusRefresh.prototype.refresh = function(text) {
 		var [iface, peers] = decodeDump(cmdresult, this.unit);
 		output = encodeStatus(iface, peers);
 	}
-	displayStatus(unit, output);
+	displayStatus(this.unit, output);
 }
 
 PeerGrid.prototype.setup = function() {
