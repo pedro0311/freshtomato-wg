@@ -18,7 +18,7 @@ void start_wg_eas()
 	int unit;
 
 	for (unit = 0; unit < WG_INTERFACE_MAX; unit ++) {
-		if (atoi(getNVRAMVar("wg_iface%d_eas", unit)) == 1) {
+		if (atoi(getNVRAMVar("wg%d_eas", unit)) == 1) {
 			start_wireguard(unit);
 		}
 	}
@@ -40,8 +40,8 @@ void start_wireguard(int unit)
 	snprintf(iface, IF_SIZE, "wg%d", unit);
 
 	/* check if file is specified */
-	if(getNVRAMVar("wg_iface%d_file", unit)[0] != '\0') {
-		wg_load_iface(iface, getNVRAMVar("wg_iface%d_file", unit));
+	if(getNVRAMVar("wg%d_file", unit)[0] != '\0') {
+		wg_load_iface(iface, getNVRAMVar("wg%d_file", unit));
 	}
 	else {
 
@@ -52,37 +52,37 @@ void start_wireguard(int unit)
 		}
 
 		/* set interface address */
-		if (wg_set_iface_addr(iface, getNVRAMVar("wg_iface%d_ip", unit))) {
+		if (wg_set_iface_addr(iface, getNVRAMVar("wg%d_ip", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
 
 		/* set interface port */
-		if (wg_set_iface_port(iface, getNVRAMVar("wg_iface%d_port", unit))) {
+		if (wg_set_iface_port(iface, getNVRAMVar("wg%d_port", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
 
 		/* set interface private key */
-		if (wg_set_iface_privkey(iface, getNVRAMVar("wg_iface%d_key", unit))) {
+		if (wg_set_iface_privkey(iface, getNVRAMVar("wg%d_key", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
 
 		/* set interface fwmark*/
-		if (wg_set_iface_fwmark(iface, getNVRAMVar("wg_iface%d_fwmark", unit))) {
+		if (wg_set_iface_fwmark(iface, getNVRAMVar("wg%d_fwmark", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
 
 		/* set interface mtu*/
-		if (wg_set_iface_mtu(iface, getNVRAMVar("wg_iface%d_mtu", unit))) {
+		if (wg_set_iface_mtu(iface, getNVRAMVar("wg%d_mtu", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
 
 		/* add stored peers */
-		nvp = nv = strdup(getNVRAMVar("wg_iface%d_peers", unit));
+		nvp = nv = strdup(getNVRAMVar("wg%d_peers", unit));
 		if (nv){
 			while ((b = strsep(&nvp, ">")) != NULL) {
 
@@ -119,7 +119,7 @@ void start_wireguard(int unit)
 	wg_iface_post_up(unit);
 
 	/* set iptables rules */
-	if (wg_set_iptables(iface, getNVRAMVar("wg_iface%d_port", unit))) {
+	if (wg_set_iptables(iface, getNVRAMVar("wg%d_port", unit))) {
 		stop_wireguard(unit);
 		return;
 	}
@@ -140,7 +140,7 @@ void stop_wireguard(int unit)
 	wg_iface_post_down(unit);
 
 	/* remove iptables rules */
-	wg_remove_iptables(iface, getNVRAMVar("wg_iface%d_port", unit));
+	wg_remove_iptables(iface, getNVRAMVar("wg%d_port", unit));
 }
 
 void wg_setup_dirs() {
@@ -505,7 +505,7 @@ int wg_iface_script(int unit, char *script_name)
 	FILE *fp;
 
 	memset(buffer, 0, buffer_size);
-	snprintf(buffer, buffer_size, "wg_iface%d_%s", unit, script_name);
+	snprintf(buffer, buffer_size, "wg%d_%s", unit, script_name);
 
 	script = nvram_safe_get(buffer);
 
@@ -671,7 +671,7 @@ void write_wg_dnsmasq_config(FILE* f)
 	int cur;
 
 	/* add interfaces to dns config */
-	strlcpy(buf, nvram_safe_get("wg_iface_dns"), sizeof(buf));
+	strlcpy(buf, nvram_safe_get("wg_dns"), sizeof(buf));
 	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
 		cur = atoi(pos);
 		if (cur) {
