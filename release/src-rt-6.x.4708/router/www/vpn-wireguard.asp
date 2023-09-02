@@ -346,7 +346,7 @@ StatusRefresh.prototype.refresh = function(text) {
 	var output;
 	eval(text);
 	if (cmdresult == "Unable to access interface: No such device\n" || cmdresult == "Unable to access interface: Protocol not supported\n") {
-		output = 'ERROR: Wireguard device wg'+this.unit+' does not exist!';
+		output = 'Wireguard device wg'+this.unit+' is down';
 	}
 	else {
 		var [iface, peers] = decodeDump(cmdresult, this.unit);
@@ -1629,7 +1629,7 @@ function init() {
 			W('<\/ul><div class="tabs-bottom"><\/div>');
 
 
-
+			/* config tab start */
 			W('<div id="'+t+'-config">');
 			W('<div class="section-title">Interface</div>');
 			createFieldTable('', [
@@ -1664,9 +1664,9 @@ function init() {
 				{ title: 'Forward all peer traffic', name: 'f_wg_'+t+'_rgw', type: 'checkbox', value: eval('nvram.wg_'+t+'_rgw') == '1' },
 			]);
 			W('</div>');
+			/* config tab stop */
 
-
-
+			/* scripts tab start */
 			W('<div id="'+t+'-scripts">');
 			W('<div class="section-title">Custom Interface Scripts</div>');
 			createFieldTable('', [
@@ -1676,9 +1676,9 @@ function init() {
 				{ title: 'Post-Down Script', name: 'wg_'+t+'_postdown', type: 'textarea', value: eval('nvram.wg_'+t+'_postdown') },
 			]);
 			W('</div>');
+			/* scripts tab stop */
 
-
-
+			/* peers tab start */
 			W('<div id="'+t+'-peers">');
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
@@ -1719,11 +1719,12 @@ function init() {
 			W('</div>');
 			W('</div>');
 			W('</div>');
+			/* peers tab stop */
 
 
-			
+			/* status tab start */
 			W('<div id="'+t+'-status">');
-			
+			W('<pre id="wg_'+t+'_result" class="status-result"><\/pre>');
 			W('<div style="text-align:right">');
 			W('<img src="spin.gif" id="wg_'+t+'_status_refresh_spinner" alt=""> ');
 			genStdTimeList('wg_'+t+'_status_refresh_time', 'One off', 0);
@@ -1731,9 +1732,8 @@ function init() {
 			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
 			statRefreshes[i].setup();
 			statRefreshes[i].initPage(3000, 3);
-			W('<pre id="wg_'+t+'_result" class="status-result"><\/pre>');
 			W('</div>');
-
+			/* status tab end */
 
 
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard'+i+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+i+'"></div>');
