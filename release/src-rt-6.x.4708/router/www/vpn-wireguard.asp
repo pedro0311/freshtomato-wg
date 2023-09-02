@@ -346,7 +346,7 @@ StatusRefresh.prototype.refresh = function(text) {
 	var output;
 	eval(text);
 	if (cmdresult == "Unable to access interface: No such device\n" || cmdresult == "Unable to access interface: Protocol not supported\n") {
-		output = 'ERROR: Wireguard device wg'+this.unit+' does not exist!';
+		output = 'Wireguard device wg'+this.unit+' is down';
 	}
 	else {
 		var [iface, peers] = decodeDump(cmdresult, this.unit);
