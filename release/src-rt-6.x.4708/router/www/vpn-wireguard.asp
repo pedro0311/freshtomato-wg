@@ -405,7 +405,7 @@ PeerGrid.prototype.edit = function(cell) {
 	
 	alias.value = data[0];
 	endpoint.value = data[1];
-	port.value = eval('nvram.wg_'+this.interface_name+'_port');
+	port.value = eval('nvram.'+this.interface_name+'_port');
 	privkey.value = data[2];
 	pubkey.value = data[3];
 	psk.value = data[4];
@@ -414,7 +414,7 @@ PeerGrid.prototype.edit = function(cell) {
 	keepalive.value = data[7];
 	fwmark.value = 0;
 
-	var button = E('wg_'+this.interface_name+'_peer_add');
+	var button = E(this.interface_name+'_peer_add');
 	button.value = 'Save to Peers';
 	button.setAttribute('onclick', 'editPeer('+this.unit+', '+row.rowIndex+')');
 
@@ -1613,14 +1613,14 @@ function init() {
 		for (i = 0; i < tabs.length; ++i) {
 			t = tabs[i][0];
 			W('<div id="'+t+'-tab">');
-			W('<input type="hidden" name="wg_'+t+'_eas">');
-			W('<input type="hidden" name="wg_'+t+'_lan">');
-			W('<input type="hidden" name="wg_'+t+'_lan0">');
-			W('<input type="hidden" name="wg_'+t+'_lan1">');
-			W('<input type="hidden" name="wg_'+t+'_lan2">');
-			W('<input type="hidden" name="wg_'+t+'_lan3">');
-			W('<input type="hidden" name="wg_'+t+'_rgw">');
-			W('<input type="hidden" name="wg_'+t+'_peers">');
+			W('<input type="hidden" name="'+t+'_eas">');
+			W('<input type="hidden" name="'+t+'_lan">');
+			W('<input type="hidden" name="'+t+'_lan0">');
+			W('<input type="hidden" name="'+t+'_lan1">');
+			W('<input type="hidden" name="'+t+'_lan2">');
+			W('<input type="hidden" name="'+t+'_lan3">');
+			W('<input type="hidden" name="'+t+'_rgw">');
+			W('<input type="hidden" name="'+t+'_peers">');
 
 			W('<ul class="tabs">');
 			for (j = 0; j < sections.length; j++) {
@@ -1633,35 +1633,35 @@ function init() {
 			W('<div id="'+t+'-config">');
 			W('<div class="section-title">Interface</div>');
 			createFieldTable('', [
-				{ title: 'Enable on Start', name: 'f_wg_'+t+'_eas', type: 'checkbox', value: eval('nvram.wg_'+t+'_eas') == '1' },
-				{ title: 'Config file', name: 'wg_'+t+'_file', type: 'text', placeholder: '(optional)', maxlen: 64, size: 64, value: eval('nvram.wg_'+t+'_file') },
-				{ title: 'Port', name: 'wg_'+t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port') },
+				{ title: 'Enable on Start', name: 'f_'+t+'_eas', type: 'checkbox', value: eval('nvram.'+t+'_eas') == '1' },
+				{ title: 'Config file', name: t+'_file', type: 'text', placeholder: '(optional)', maxlen: 64, size: 64, value: eval('nvram.'+t+'_file') },
+				{ title: 'Port', name: t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port') },
 				{ title: 'Private Key', multi: [
-					{ title: '', name: 'wg_'+t+'_key', type: 'password', maxlen: 44, size: 44, value: eval('nvram.wg_'+t+'_key'), peekaboo: 1 },
-					{ title: '', custom: '<input type="button" value="Generate" onclick="generateInterfaceKey('+i+')" id="wg_'+t+'_keygen">' },
+					{ title: '', name: t+'_key', type: 'password', maxlen: 44, size: 44, value: eval('nvram.'+t+'_key'), peekaboo: 1 },
+					{ title: '', custom: '<input type="button" value="Generate" onclick="generateInterfaceKey('+i+')" id="'+t+'_keygen">' },
 				] },
 				{ title: 'Public Key', multi: [
-					{ title: '', name: 'wg_'+t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
-					{ title: '', custom: '<input type="button" value="Copy" onclick="copyInterfacePubKey('+i+')" id="wg_'+t+'_pubkey_copy">' },
+					{ title: '', name: t+'_pubkey', type: 'text', maxlen: 44, size: 44, disabled: ""},
+					{ title: '', custom: '<input type="button" value="Copy" onclick="copyInterfacePubKey('+i+')" id="'+t+'_pubkey_copy">' },
 				] },
-				{ title: 'Interface IP', name: 'wg_'+t+'_ip', type: 'text', maxlen: 32, size: 17, value: eval('nvram.wg_'+t+'_ip'), placeholder: "(CIDR format)" },
-				{ title: 'FWMark', name: 'wg_'+t+'_fwmark', type: 'text', maxlen: 8, size: 8, value: eval('nvram.wg_'+t+'_fwmark') },
-				{ title: 'MTU', name: 'wg_'+t+'_mtu', type: 'text', maxlen: 4, size: 4, value: eval('nvram.wg_'+t+'_mtu') },
-				{ title: 'Respond to DNS', name: 'f_wg_'+t+'_dns', type: 'checkbox', value: nvram.wg_dns.indexOf(''+i) >= 0 },
+				{ title: 'Interface IP', name: t+'_ip', type: 'text', maxlen: 32, size: 17, value: eval('nvram.'+t+'_ip'), placeholder: "(CIDR format)" },
+				{ title: 'FWMark', name: t+'_fwmark', type: 'text', maxlen: 8, size: 8, value: eval('nvram.'+t+'_fwmark') },
+				{ title: 'MTU', name: t+'_mtu', type: 'text', maxlen: 4, size: 4, value: eval('nvram.'+t+'_mtu') },
+				{ title: 'Respond to DNS', name: 'f_'+t+'_dns', type: 'checkbox', value: nvram.wg_dns.indexOf(''+i) >= 0 },
 			]);
 			W('<br>');
 			W('<div class="section-title">Peer</div>');
 			createFieldTable('', [
-				{ title: 'Keepalive to Router', name: 'wg_'+t+'_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: eval('nvram.wg_'+t+'_ka') },
-				{ title: 'Endpoint', name: 'wg_'+t+'_endpoint', type: 'text', maxlen: 64, size: 64, placeholder: '(leave blank to use WAN IP)', value: eval('nvram.wg_'+t+'_endpoint') },
-				{ title: 'Allowed IPs', name: 'wg_'+t+'_aip', type: 'text', placeholder: "(CIDR format)", maxlen: 128, size: 64, suffix: '&nbsp;<small>comma separated<\/small>', value: eval('nvram.wg_'+t+'_aip') },
-				{ title: 'DNS Servers', name: 'wg_'+t+'_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.wg_'+t+'_dns') },
-				{ title: 'Allow peers to communicate', name: 'f_wg_'+t+'_lan', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan') == '1'},
-				{ title: 'Push LAN0 (br0) to peers', name: 'f_wg_'+t+'_lan0', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan0') == '1' },
-				{ title: 'Push LAN1 (br1) to peers', name: 'f_wg_'+t+'_lan1', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan1') == '1' },
-				{ title: 'Push LAN2 (br2) to peers', name: 'f_wg_'+t+'_lan2', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan2') == '1' },
-				{ title: 'Push LAN3 (br3) to peers', name: 'f_wg_'+t+'_lan3', type: 'checkbox', value: eval('nvram.wg_'+t+'_lan3') == '1' },
-				{ title: 'Forward all peer traffic', name: 'f_wg_'+t+'_rgw', type: 'checkbox', value: eval('nvram.wg_'+t+'_rgw') == '1' },
+				{ title: 'Keepalive to Router', name: t+'_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: eval('nvram.'+t+'_ka') },
+				{ title: 'Endpoint', name: t+'_endpoint', type: 'text', maxlen: 64, size: 64, placeholder: '(leave blank to use WAN IP)', value: eval('nvram.'+t+'_endpoint') },
+				{ title: 'Allowed IPs', name: t+'_aip', type: 'text', placeholder: "(CIDR format)", maxlen: 128, size: 64, suffix: '&nbsp;<small>comma separated<\/small>', value: eval('nvram.'+t+'_aip') },
+				{ title: 'DNS Servers', name: t+'_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.'+t+'_dns') },
+				{ title: 'Allow peers to communicate', name: 'f_'+t+'_lan', type: 'checkbox', value: eval('nvram.'+t+'_lan') == '1'},
+				{ title: 'Push LAN0 (br0) to peers', name: 'f_'+t+'_lan0', type: 'checkbox', value: eval('nvram.'+t+'_lan0') == '1' },
+				{ title: 'Push LAN1 (br1) to peers', name: 'f_'+t+'_lan1', type: 'checkbox', value: eval('nvram.'+t+'_lan1') == '1' },
+				{ title: 'Push LAN2 (br2) to peers', name: 'f_'+t+'_lan2', type: 'checkbox', value: eval('nvram.'+t+'_lan2') == '1' },
+				{ title: 'Push LAN3 (br3) to peers', name: 'f_'+t+'_lan3', type: 'checkbox', value: eval('nvram.'+t+'_lan3') == '1' },
+				{ title: 'Forward all peer traffic', name: 'f_'+t+'_rgw', type: 'checkbox', value: eval('nvram.'+t+'_rgw') == '1' },
 			]);
 			W('</div>');
 			/* config tab stop */
@@ -1670,10 +1670,10 @@ function init() {
 			W('<div id="'+t+'-scripts">');
 			W('<div class="section-title">Custom Interface Scripts</div>');
 			createFieldTable('', [
-				{ title: 'Pre-Up Script', name: 'wg_'+t+'_preup', type: 'textarea', value: eval('nvram.wg_'+t+'_preup') },
-				{ title: 'Post-Up Script', name: 'wg_'+t+'_postup', type: 'textarea', value: eval('nvram.wg_'+t+'_postup') },
-				{ title: 'Pre-Down Script', name: 'wg_'+t+'_predown', type: 'textarea', value: eval('nvram.wg_'+t+'_predown') },
-				{ title: 'Post-Down Script', name: 'wg_'+t+'_postdown', type: 'textarea', value: eval('nvram.wg_'+t+'_postdown') },
+				{ title: 'Pre-Up Script', name: t+'_preup', type: 'textarea', value: eval('nvram.'+t+'_preup') },
+				{ title: 'Post-Up Script', name: t+'_postup', type: 'textarea', value: eval('nvram.'+t+'_postup') },
+				{ title: 'Pre-Down Script', name: t+'_predown', type: 'textarea', value: eval('nvram.'+t+'_predown') },
+				{ title: 'Post-Down Script', name: t+'_postdown', type: 'textarea', value: eval('nvram.'+t+'_postdown') },
 			]);
 			W('</div>');
 			/* scripts tab stop */
@@ -1686,34 +1686,34 @@ function init() {
 			W('<br>');
 			W('<div class="section-title">Peer Generation</div>');
 			createFieldTable('', [
-				{ title: 'Generate PSK', name: 'f_wg_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
-				{ title: 'Send Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka_enable', type: 'checkbox', value: false},
+				{ title: 'Generate PSK', name: 'f_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
+				{ title: 'Send Keepalive to this peer', name: 'f_'+t+'_peer_ka_enable', type: 'checkbox', value: false},
 			]);
-			W('<input type="button" value="Generate Peer" onclick="generatePeer('+i+')" id="wg_'+t+'_peer_gen">');
+			W('<input type="button" value="Generate Peer" onclick="generatePeer('+i+')" id="'+t+'_peer_gen">');
 			W('<br>');
 			W('<br>');
 			W('<div class="section-title">Peer Parameters</div>');
 			createFieldTable('', [
-				{ title: 'Alias', name: 'f_wg_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
-				{ title: 'Endpoint', name: 'f_wg_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
-				{ title: 'Port', name: 'f_wg_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.wg_'+t+'_port')},
-				{ title: 'Private Key', name: 'f_wg_'+t+'_peer_privkey', type: 'text', maxlen: 44, size: 44},
-				{ title: 'Public Key', name: 'f_wg_'+t+'_peer_pubkey', type: 'text', maxlen: 44, size: 44},
-				{ title: 'Preshared Key', name: 'f_wg_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
-				{ title: 'Interface IP', name: 'f_wg_'+t+'_peer_ip', type: 'text', placeholder: "(CIDR format)", maxlen: 64, size: 64},
-				{ title: 'Allowed IPs', name: 'f_wg_'+t+'_peer_aip', type: 'text', placeholder: "(CIDR format)", suffix: '&nbsp;<small>comma separated<\/small>', maxlen: 128, size: 64},
-				{ title: 'Keepalive to this peer', name: 'f_wg_'+t+'_peer_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: "0"},
-				{ title: 'FWMark for this peer', name: 'f_wg_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
-				{ title: 'Generate Config QR Code', name: 'f_wg_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
-				{ title: 'Save Config to File', name: 'f_wg_'+t+'_peer_save', type: 'checkbox', value: true },
+				{ title: 'Alias', name: 'f_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
+				{ title: 'Endpoint', name: 'f_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
+				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port')},
+				{ title: 'Private Key', name: 'f_'+t+'_peer_privkey', type: 'text', maxlen: 44, size: 44},
+				{ title: 'Public Key', name: 'f_'+t+'_peer_pubkey', type: 'text', maxlen: 44, size: 44},
+				{ title: 'Preshared Key', name: 'f_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
+				{ title: 'Interface IP', name: 'f_'+t+'_peer_ip', type: 'text', placeholder: "(CIDR format)", maxlen: 64, size: 64},
+				{ title: 'Allowed IPs', name: 'f_'+t+'_peer_aip', type: 'text', placeholder: "(CIDR format)", suffix: '&nbsp;<small>comma separated<\/small>', maxlen: 128, size: 64},
+				{ title: 'Keepalive to this peer', name: 'f_'+t+'_peer_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: "0"},
+				{ title: 'FWMark for this peer', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
+				{ title: 'Generate Config QR Code', name: 'f_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
+				{ title: 'Save Config to File', name: 'f_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
 			W('<div>');
-			W('<input type="button" value="Add to Peers" onclick="addPeer('+i+')" id="wg_'+t+'_peer_add">');
-			W('<input type="button" value="Generate Config" onclick="generatePeerConfig('+i+')" id="wg_'+t+'_peer_config">');
+			W('<input type="button" value="Add to Peers" onclick="addPeer('+i+')" id="'+t+'_peer_add">');
+			W('<input type="button" value="Generate Config" onclick="generatePeerConfig('+i+')" id="'+t+'_peer_config">');
 			W('</div>');
-			W('<div id="wg_'+t+'_qrcode" class="qrcode" style="display:none">');
-			W('<img alt="wg_'+t+'_qrcode_img" style="max-width: 100px;">');
-			W('<div id="wg_'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
+			W('<div id="'+t+'_qrcode" class="qrcode" style="display:none">');
+			W('<img alt="'+t+'_qrcode_img" style="max-width: 100px;">');
+			W('<div id="'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
 			W('Point your mobile phone camera<br>');
 			W('here above to connect automatically');
 			W('</div>');
@@ -1724,12 +1724,12 @@ function init() {
 
 			/* status tab start */
 			W('<div id="'+t+'-status">');
-			W('<pre id="wg_'+t+'_result" class="status-result"><\/pre>');
+			W('<pre id="'+t+'_result" class="status-result"><\/pre>');
 			W('<div style="text-align:right">');
-			W('<img src="spin.gif" id="wg_'+t+'_status_refresh_spinner" alt=""> ');
-			genStdTimeList('wg_'+t+'_status_refresh_time', 'One off', 0);
-			W('<input type="button" value="Refresh" onclick="toggleRefresh('+i+')" id="wg_'+t+'_status_refresh_button"></div>');
-			W('<div style="display:none;padding-left:5px" id="wg_'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
+			W('<img src="spin.gif" id="'+t+'_status_refresh_spinner" alt=""> ');
+			genStdTimeList(t+'_status_refresh_time', 'One off', 0);
+			W('<input type="button" value="Refresh" onclick="toggleRefresh('+i+')" id="'+t+'_status_refresh_button"></div>');
+			W('<div style="display:none;padding-left:5px" id="'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
 			statRefreshes[i].setup();
 			statRefreshes[i].initPage(3000, 3);
 			W('</div>');
