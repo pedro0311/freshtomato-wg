@@ -270,7 +270,28 @@ function mapConfigToFields(event) {
 }
 
 function clearAllFields(unit) {
-
+	E('_wg'+unit+'_file').value = '';
+	E('_wg'+unit+'_port').value = '';
+	E('_wg'+unit+'_key').value = '';
+	E('_wg'+unit+'_pubkey').value = '';
+	E('_wg'+unit+'_ip').value = '';
+	E('_wg'+unit+'_fwmark').value = '';
+	E('_wg'+unit+'_mtu').value = '';
+	E('_wg'+unit+'_f_wg'+unit+'_dns').checked = 0;
+	E('_wg'+unit+'_ka').value = '';
+	E('_wg'+unit+'_endpoint').value = '';
+	E('_wg'+unit+'_aip').value = '';
+	E('_wg'+unit+'_dns').value = '';
+	E('_wg'+unit+'_f_wg'+unit+'_lan').checked = 0;
+	for(let i = 0; i <= 3; i++){
+		E('_wg'+unit+'_f_wg'+unit+'_lan'+i).checked = 0;
+	}
+	E('_wg'+unit+'_f_wg'+unit+'_rgw').checked = 0;
+	E('_wg'+unit+'_preup').value = '';
+	E('_wg'+unit+'_postup').value = '';
+	E('_wg'+unit+'_predown').value = '';
+	E('_wg'+unit+'_postdown').value = '';
+	peerTables[unit].removeAllData();
 }
 
 function validateConfig(config) {
