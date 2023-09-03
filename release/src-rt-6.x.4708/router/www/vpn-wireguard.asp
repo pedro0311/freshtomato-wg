@@ -339,9 +339,9 @@ function mapConfig(contents) {
 			continue;
 		}
 
-		var [key, value] = line.split('=', 2);
-		key = key.trim().toLowerCase();
-		value = value.trim();
+		var index = line.indexOf('=');
+		var key = line.slice(0, index).trim().toLowerCase();
+		var value = line.slice(index + 1).trim();
 
 		switch(key) {
 			case 'privatekey':
