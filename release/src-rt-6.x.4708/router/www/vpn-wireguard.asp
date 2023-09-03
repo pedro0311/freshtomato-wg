@@ -195,7 +195,15 @@ function updateForm(num) {
 }
 
 function loadConfig(unit) {
-	var name = fixFile(E('wg'+unit+'_config_file').value);
+	var [file] = E('wg'+unit+'_config_file').files;
+	var reader = new FileReader();
+
+	reader.addEventListener('load', mapConfigToFields(unit, reader));
+	reader.readAsText(file);
+}
+
+function mapConfigToFields(unit, reader) {
+	console.log(reader.result);
 }
 
 StatusRefresh.prototype.setup = function() {
@@ -1656,6 +1664,7 @@ function init() {
 			W('<br>');
 			W('<div class="section-title">Load Config From File</div>');
 			W('<input type="file" id="'+t+'_config_file" name="Browse File" onchange="loadConfig('+i+')">')
+			W('<br>');
 			W('<br>');
 			W('<div class="section-title">Peer</div>');
 			createFieldTable('', [
