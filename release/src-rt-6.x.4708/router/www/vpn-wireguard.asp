@@ -292,12 +292,14 @@ function validateConfig(config) {
 
 	for (var i = 0; i < config.peers.length; ++i) {
 
-		if (!config.peer.pubkey) {
+		var peer = config.peers[i];
+
+		if (!peer.pubkey) {
 			alert('Every peer requires a PublicKey');
 			return false;
 		}
 
-		if (!config.peer.allowed_ips) {
+		if (!peer.allowed_ips) {
 			alert('Every peer requires AllowedIPs');
 			return false;
 		}
