@@ -319,7 +319,7 @@ function mapConfig(contents) {
 
 		var line = lines[i].trim();
 
-		var comment_index = indexOf();
+		var comment_index = line.indexOf('#');
 		if (comment_index != -1)
 			line = line.slice(0, comment_index);
 
