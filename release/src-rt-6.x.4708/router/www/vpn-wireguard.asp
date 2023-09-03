@@ -207,6 +207,38 @@ function mapConfigToFields(event) {
 	var config = mapConfig(event.target.result);
 	var unit = event.target.unit;
 
+	if (!validateConfig)
+		return;
+
+}
+
+function validateConfig(config) {
+	
+	if (!config.interface.privkey) {
+		alert('The interface requires a PrivateKey');
+		return false;
+	}
+
+	if (!config.interface.port) {
+		alert('The interface requires a ListenPort');
+		return false;
+	}
+
+	for (var i = 0; i < config.peers.length; ++i) {
+
+		if (!config.peer.pubkey) {
+			alert('Every peer requires a PublicKey');
+			return false;
+		}
+
+		if (!config.interface.privkey) {
+			alert('Every peer requires AllowedIPs');
+			return false;
+		}
+
+	}
+
+	return true;
 }
 
 function mapConfig(contents) {
