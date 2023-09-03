@@ -204,11 +204,72 @@ function loadConfig(unit) {
 }
 
 function mapConfigToFields(event) {
+
 	var config = mapConfig(event.target.result);
 	var unit = event.target.unit;
 
-	if (!validateConfig)
+	if (!validateConfig(config))
 		return;
+
+	clearAllFields(unit);
+
+	if (config.interface.privkey)
+		E('_wg'+unit+'_key').value = config.interface.privkey;
+
+	if (config.interface.port)
+		E('_wg'+unit+'_port').value = config.interface.port;
+
+	if (config.interface.fwmark)
+		E('_wg'+unit+'_fwmark').value = config.interface.fwmark;
+
+	if (config.interface.address)
+		E('_wg'+unit+'_ip').value = config.interface.address;
+
+	if (config.interface.mtu)
+		E('_wg'+unit+'_mtu').value = config.interface.mtu;
+
+	if (config.interface.preup)
+		E('_wg'+unit+'_preup').value = config.interface.preup;
+
+	if (config.interface.postup)
+		E('_wg'+unit+'_postup').value = config.interface.postup;
+
+	if (config.interface.predown)
+		E('_wg'+unit+'_predown').value = config.interface.predown;
+
+	if (config.interface.postdown)
+		E('_wg'+unit+'_postdown').value = config.interface.postdown;
+
+	if (config.interface.endpoint)
+		E('_wg'+unit+'_endpoint').value = config.interface.endpoint;
+
+	for (var i = 0; i < config.peers.length; ++i) {
+
+		var peer = config.peers[i];
+
+		var [ip, allowed_ips] = peer.allowed_ips.split(',', 2);
+		ip = ip.trim().split('/')[0] + '/32';
+
+		var data = [
+			'',
+			peer.endpoint ? peer.endpoint: '',
+			peer.privkey ? peer.privkey : '',
+			peer.pubkey,
+			peer.psk ? peer.psk : '',
+			ip,
+			allowed_ips ? allowed_ips: '',
+			peer.keepalive ? peer.keepalive : 0
+		];
+
+		peerTables[unit].insertData(-1, data)
+
+	}
+
+	verifyFields();
+
+}
+
+function clearAllFields(unit) {
 
 }
 
@@ -224,6 +285,11 @@ function validateConfig(config) {
 		return false;
 	}
 
+	if (!config.interface.address) {
+		alert('The interface requires an Address');
+		return false;
+	}
+
 	for (var i = 0; i < config.peers.length; ++i) {
 
 		if (!config.peer.pubkey) {
@@ -231,7 +297,7 @@ function validateConfig(config) {
 			return false;
 		}
 
-		if (!config.interface.privkey) {
+		if (!config.peer.allowed_ips) {
 			alert('Every peer requires AllowedIPs');
 			return false;
 		}
@@ -253,6 +319,10 @@ function mapConfig(contents) {
 
 		var line = lines[i].trim();
 
+		var comment_index = indexOf();
+		if (comment_index != -1)
+			line = line.slice(0, comment_index);
+
 		if (!line)
 			continue;
 
@@ -268,59 +338,61 @@ function mapConfig(contents) {
 		}
 
 		var [key, value] = line.split('=', 2);
-		key = key.trim().toLowerCase().repla;
+		key = key.trim().toLowerCase();
 		value = value.trim();
 
 		switch(key) {
-		case 'privatekey':
-			target.privkey = value;
-			break;
-		case 'listenport':
-			target.port = value;
-			break;
-		case 'fwmark':
-			target.fwmark = value;
-			break;
-		case 'address':
-			target.address = value;
-			break;
-		case 'dns':
-			target.dns = value;
-			break;
-		case 'mtu':
-			target.mtu = value;
-			break;
-		case 'table':
-			target.table = value;
-			break;
-		case 'preup':
-			target.preup = value;
-			break;
-		case 'postup':
-			target.postup = value;
-			break;
-		case 'predown':
-			target.predown = value;
-			break;
-		case 'postdown':
-			target.postdown = value;
-			break;
-		case 'publickey':
-			target.pubkey = value;
-			break;
-		case 'presharedkey':
-			target.psk = value;
-			break;
-		case 'allowedips':
-			target.allowed_ips = value;
-			break;
-		case 'endpoint':
-			target.endpoint = value;
-			break;
-		case 'persistentkeepalive':
-			target.keepalive = value;
-			break;
-		
+			case 'privatekey':
+				target.privkey = value;
+				break;
+			case 'listenport':
+				target.port = value;
+				break;
+			case 'fwmark':
+				target.fwmark = value;
+				break;
+			case 'address':
+				target.address = value;
+				break;
+			case 'dns':
+				target.dns = value;
+				break;
+			case 'mtu':
+				target.mtu = value;
+				break;
+			case 'table':
+				target.table = value;
+				break;
+			case 'preup':
+				target.preup = value;
+				break;
+			case 'postup':
+				target.postup = value;
+				break;
+			case 'predown':
+				target.predown = value;
+				break;
+			case 'postdown':
+				target.postdown = value;
+				break;
+			case 'publickey':
+				target.pubkey = value;
+				break;
+			case 'presharedkey':
+				target.psk = value;
+				break;
+			case 'allowedips':
+				if (!target.allowed_ips)
+					target.allowed_ips = value;
+				else
+					target.allowed_ips = [target.allowed_ips, value].join(',');
+				break;
+			case 'endpoint':
+				target.endpoint = value;
+				break;
+			case 'persistentkeepalive':
+				target.keepalive = value;
+				break;
 		} 
 
 	}
