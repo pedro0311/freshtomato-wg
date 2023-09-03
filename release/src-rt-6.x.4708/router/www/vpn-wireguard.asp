@@ -194,6 +194,10 @@ function updateForm(num) {
 	}
 }
 
+function loadConfig(unit) {
+	var name = fixFile(E('wg'+unit+'_config_file').value);
+}
+
 StatusRefresh.prototype.setup = function() {
 	var e, v;
 
@@ -1649,6 +1653,10 @@ function init() {
 				{ title: 'MTU', name: t+'_mtu', type: 'text', maxlen: 4, size: 4, value: eval('nvram.'+t+'_mtu') },
 				{ title: 'Respond to DNS', name: 'f_'+t+'_dns', type: 'checkbox', value: nvram.wg_dns.indexOf(''+i) >= 0 },
 			]);
+			W('<br>');
+			W('<div class="section-title">Load Config From File</div>');
+			W('<input type="file" id="'+t+'_config_file" name="Browse File">')
+			W('<input type="button" value="Load Config" onclick="loadConfig('+i+')" id="'+t+'_config_load">');
 			W('<br>');
 			W('<div class="section-title">Peer</div>');
 			createFieldTable('', [
