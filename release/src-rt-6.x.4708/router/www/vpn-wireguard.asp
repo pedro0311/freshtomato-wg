@@ -282,11 +282,11 @@ function clearAllFields(unit) {
 	E('_wg'+unit+'_endpoint').value = '';
 	E('_wg'+unit+'_aip').value = '';
 	E('_wg'+unit+'_dns').value = '';
-	E('_wg'+unit+'_f_wg'+unit+'_lan').checked = 0;
+	E('_f_wg'+unit+'_lan').checked = 0;
 	for(let i = 0; i <= 3; i++){
-		E('_wg'+unit+'_f_wg'+unit+'_lan'+i).checked = 0;
+		E('_f_wg'+unit+'_lan'+i).checked = 0;
 	}
-	E('_wg'+unit+'_f_wg'+unit+'_rgw').checked = 0;
+	E('_f_wg'+unit+'_rgw').checked = 0;
 	E('_wg'+unit+'_preup').value = '';
 	E('_wg'+unit+'_postup').value = '';
 	E('_wg'+unit+'_predown').value = '';
