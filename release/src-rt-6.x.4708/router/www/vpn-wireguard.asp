@@ -198,12 +198,102 @@ function loadConfig(unit) {
 	var [file] = E('wg'+unit+'_config_file').files;
 	var reader = new FileReader();
 
-	reader.addEventListener('load', mapConfigToFields(unit, reader));
+	reader.unit = unit;
+	reader.addEventListener('load', mapConfigToFields);
 	reader.readAsText(file);
 }
 
-function mapConfigToFields(unit, reader) {
-	console.log(reader.result);
+function mapConfigToFields(event) {
+	var config = mapConfig(event.target.result);
+	var unit = event.target.unit;
+
+}
+
+function mapConfig(contents) {
+	var lines = contents.split('\n');
+	var config = {
+		'interface': {},
+		'peers': []
+	}
+
+	var target;
+	for (var i = 0; i < lines.length; ++i) {
+
+		var line = lines[i].trim();
+
+		if (!line)
+			continue;
+
+		if (line.toLowerCase() == '[interface]') {
+			target = config.interface;
+			continue;
+		}
+
+		if (line.toLowerCase() == '[peer]') {
+			target = {};
+			config.peers.push(target);
+			continue;
+		}
+
+		var [key, value] = line.split('=', 2);
+		key = key.trim().toLowerCase().repla;
+		value = value.trim();
+
+		switch(key) {
+		case 'privatekey':
+			target.privkey = value;
+			break;
+		case 'listenport':
+			target.port = value;
+			break;
+		case 'fwmark':
+			target.fwmark = value;
+			break;
+		case 'address':
+			target.address = value;
+			break;
+		case 'dns':
+			target.dns = value;
+			break;
+		case 'mtu':
+			target.mtu = value;
+			break;
+		case 'table':
+			target.table = value;
+			break;
+		case 'preup':
+			target.preup = value;
+			break;
+		case 'postup':
+			target.postup = value;
+			break;
+		case 'predown':
+			target.predown = value;
+			break;
+		case 'postdown':
+			target.postdown = value;
+			break;
+		case 'publickey':
+			target.pubkey = value;
+			break;
+		case 'presharedkey':
+			target.psk = value;
+			break;
+		case 'allowedips':
+			target.allowed_ips = value;
+			break;
+		case 'endpoint':
+			target.endpoint = value;
+			break;
+		case 'persistentkeepalive':
+			target.keepalive = value;
+			break;
+		
+		} 
+
+	}
+
+	return config;
 }
 
 StatusRefresh.prototype.setup = function() {
