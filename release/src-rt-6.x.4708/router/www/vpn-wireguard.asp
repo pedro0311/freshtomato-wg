@@ -277,7 +277,7 @@ function clearAllFields(unit) {
 	E('_wg'+unit+'_ip').value = '';
 	E('_wg'+unit+'_fwmark').value = '';
 	E('_wg'+unit+'_mtu').value = '';
-	E('_wg'+unit+'_f_wg'+unit+'_dns').checked = 0;
+	E('_f_wg'+unit+'_dns').checked = 0;
 	E('_wg'+unit+'_ka').value = '';
 	E('_wg'+unit+'_endpoint').value = '';
 	E('_wg'+unit+'_aip').value = '';
