@@ -1207,7 +1207,7 @@ function decodeDump(dump, unit) {
 	var sections = lines.shift().split('\t');
 	iface = {
 		'name': 'wg'+unit,
-		'alias': 'Router',
+		'alias': 'This Router',
 		'privkey': sections[0],
 		'pubkey': sections[1],
 		'port': sections[2],
