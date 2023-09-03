@@ -1655,8 +1655,7 @@ function init() {
 			]);
 			W('<br>');
 			W('<div class="section-title">Load Config From File</div>');
-			W('<input type="file" id="'+t+'_config_file" name="Browse File">')
-			W('<input type="button" value="Load Config" onclick="loadConfig('+i+')" id="'+t+'_config_load">');
+			W('<input type="file" id="'+t+'_config_file" name="Browse File" onchange="loadConfig('+i+'')">')
 			W('<br>');
 			W('<div class="section-title">Peer</div>');
 			createFieldTable('', [
