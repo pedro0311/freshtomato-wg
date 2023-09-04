@@ -63,7 +63,7 @@
 <script src="html5-qrcode.js"></script>
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_dns,wg0_eas,wg0_file,wg0_ip,wg0_fwmark,wg0_mtu,wg0_preup,wg0_postup,wg0_predown,wg0_postdown,wg0_aip,wg0_dns,wg0_ka,wg0_port,wg0_key,wg0_endpoint,wg0_lan,wg0_lan0,wg0_lan1,wg0_lan2,wg0_lan3,wg0_rgw,wg0_peers,wg1_eas,wg1_file,wg1_ip,wg1_fwmark,wg1_mtu,wg1_preup,wg1_postup,wg1_predown,wg1_postdown,wg1_aip,wg1_dns,wg1_ka,wg1_port,wg1_key,wg1_endpoint,wg1_lan,wg1_lan0,wg1_lan1,wg1_lan2,wg1_lan3,wg1_rgw,wg1_peers,wg2_eas,wg2_file,wg2_ip,wg2_fwmark,wg2_mtu,wg2_preup,wg2_postup,wg2_predown,wg2_postdown,wg2_aip,wg2_dns,wg2_ka,wg2_port,wg2_key,wg2_endpoint,wg2_lan,wg2_lan0,wg2_lan1,wg2_lan2,wg2_lan3,wg2_rgw,wg2_peers"); %>
+//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_dns,wg0_enable,wg0_file,wg0_ip,wg0_fwmark,wg0_mtu,wg0_preup,wg0_postup,wg0_predown,wg0_postdown,wg0_aip,wg0_dns,wg0_ka,wg0_port,wg0_key,wg0_endpoint,wg0_lan,wg0_lan0,wg0_lan1,wg0_lan2,wg0_lan3,wg0_rgw,wg0_peers,wg1_enable,wg1_file,wg1_ip,wg1_fwmark,wg1_mtu,wg1_preup,wg1_postup,wg1_predown,wg1_postdown,wg1_aip,wg1_dns,wg1_ka,wg1_port,wg1_key,wg1_endpoint,wg1_lan,wg1_lan0,wg1_lan1,wg1_lan2,wg1_lan3,wg1_rgw,wg1_peers,wg2_enable,wg2_file,wg2_ip,wg2_fwmark,wg2_mtu,wg2_preup,wg2_postup,wg2_predown,wg2_postdown,wg2_aip,wg2_dns,wg2_ka,wg2_port,wg2_key,wg2_endpoint,wg2_lan,wg2_lan0,wg2_lan1,wg2_lan2,wg2_lan3,wg2_rgw,wg2_peers"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
@@ -1778,7 +1778,7 @@ function save(nomsg) {
 		eval('fom.wg'+i+'_peers.value = s');
 		eval('nvram.wg'+i+'_peers = s');
 
-		eval('fom.wg'+i+'_eas.value = fom._f_wg'+i+'_eas.checked ? 1 : 0');
+		eval('fom.wg'+i+'_enable.value = fom._f_wg'+i+'_enable.checked ? 1 : 0');
 		eval('fom.wg'+i+'_lan.value = fom._f_wg'+i+'_lan.checked ? 1 : 0');
 		eval('fom.wg'+i+'_lan0.value = fom._f_wg'+i+'_lan0.checked ? 1 : 0');
 		eval('fom.wg'+i+'_lan1.value = fom._f_wg'+i+'_lan1.checked ? 1 : 0');
@@ -1842,7 +1842,7 @@ function init() {
 		for (i = 0; i < tabs.length; ++i) {
 			t = tabs[i][0];
 			W('<div id="'+t+'-tab">');
-			W('<input type="hidden" name="'+t+'_eas">');
+			W('<input type="hidden" name="'+t+'_enable">');
 			W('<input type="hidden" name="'+t+'_lan">');
 			W('<input type="hidden" name="'+t+'_lan0">');
 			W('<input type="hidden" name="'+t+'_lan1">');
@@ -1862,7 +1862,7 @@ function init() {
 			W('<div id="'+t+'-config">');
 			W('<div class="section-title">Interface</div>');
 			createFieldTable('', [
-				{ title: 'Enable on Start', name: 'f_'+t+'_eas', type: 'checkbox', value: eval('nvram.'+t+'_eas') == '1' },
+				{ title: 'Enable on Start', name: 'f_'+t+'_enable', type: 'checkbox', value: eval('nvram.'+t+'_enable') == '1' },
 				{ title: 'Config file', name: t+'_file', type: 'text', placeholder: '(optional)', maxlen: 64, size: 64, value: eval('nvram.'+t+'_file') },
 				{ title: 'Port', name: t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port') },
 				{ title: 'Private Key', multi: [

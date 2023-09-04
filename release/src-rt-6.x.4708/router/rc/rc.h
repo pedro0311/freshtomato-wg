@@ -605,7 +605,7 @@ extern int wg_iface_post_down(int unit);
 extern int wg_set_iptables(char *iface, char *port);
 extern int wg_remove_iptables(char *iface, char *port);
 extern int wg_remove_iface(char *iface);
-extern void start_wg_eas();
+extern void start_wg_enable();
 extern int wg_pubkey(char *privkey, char *pubkey);
 extern int wg_save_iface(char *iface, char *file);
 extern int wg_load_iface(char *iface, char *file);
