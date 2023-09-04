@@ -857,7 +857,7 @@ function verifyPeerFields(unit, require_privkey) {
 	else
 		ferror.clear(keepalive);
 	
-	if (!verifyFWMark(fwmark)) {
+	if (!verifyFWMark(fwmark.value)) {
 		ferror.set(fwmark, 'FWMark must be a hexadecimal number or 0', !result);
 		result = false;
 	}
@@ -1117,7 +1117,7 @@ function genPeerGridConfig(unit, row) {
 	else
 		ferror.clear(port);
 
-	if (!verifyFWMark(fwmark)) {
+	if (!verifyFWMark(fwmark.value)) {
 		ferror.set(fwmark, 'FWMark must be a hexadecimal number or 0', !result);
 		result = false;
 	}
