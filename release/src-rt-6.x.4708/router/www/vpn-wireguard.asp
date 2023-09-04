@@ -857,8 +857,8 @@ function verifyPeerFields(unit, require_privkey) {
 	else
 		ferror.clear(keepalive);
 	
-	if (fwmark.value && !fwmark.value.match(/0[xX][0-9a-fA-F]+/)) {
-		ferror.set(fwmark, 'FWMark must be a hexadecimal number if specified', !result);
+	if (!verifyFWMark(fwmark)) {
+		ferror.set(fwmark, 'FWMark must be a hexadecimal number or 0', !result);
 		result = false;
 	}
 	else
@@ -1107,8 +1107,25 @@ function genPeerGridConfigFile(unit, row) {
 }
 
 function genPeerGridConfig(unit, row) {
+	var port = E('_f_wg'+this.unit+'_peer_port');
+	var fwmark = E('_f_wg'+this.unit+'_peer_fwmark');
+
+	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
+		ferror.set(port, 'A valid port must be provided', !ok);
+		result = false;
+	}
+	else
+		ferror.clear(port);
+
+	if (!verifyFWMark(fwmark)) {
+		ferror.set(fwmark, 'FWMark must be a hexadecimal number or 0', !result);
+		result = false;
+	}
+	else
+		ferror.clear(fwmark);
+
 	var row_data = peerTables[unit].tb.rows[row]._data;
-	return generateWGConfig(unit, row_data[0], row_data[2], row_data[5], port, fwmark);
+	return generateWGConfig(unit, row_data[0], row_data[2], row_data[5], port.value, fwmark.value);
 }
 
 function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
