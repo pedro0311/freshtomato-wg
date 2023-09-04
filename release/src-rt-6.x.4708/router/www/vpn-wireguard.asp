@@ -194,6 +194,235 @@ function updateForm(num) {
 	}
 }
 
+function loadConfig(unit) {
+	var [file] = E('wg'+unit+'_config_file').files;
+	var reader = new FileReader();
+
+	reader.unit = unit;
+	reader.addEventListener('load', mapConfigToFields);
+	reader.readAsText(file);
+}
+
+function mapConfigToFields(event) {
+
+	var config = mapConfig(event.target.result);
+	var unit = event.target.unit;
+
+	if (!validateConfig(config))
+		return;
+
+	clearAllFields(unit);
+
+	if (config.interface.privkey)
+		E('_wg'+unit+'_key').value = config.interface.privkey;
+
+	if (config.interface.port)
+		E('_wg'+unit+'_port').value = config.interface.port;
+
+	if (config.interface.fwmark)
+		E('_wg'+unit+'_fwmark').value = config.interface.fwmark;
+
+	if (config.interface.address)
+		E('_wg'+unit+'_ip').value = config.interface.address;
+
+	if (config.interface.mtu)
+		E('_wg'+unit+'_mtu').value = config.interface.mtu;
+
+	if (config.interface.preup)
+		E('_wg'+unit+'_preup').value = config.interface.preup;
+
+	if (config.interface.postup)
+		E('_wg'+unit+'_postup').value = config.interface.postup;
+
+	if (config.interface.predown)
+		E('_wg'+unit+'_predown').value = config.interface.predown;
+
+	if (config.interface.postdown)
+		E('_wg'+unit+'_postdown').value = config.interface.postdown;
+
+	if (config.interface.endpoint)
+		E('_wg'+unit+'_endpoint').value = config.interface.endpoint;
+
+	for (var i = 0; i < config.peers.length; ++i) {
+
+		var peer = config.peers[i];
+
+		var [ip, allowed_ips] = peer.allowed_ips.split(',', 2);
+		ip = ip.trim().split('/')[0] + '/32';
+
+		var data = [
+			'',
+			peer.endpoint ? peer.endpoint: '',
+			peer.privkey ? peer.privkey : '',
+			peer.pubkey,
+			peer.psk ? peer.psk : '',
+			ip,
+			allowed_ips ? allowed_ips: '',
+			peer.keepalive ? peer.keepalive : 0
+		];
+
+		peerTables[unit].insertData(-1, data)
+
+	}
+
+	verifyFields();
+
+}
+
+function clearAllFields(unit) {
+	E('_wg'+unit+'_file').value = '';
+	E('_wg'+unit+'_port').value = '';
+	E('_wg'+unit+'_key').value = '';
+	E('_wg'+unit+'_pubkey').value = '';
+	E('_wg'+unit+'_ip').value = '';
+	E('_wg'+unit+'_fwmark').value = '';
+	E('_wg'+unit+'_mtu').value = '';
+	E('_f_wg'+unit+'_dns').checked = 0;
+	E('_wg'+unit+'_ka').value = '';
+	E('_wg'+unit+'_endpoint').value = '';
+	E('_wg'+unit+'_aip').value = '';
+	E('_wg'+unit+'_dns').value = '';
+	E('_f_wg'+unit+'_lan').checked = 0;
+	for(let i = 0; i <= 3; i++){
+		E('_f_wg'+unit+'_lan'+i).checked = 0;
+	}
+	E('_f_wg'+unit+'_rgw').checked = 0;
+	E('_wg'+unit+'_preup').value = '';
+	E('_wg'+unit+'_postup').value = '';
+	E('_wg'+unit+'_predown').value = '';
+	E('_wg'+unit+'_postdown').value = '';
+	peerTables[unit].removeAllData();
+}
+
+function validateConfig(config) {
+	
+	if (!config.interface.privkey) {
+		alert('The interface requires a PrivateKey');
+		return false;
+	}
+
+	if (!config.interface.port) {
+		alert('The interface requires a ListenPort');
+		return false;
+	}
+
+	if (!config.interface.address) {
+		alert('The interface requires an Address');
+		return false;
+	}
+
+	for (var i = 0; i < config.peers.length; ++i) {
+
+		var peer = config.peers[i];
+
+		if (!peer.pubkey) {
+			alert('Every peer requires a PublicKey');
+			return false;
+		}
+
+		if (!peer.allowed_ips) {
+			alert('Every peer requires AllowedIPs');
+			return false;
+		}
+
+	}
+
+	return true;
+}
+
+function mapConfig(contents) {
+	var lines = contents.split('\n');
+	var config = {
+		'interface': {},
+		'peers': []
+	}
+
+	var target;
+	for (var i = 0; i < lines.length; ++i) {
+
+		var line = lines[i].trim();
+
+		var comment_index = line.indexOf('#');
+		if (comment_index != -1)
+			line = line.slice(0, comment_index);
+
+		if (!line)
+			continue;
+
+		if (line.toLowerCase() == '[interface]') {
+			target = config.interface;
+			continue;
+		}
+
+		if (line.toLowerCase() == '[peer]') {
+			target = {};
+			config.peers.push(target);
+			continue;
+		}
+
+		var index = line.indexOf('=');
+		var key = line.slice(0, index).trim().toLowerCase();
+		var value = line.slice(index + 1).trim();
+
+		switch(key) {
+			case 'privatekey':
+				target.privkey = value;
+				break;
+			case 'listenport':
+				target.port = value;
+				break;
+			case 'fwmark':
+				target.fwmark = value;
+				break;
+			case 'address':
+				target.address = value;
+				break;
+			case 'dns':
+				target.dns = value;
+				break;
+			case 'mtu':
+				target.mtu = value;
+				break;
+			case 'table':
+				target.table = value;
+				break;
+			case 'preup':
+				target.preup = value;
+				break;
+			case 'postup':
+				target.postup = value;
+				break;
+			case 'predown':
+				target.predown = value;
+				break;
+			case 'postdown':
+				target.postdown = value;
+				break;
+			case 'publickey':
+				target.pubkey = value;
+				break;
+			case 'presharedkey':
+				target.psk = value;
+				break;
+			case 'allowedips':
+				if (!target.allowed_ips)
+					target.allowed_ips = value;
+				else
+					target.allowed_ips = [target.allowed_ips, value].join(',');
+				break;
+			case 'endpoint':
+				target.endpoint = value;
+				break;
+			case 'persistentkeepalive':
+				target.keepalive = value;
+				break;
+		} 
+
+	}
+
+	return config;
+}
+
 StatusRefresh.prototype.setup = function() {
 	var e, v;
 
@@ -1649,6 +1878,10 @@ function init() {
 				{ title: 'MTU', name: t+'_mtu', type: 'text', maxlen: 4, size: 4, value: eval('nvram.'+t+'_mtu') },
 				{ title: 'Respond to DNS', name: 'f_'+t+'_dns', type: 'checkbox', value: nvram.wg_dns.indexOf(''+i) >= 0 },
 			]);
+			W('<br>');
+			W('<div class="section-title">Load Config From File</div>');
+			W('<input type="file" id="'+t+'_config_file" name="Browse File" onchange="loadConfig('+i+')">')
+			W('<br>');
 			W('<br>');
 			W('<div class="section-title">Peer</div>');
 			createFieldTable('', [
