@@ -586,6 +586,8 @@ StatusRefresh.prototype.refresh = function(text) {
 
 PeerGrid.prototype.setup = function() {
 	this.init(this.interface_name+'-peers-grid', '', 50, [
+		{ type: 'text' },
+		{ type: 'text' },
 		{ type: 'text', maxlen: 32 },
 		{ type: 'text', maxlen: 128 },
 		{ type: 'password', maxlen: 44 },
@@ -595,7 +597,7 @@ PeerGrid.prototype.setup = function() {
 		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 3 },
 	]);
-	this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','Interface IP','Allowed IPs','KA']);
+	this.headerSet(['QR', 'Config', 'Alias','Endpoint','Private Key','Public Key','Preshared Key','Interface IP','Allowed IPs','KA']);
 	this.disableNewEditor(true);
 
 	var peers = decodePeers(this.unit);
@@ -649,6 +651,15 @@ PeerGrid.prototype.edit = function(cell) {
 
 }
 
+PeerGrid.prototype.insertData = function(at, data) {
+	if ((this.footer) && (at == -1)) at = this.footer.rowIndex;
+	var view = this.dataToView(data);
+	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" onclick ="">';
+	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" onclick ="">';
+	view.unshift(qr, cfg);
+	return this.insert(at, data, view, false);
+}
+
 PeerGrid.prototype.rowDel = function(e) {
 	changed = 1;
 	TGO(e).moving = null;
@@ -663,6 +674,15 @@ PeerGrid.prototype.rpDel = function(e) {
 	this.rowDel(e);
 }
 
+PeerGrid.prototype.fieldValuesToData = function(row) {
+	var e, i, data;
+
+	data = [];
+	e = fields.getAll(row);
+	for (i = 2; i < e.length; ++i) data.push(e[i].value);
+	return data;
+}
+
 PeerGrid.prototype.verifyFields = function(row, quiet) {
 
 	changed = 1;
@@ -675,7 +695,7 @@ PeerGrid.prototype.verifyFields = function(row, quiet) {
 	}
 
 	var f = fields.getAll(row);
-	var data = this.fieldValuesToData(row)
+	var data = this.fieldValuesToData(row);
 	var results = verifyPeerFieldData(data);
 
 	if (!results[2]) {
@@ -1254,7 +1274,7 @@ function generatePeerConfig(unit) {
 	if (E('_f_wg'+unit+'_peer_qr_enable').checked) {
 		var qrcode = E('wg'+unit+'_qrcode');
 		var qrcode_content = content.join('');
-		var image = showQRCode(qrcode_content, 40);
+		var image = showQRCode(qrcode_content);
 		image.style.maxWidth = "700px";
 		qrcode.replaceChild(image, qrcode.firstChild);
 		elem.display('wg'+unit+'_qrcode', true);
