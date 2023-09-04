@@ -15,30 +15,32 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-.co1, .co2, .co3, .co4, .co5, .co6, .co7, .co8 {
+
+.co1, .co2, .co3, .co4, .co5, .co6, .co7, .co8, .co9, .co10 {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.co3, .co5, .co7, .co8 {
+.co5, .co7, .co9, .co10 {
 	display: none;
 }
 
-.co1 {
-	width: 21%;
+.co1, .co2 {
+	width: 3%;
+	text-align: center;
 }
 
-.co2 {
-	width: 21%;
-}
-
-.co4 {
-	width: 40%;
+.co3, co4 {
+	width: 19%;
 }
 
 .co6 {
-	width: 18%;
+	width: 40%;
+}
+
+.co8 {
+	width: 16%;
 }
 
 .status-result {
@@ -597,7 +599,7 @@ PeerGrid.prototype.setup = function() {
 		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 3 },
 	]);
-	this.headerSet(['QR', 'Config', 'Alias','Endpoint','Private Key','Public Key','Preshared Key','Interface IP','Allowed IPs','KA']);
+	this.headerSet(['QR', 'Cfg', 'Alias','Endpoint','Private Key','Public Key','Preshared Key','Interface IP','Allowed IPs','KA']);
 	this.disableNewEditor(true);
 
 	var peers = decodePeers(this.unit);
@@ -654,8 +656,8 @@ PeerGrid.prototype.edit = function(cell) {
 PeerGrid.prototype.insertData = function(at, data) {
 	if ((this.footer) && (at == -1)) at = this.footer.rowIndex;
 	var view = this.dataToView(data);
-	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" onclick ="">';
-	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" onclick ="">';
+	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" width="16px" onclick ="">';
+	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" width="16px" onclick ="">';
 	view.unshift(qr, cfg);
 	return this.insert(at, data, view, false);
 }
