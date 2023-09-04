@@ -13,12 +13,12 @@
 
 #define WG_INTERFACE_MAX	3
 
-void start_wg_eas()
+void start_wg_enable()
 {
 	int unit;
 
 	for (unit = 0; unit < WG_INTERFACE_MAX; unit ++) {
-		if (atoi(getNVRAMVar("wg%d_eas", unit)) == 1) {
+		if (atoi(getNVRAMVar("wg%d_enable", unit)) == 1) {
 			start_wireguard(unit);
 		}
 	}
