@@ -1718,7 +1718,7 @@ static const nvset_t nvset_list[] = {
 #ifdef TCONFIG_WIREGUARD
 /* wireguard */
     { "wg_dns",			V_NONE				},
-	{ "wg0_eas",			V_01				},
+	{ "wg0_enable",			V_01				},
 	{ "wg0_file",			V_TEXT(0, 64)		},
 	{ "wg0_key",			V_TEXT(0, 44)		},
 	{ "wg0_endpoint",		V_TEXT(0, 64)		},
@@ -1740,7 +1740,7 @@ static const nvset_t nvset_list[] = {
 	{ "wg0_lan3",			V_01				},
 	{ "wg0_rgw",			V_01				},
 	{ "wg0_peers",		V_NONE				},
-	{ "wg1_eas",			V_01				},
+	{ "wg1_enable",			V_01				},
 	{ "wg1_file",			V_TEXT(0, 64)		},
 	{ "wg1_key",			V_TEXT(0, 44)		},
 	{ "wg1_endpoint",		V_TEXT(0, 64)		},
@@ -1762,7 +1762,7 @@ static const nvset_t nvset_list[] = {
 	{ "wg1_lan3",			V_01				},
 	{ "wg1_rgw",			V_01				},
 	{ "wg1_peers",		V_NONE				},
-	{ "wg2_eas",			V_01				},
+	{ "wg2_enable",			V_01				},
 	{ "wg2_file",			V_TEXT(0, 64)		},
 	{ "wg2_key",			V_TEXT(0, 44)		},
 	{ "wg2_endpoint",		V_TEXT(0, 64)		},
