@@ -903,6 +903,28 @@ function generateInterfaceKey(unit) {
 	}
 }
 
+function peerFieldsToData(unit) {
+	var alias = E('_f_wg'+unit+'_peer_alias');
+	var endpoint = E('_f_wg'+unit+'_peer_ep');
+	var privkey = E('_f_wg'+unit+'_peer_privkey');
+	var pubkey = E('_f_wg'+unit+'_peer_pubkey');
+	var psk = E('_f_wg'+unit+'_peer_psk');
+	var ip = E('_f_wg'+unit+'_peer_ip');
+	var allowedips = E('_f_wg'+unit+'_peer_aip');
+	var keepalive = E('_f_wg'+unit+'_peer_ka');
+
+	return [
+		alias.value,
+		endpoint.value,
+		privkey.value,
+		pubkey.value,
+		psk.value,
+		ip.value,
+		allowedips.value,
+		keepalive.value
+	];
+}
+
 function clearPeerFields(unit) {
 	E('_f_wg'+unit+'_peer_alias').value = '';
 	E('_f_wg'+unit+'_peer_ep').value = '';
@@ -923,6 +945,7 @@ function addPeer(unit, quiet) {
 
 	changed = 1;
 	
+	var data = peerFieldsToData(unit);
 	peerTables[unit].insertData(-1, data);
 	peerTables[unit].disableNewEditor(true);
 
@@ -937,6 +960,7 @@ function editPeer(unit, rowIndex, quiet) {
 
 	changed = 1;
 
+	var data = peerFieldsToData(unit);
 	var row = peerTables[unit].tb.firstChild.rows[rowIndex];
 	peerTables[unit].rowDel(row);
 	table.insertData(rowIndex, data);
