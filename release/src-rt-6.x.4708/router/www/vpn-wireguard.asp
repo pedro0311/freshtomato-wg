@@ -106,7 +106,7 @@ ferror.show = function(e) {
 	elem.addClass(e, 'error-focused');
 	var [tab, section] = locateElement(e);
 	tabSelect(tab);
-	sectSelect(tab.substr(5), section);
+	sectSelect(tab.substr(2), section);
 	e.focus();
 	alert(e._error_msg);
 	elem.removeClass(e, 'error-focused');
