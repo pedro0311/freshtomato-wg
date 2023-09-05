@@ -656,8 +656,8 @@ PeerGrid.prototype.edit = function(cell) {
 PeerGrid.prototype.insertData = function(at, data) {
 	if ((this.footer) && (at == -1)) at = this.footer.rowIndex;
 	var view = this.dataToView(data);
-	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" height="16px" onclick=genPeerGridConfigQR("'+this.unit+','+at+')">';
-	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" height="16px" onclick=genPeerGridConfigFile("'+this.unit+','+at+')">';
+	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" height="16px" onclick="genPeerGridConfigQR('+this.unit+','+at+')">';
+	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" height="16px" onclick="genPeerGridConfigFile('+this.unit+','+at+')">';
 	view.unshift(qr, cfg);
 	return this.insert(at, data, view, false);
 }
