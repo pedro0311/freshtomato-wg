@@ -807,7 +807,7 @@ function verifyPeerFields(unit, require_privkey) {
 	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
 
 	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
-		ferror.set(port, 'A valid port must be provided', !ok);
+		ferror.set(port, 'A valid port must be provided', !result);
 		result = false;
 	}
 	else
@@ -1141,9 +1141,15 @@ function genPeerGridConfig(unit, row) {
 
 	var port = E('_f_wg'+unit+'_peer_port');
 	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
+	var row_data = peerTables[unit].tb.rows[row]._data;
 
+	if (!row_data[2]) {
+		alert('The selected peer does not have a private key stored, which is require for configuration generation');
+		result = false;
+	}
+	
 	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
-		ferror.set(port, 'A valid port must be provided', !ok);
+		ferror.set(port, 'A valid port must be provided', !result);
 		result = false;
 	}
 	else
@@ -1156,8 +1162,7 @@ function genPeerGridConfig(unit, row) {
 	else
 		ferror.clear(fwmark);
 
-	var row_data = peerTables[unit].tb.rows[row]._data;
-	return generateWGConfig(unit, row_data[0], row_data[2], row_data[5], port.value, fwmark.value);
+	return generateWGConfig(unit, row_data[0], row_data[2], row_data[4], row_data[5], port.value, fwmark.value);
 }
 
 function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
