@@ -1166,7 +1166,7 @@ function genPeerGridConfig(unit, row) {
 	if (!result)
 		return;
 
-	return generateWGConfig(unit, row_data[0], row_data[2], row_data[4], row_data[5], port.value, fwmark.value);
+	return generateWGConfig(unit, row_data[0], row_data[2], row_data[4], row_data[5].split('/')[0], port.value, fwmark.value);
 }
 
 function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
