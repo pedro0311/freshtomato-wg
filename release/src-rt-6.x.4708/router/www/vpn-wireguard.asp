@@ -657,8 +657,8 @@ PeerGrid.prototype.insertData = function(at, data) {
 	if (at == -1)
 		at = this.tb.rows.length ;
 	var view = this.dataToView(data);
-	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" height="16px" onclick="genPeerGridConfigQR('+this.unit+','+at+')">';
-	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" height="16px" onclick="genPeerGridConfigFile('+this.unit+','+at+')">';
+	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" height="16px" onclick="genPeerGridConfigQR(event,'+this.unit+','+at+')">';
+	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" height="16px" onclick="genPeerGridConfigFile(event,'+this.unit+','+at+')">';
 	view.unshift(qr, cfg);
 	return this.insert(at, data, view, false);
 }
@@ -1121,18 +1121,20 @@ function displayQRCode(content, unit) {
 	elem.display('wg'+unit+'_qrcode', true);
 }
 
-function genPeerGridConfigQR(unit, row) {
+function genPeerGridConfigQR(event, unit, row) {
 	var content = genPeerGridConfig(unit, row);
 	displayQRCode(content, unit);
+	event.stopPropagation();
 }
 
-function genPeerGridConfigFile(unit, row) {
+function genPeerGridConfigFile(event, unit, row) {
 	var content = genPeerGridConfig(unit, row);
 	var filename = "peer.conf";
 	var alias = peerTables[unit].tb.rows[row]._data[0];
 	if (alias != "")
 		filename = `${alias}.conf`;
 	downloadConfig(content, filename);
+	event.stopPropagation();
 }
 
 function genPeerGridConfig(unit, row) {
