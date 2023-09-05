@@ -1131,8 +1131,8 @@ function genPeerGridConfigFile(unit, row) {
 }
 
 function genPeerGridConfig(unit, row) {
-	var port = E('_f_wg'+this.unit+'_peer_port');
-	var fwmark = E('_f_wg'+this.unit+'_peer_fwmark');
+	var port = E('_f_wg'+unit+'_peer_port');
+	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
 
 	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
 		ferror.set(port, 'A valid port must be provided', !ok);
