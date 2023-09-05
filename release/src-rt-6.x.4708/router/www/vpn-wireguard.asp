@@ -1800,7 +1800,7 @@ function init() {
 			]);
 			W('<br>');
 			W('<div class="section-title">Import Config from File</div>');
-			W('<input type="file" id="'+t+'_config_file" name="Browse File">');
+			W('<input type="file" id="'+t+'_config_file" accept=".conf" name="Browse File">');
 			W('<input type="button" id="'+t+'_config_import" value="Import" onclick="loadConfig('+i+')" >');
 			W('</div>');
 			/* config tab stop */
