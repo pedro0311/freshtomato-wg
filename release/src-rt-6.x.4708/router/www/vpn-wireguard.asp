@@ -1142,6 +1142,7 @@ function genPeerGridConfig(unit, row) {
 	var port = E('_f_wg'+unit+'_peer_port');
 	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
 	var row_data = peerTables[unit].tb.rows[row]._data;
+	var result = true;
 
 	if (!row_data[2]) {
 		alert('The selected peer does not have a private key stored, which is require for configuration generation');
