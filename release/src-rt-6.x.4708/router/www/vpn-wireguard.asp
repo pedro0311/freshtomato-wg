@@ -1785,10 +1785,6 @@ function init() {
 				{ title: 'Respond to DNS', name: 'f_'+t+'_dns', type: 'checkbox', value: nvram.wg_dns.indexOf(''+i) >= 0 },
 			]);
 			W('<br>');
-			W('<div class="section-title">Load Config From File</div>');
-			W('<input type="file" id="'+t+'_config_file" name="Browse File" onchange="loadConfig('+i+')">')
-			W('<br>');
-			W('<br>');
 			W('<div class="section-title">Peer</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Router', name: t+'_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: eval('nvram.'+t+'_ka') },
@@ -1802,6 +1798,9 @@ function init() {
 				{ title: 'Push LAN3 (br3) to peers', name: 'f_'+t+'_lan3', type: 'checkbox', value: eval('nvram.'+t+'_lan3') == '1' },
 				{ title: 'Forward all peer traffic', name: 'f_'+t+'_rgw', type: 'checkbox', value: eval('nvram.'+t+'_rgw') == '1' },
 			]);
+			W('<br>');
+			W('<div class="section-title">Import Config from File</div>');
+			W('<input type="file" id="'+t+'_config_file" name="Browse File" onchange="loadConfig('+i+')">')
 			W('</div>');
 			/* config tab stop */
 
