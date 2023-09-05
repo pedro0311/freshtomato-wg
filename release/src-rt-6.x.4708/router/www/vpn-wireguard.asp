@@ -964,8 +964,8 @@ function editPeer(unit, rowIndex, quiet) {
 	var data = peerFieldsToData(unit);
 	var row = peerTables[unit].tb.firstChild.rows[rowIndex];
 	peerTables[unit].rowDel(row);
-	table.insertData(rowIndex, data);
-	table.disableNewEditor(true);
+	peerTables[unit].insertData(rowIndex, data);
+	peerTables[unit].disableNewEditor(true);
 
 	clearPeerFields(unit);
 
