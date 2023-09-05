@@ -15,30 +15,32 @@
 <link rel="stylesheet" type="text/css" href="tomato.css">
 <% css(); %>
 <style>
-.co1, .co2, .co3, .co4, .co5, .co6, .co7, .co8 {
+
+.co1, .co2, .co3, .co4, .co5, .co6, .co7, .co8, .co9, .co10 {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.co3, .co5, .co7, .co8 {
+.co5, .co7, .co9, .co10 {
 	display: none;
 }
 
-.co1 {
-	width: 21%;
+.co1, .co2 {
+	width: 3%;
+	text-align: center;
 }
 
-.co2 {
-	width: 21%;
-}
-
-.co4 {
-	width: 40%;
+.co3, co4 {
+	width: 19%;
 }
 
 .co6 {
-	width: 18%;
+	width: 40%;
+}
+
+.co8 {
+	width: 16%;
 }
 
 .status-result {
@@ -104,7 +106,7 @@ ferror.show = function(e) {
 	elem.addClass(e, 'error-focused');
 	var [tab, section] = locateElement(e);
 	tabSelect(tab);
-	sectSelect(tab.substr(5), section);
+	sectSelect(tab.substr(2), section);
 	e.focus();
 	alert(e._error_msg);
 	elem.removeClass(e, 'error-focused');
@@ -586,6 +588,8 @@ StatusRefresh.prototype.refresh = function(text) {
 
 PeerGrid.prototype.setup = function() {
 	this.init(this.interface_name+'-peers-grid', '', 50, [
+		{ type: 'text' },
+		{ type: 'text' },
 		{ type: 'text', maxlen: 32 },
 		{ type: 'text', maxlen: 128 },
 		{ type: 'password', maxlen: 44 },
@@ -595,7 +599,7 @@ PeerGrid.prototype.setup = function() {
 		{ type: 'text', maxlen: 128 },
 		{ type: 'text', maxlen: 3 },
 	]);
-	this.headerSet(['Alias','Endpoint','Private Key','Public Key','Preshared Key','Interface IP','Allowed IPs','KA']);
+	this.headerSet(['QR', 'Cfg', 'Alias','Endpoint','Private Key','Public Key','Preshared Key','Interface IP','Allowed IPs','KA']);
 	this.disableNewEditor(true);
 
 	var peers = decodePeers(this.unit);
@@ -649,6 +653,16 @@ PeerGrid.prototype.edit = function(cell) {
 
 }
 
+PeerGrid.prototype.insertData = function(at, data) {
+	if (at == -1)
+		at = this.tb.rows.length ;
+	var view = this.dataToView(data);
+	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" height="16px" onclick="genPeerGridConfigQR(event,'+this.unit+','+at+')">';
+	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" height="16px" onclick="genPeerGridConfigFile(event,'+this.unit+','+at+')">';
+	view.unshift(qr, cfg);
+	return this.insert(at, data, view, false);
+}
+
 PeerGrid.prototype.rowDel = function(e) {
 	changed = 1;
 	TGO(e).moving = null;
@@ -661,66 +675,6 @@ PeerGrid.prototype.rowDel = function(e) {
 PeerGrid.prototype.rpDel = function(e) {
 	e = PR(e);
 	this.rowDel(e);
-}
-
-PeerGrid.prototype.verifyFields = function(row, quiet) {
-
-	changed = 1;
-	var ok = 1;
-
-	/* When settings change, make sure we restart the right server */
-	for (var i = 0; i < tabs.length; ++i) {
-		if (peerTables[i] == this)
-			updateForm(i);
-	}
-
-	var f = fields.getAll(row);
-	var data = this.fieldValuesToData(row)
-	var results = verifyPeerFieldData(data);
-
-	if (!results[2]) {
-		ferror.set(f[2], 'A valid private key is required', quiet || !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(f[2]);
-	
-	if (!results[3]) {
-		ferror.set(f[3], 'A valid public key is required', quiet || !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(f[3]);
-
-	if (!results[4]) {
-		ferror.set(f[4], 'Preshared key is invalid', quiet || !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(f[4]);
-
-	if (!results[5]) {
-		ferror.set(f[5], 'IP must be in CIDR notation', quiet || !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(f[5]);
-	
-	if (!results[6]) {
-		ferror.set(f[6], 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
-		ok = 0;
-	}
-	else 
-		ferror.clear(f[6]);
-
-	if (!results[7]) {
-		ferror.set(f[7], 'Keepalive is not within range 0-128', quiet || !ok);
-		ok = 0;
-	}
-	else 
-		ferror.clear(f[7]);
-
-	return ok;
 }
 
 PeerGrid.prototype.getAllData = function() {
@@ -837,40 +791,82 @@ function encodePeers(data) {
 	return data;
 }
 
-function verifyPeerFieldData(data) {
+function verifyPeerFields(unit, require_privkey) {
 
-	var results = [];
-	for (var i = 0; i < data.length; i++) {
-		results.push(true);
+	var result = true;
+
+	var alias = E('_f_wg'+unit+'_peer_alias');
+	var endpoint = E('_f_wg'+unit+'_peer_ep');
+	var port = E('_f_wg'+unit+'_peer_port');
+	var privkey = E('_f_wg'+unit+'_peer_privkey');
+	var pubkey = E('_f_wg'+unit+'_peer_pubkey');
+	var psk = E('_f_wg'+unit+'_peer_psk');
+	var ip = E('_f_wg'+unit+'_peer_ip');
+	var allowedips = E('_f_wg'+unit+'_peer_aip');
+	var keepalive = E('_f_wg'+unit+'_peer_ka');
+	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
+
+	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
+		ferror.set(port, 'A valid port must be provided', !result);
+		result = false;
 	}
+	else
+		ferror.clear(port);
 
-	if (data[2] && !window.wireguard.validateBase64Key(data[2]))
-		results[2] = false;
+	if ((privkey.value || require_privkey) && !window.wireguard.validateBase64Key(privkey.value)) {
+		ferror.set(privkey, 'A valid private key must be provided', !result);
+		result = false;
+	}
+	else
+		ferror.clear(privkey);
 
-	if (!window.wireguard.validateBase64Key(data[3]))
-		results[3] = false;
+	if (psk.value && !window.wireguard.validateBase64Key(psk.value)) {
+		ferror.set(psk, 'A valid PSK must be provided or left blank', !result);
+		result = false;
+	}
+	else
+		ferror.clear(psk);
 
-	if (data[4] != '' && !window.wireguard.validateBase64Key(data[4])) 
-		results[4] = false;
+	if (!verifyCIDR(ip.value)) {
+		ferror.set(ip, 'A valid IP CIDR must be provided to generate a configuration file', !result);
+		result = false;
+	}
+	else
+		ferror.clear(ip);
 
-	if (!verifyCIDR(data[5]))
-		results[5] = false;
-	
-	if (data[6] != '') {
-		var cidrs = data[6].split(',')
+	var ok = true;
+	if (allowedips.value != '') {
+		var cidrs = allowedips.value.split(',')
 		for(var i = 0; i < cidrs.length; i++) {
 			var cidr = cidrs[i].trim();
 			if (!verifyCIDR(cidr)) {
-				results[6] = false;
-				break;
+				ok = false;
 			}
 		}
 	}
-	
-	if ((!data[7].match(/^ *[-\+]?\d+ *$/)) || (data[7] < 0) || (data[7] > 128)) 
-		results[7] = false;
+	if (!ok) {
+		ferror.set(allowedips, 'Allowed IPs must be in CIDR format separated by commas', !result);
+		result = false;
+	}
+	else
+		ferror.clear(allowedips);
 
-	return results;
+	if ((!keepalive.value.match(/^ *[-\+]?\d+ *$/)) || (keepalive.value < 0) || (keepalive.value > 128)) {
+		ferror.set(keepalive, 'Keepalive must an integer between 0 and 128', !result);
+		result = false;
+	}
+	else
+		ferror.clear(keepalive);
+	
+	if (!verifyFWMark(fwmark.value)) {
+		ferror.set(fwmark, 'FWMark must be a hexadecimal number or 0', !result);
+		result = false;
+	}
+	else
+		ferror.clear(fwmark);
+
+	return result;
+
 }
 
 function copyInterfacePubKey(unit) {
@@ -908,22 +904,17 @@ function generateInterfaceKey(unit) {
 	}
 }
 
-function addPeer(unit, quiet) {
-
-	var ok = 1;
-
+function peerFieldsToData(unit) {
 	var alias = E('_f_wg'+unit+'_peer_alias');
 	var endpoint = E('_f_wg'+unit+'_peer_ep');
-	var port = E('_f_wg'+unit+'_peer_port');
 	var privkey = E('_f_wg'+unit+'_peer_privkey');
 	var pubkey = E('_f_wg'+unit+'_peer_pubkey');
 	var psk = E('_f_wg'+unit+'_peer_psk');
 	var ip = E('_f_wg'+unit+'_peer_ip');
 	var allowedips = E('_f_wg'+unit+'_peer_aip');
 	var keepalive = E('_f_wg'+unit+'_peer_ka');
-	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
 
-	var data = [
+	return [
 		alias.value,
 		endpoint.value,
 		privkey.value,
@@ -933,167 +924,56 @@ function addPeer(unit, quiet) {
 		allowedips.value,
 		keepalive.value
 	];
+}
 
-	var results = verifyPeerFieldData(data);
+function clearPeerFields(unit) {
+	E('_f_wg'+unit+'_peer_alias').value = '';
+	E('_f_wg'+unit+'_peer_ep').value = '';
+	E('_f_wg'+unit+'_peer_port').value = eval('nvram.wg'+unit+'_port');
+	E('_f_wg'+unit+'_peer_privkey').value = '';
+	E('_f_wg'+unit+'_peer_pubkey').value = '';
+	E('_f_wg'+unit+'_peer_psk').value = '';
+	E('_f_wg'+unit+'_peer_ip').value = '';
+	E('_f_wg'+unit+'_peer_aip').value = '';
+	E('_f_wg'+unit+'_peer_ka').value = 0;
+	E('_f_wg'+unit+'_peer_fwmark').value = 0;
+}
 
-	if (!results[2]) {
-		ferror.set(privkey, 'A valid private key is required', quiet || !ok);	
-		ok = 0;
-	}
-	else
-		ferror.clear(privkey);
+function addPeer(unit, quiet) {
 
-	if (!results[3]) {
-		ferror.set(pubkey, 'A valid public key is required', quiet || !ok);	
-		ok = 0;
-	}
-	else
-		ferror.clear(pubkey);
-		
+	if (!verifyPeerFields(unit))
+		return;
 
-	if (!results[4]) {
-		ferror.set(psk, 'Preshared key is invalid', quiet || !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(psk);
+	changed = 1;
+	
+	var data = peerFieldsToData(unit);
+	peerTables[unit].insertData(-1, data);
+	peerTables[unit].disableNewEditor(true);
 
-	if (!results[5]) {
-		ferror.set(ip, 'IP is invalid', quiet || !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(ip);
-
-	if (!results[6]) {
-		ferror.set(allowedips, 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
-		ok = 0;
-	}
-	else 
-		ferror.clear(keepalive);
-
-	if (!results[7]) {
-		ferror.set(keepalive, 'Keepalive is not within range 0-128', quiet || !ok);
-		ok = 0;
-	}
-	else 
-		ferror.clear(keepalive);
-
-	if(ok) {
-		changed = 1;
-		peerTables[unit].insertData(-1, data);
-		peerTables[unit].disableNewEditor(true);
-
-		alias.value = '';
-		endpoint.value = '';
-		port.value = eval('nvram.wg'+unit+'_port');
-		privkey.value = '';
-		pubkey.value = '';
-		psk.value = '';
-		ip.value = '';
-		allowedips.value = '';
-		keepalive.value = 0;
-		fwmark.value = 0;
-	}
+	clearPeerFields(unit);
 
 }
 
 function editPeer(unit, rowIndex, quiet) {
 
-	var ok = 1;
+	if (!verifyPeerFields(unit))
+		return;
 
-	var alias = E('_f_wg'+unit+'_peer_alias');
-	var endpoint = E('_f_wg'+unit+'_peer_ep');
-	var port = E('_f_wg'+unit+'_peer_port');
-	var privkey = E('_f_wg'+unit+'_peer_privkey');
-	var pubkey = E('_f_wg'+unit+'_peer_pubkey');
-	var psk = E('_f_wg'+unit+'_peer_psk');
-	var ip = E('_f_wg'+unit+'_peer_ip');
-	var allowedips = E('_f_wg'+unit+'_peer_aip');
-	var keepalive = E('_f_wg'+unit+'_peer_ka');
-	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
+	changed = 1;
 
-	var data = [
-		alias.value,
-		endpoint.value,
-		privkey.value,
-		pubkey.value,
-		psk.value,
-		ip.value,
-		allowedips.value,
-		keepalive.value
-	];
+	var data = peerFieldsToData(unit);
+	var row = peerTables[unit].tb.firstChild.rows[rowIndex];
+	peerTables[unit].rowDel(row);
+	peerTables[unit].insertData(rowIndex, data);
+	peerTables[unit].disableNewEditor(true);
 
-	var results = verifyPeerFieldData(data);
+	clearPeerFields(unit);
 
-	if (!results[2]) {
-		ferror.set(privkey, 'A valid private key is required', quiet || !ok);	
-		ok = 0;
-	}
-	else
-		ferror.clear(privkey);
+	var button = E('wg'+unit+'_peer_add');
+	button.value = 'Add to Peers';
+	button.setAttribute('onclick', 'addPeer('+unit+')');
 
-	if (!results[3]) {
-		ferror.set(pubkey, 'A valid public key is required', quiet || !ok);	
-		ok = 0;
-	}
-	else
-		ferror.clear(pubkey);
-		
-
-	if (!results[4]) {
-		ferror.set(psk, 'Preshared key is invalid', quiet || !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(psk);
-
-	if (!results[5]) {
-		ferror.set(ip, 'IP is invalid', quiet || !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(ip);
-
-	if (!results[6]) {
-		ferror.set(allowedips, 'Allowed IPs must be a comma separated list of CIDRs', quiet || !ok);
-		ok = 0;
-	}
-	else 
-		ferror.clear(keepalive);
-
-	if (!results[7]) {
-		ferror.set(keepalive, 'Keepalive is not within range 0-128', quiet || !ok);
-		ok = 0;
-	}
-	else 
-		ferror.clear(keepalive);
-
-	if(ok) {
-		changed = 1;
-		var table = peerTables[unit];
-		var row = peerTables[unit].tb.firstChild.rows[rowIndex];
-		table.rowDel(row);
-		table.insertData(rowIndex, data);
-		table.disableNewEditor(true);
-
-		alias.value = '';
-		endpoint.value = '';
-		port.value = eval('nvram.wg'+unit+'_port');
-		privkey.value = '';
-		pubkey.value = '';
-		psk.value = '';
-		ip.value = '';
-		allowedips.value = '';
-		keepalive.value = 0;
-		fwmark.value = 0;
-
-		var button = E('wg'+unit+'_peer_add');
-		button.value = 'Add to Peers';
-		button.setAttribute('onclick', 'addPeer('+unit+')');
-	}
-
-	}
+}
 
 function verifyPeerGenFields(unit) {
 
@@ -1170,6 +1050,10 @@ function generatePeer(unit) {
 	E('_f_wg'+unit+'_peer_psk').value = psk;
 	E('_f_wg'+unit+'_peer_ip').value = `${ip}/32`;
 	E('_f_wg'+unit+'_peer_ka').value = keepalive;
+
+	var button = E('wg'+unit+'_peer_add');
+	button.value = 'Add to Peers';
+	button.setAttribute('onclick', 'addPeer('+unit+')');
 	
 }
 
@@ -1183,6 +1067,7 @@ function generatePeerConfig(unit) {
 	var ip = E('_f_wg'+unit+'_peer_ip');
 	var allowedips = E('_f_wg'+unit+'_peer_aip');
 	var keepalive = E('_f_wg'+unit+'_peer_ka');
+	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
 
 	var data = [
 		true,
@@ -1192,44 +1077,13 @@ function generatePeerConfig(unit) {
 		psk.value,
 		ip.value,
 		allowedips.value,
-		keepalive.value
+		keepalive.value,
+		fwmark.value
 	];
 
 	/* verify fields before generating config */
-	var ok = 1;
-	var results = verifyPeerFieldData(data);
-
-	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
-		ferror.set(port, 'A valid port must be provided to generate the configuration file', !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(port);
-
-	if (!results[3]) {
-		ferror.set(privkey, 'A valid private key must be provided to generate a configuration file', !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(privkey);
-
-	if (!results[4]) {
-		ferror.set(psk, 'A valid PSK must be provided or left blank to generate a configuration file', !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(psk);
-
-	if (!results[5]) {
-		ferror.set(psk, 'A valid IP CIDR must be provided to generate a configuration file', !ok);
-		ok = 0;
-	}
-	else
-		ferror.clear(psk);
-
-	if (!ok)
+	if (!verifyPeerFields(unit, true))
 		return;
-	
 
 	/* generate config */
 	var alias = E('_f_wg'+unit+'_peer_alias').value;
@@ -1239,7 +1093,8 @@ function generatePeerConfig(unit) {
 		data[3],
 		data[4],
 		data[5].split('/', 1)[0],
-		port.value
+		port.value,
+		fwmark.value
 	);
 
 	/* download config file (if checked) */
@@ -1252,22 +1107,73 @@ function generatePeerConfig(unit) {
 
 	/* display config QR code (if checked) */
 	if (E('_f_wg'+unit+'_peer_qr_enable').checked) {
-		var qrcode = E('wg'+unit+'_qrcode');
-		var qrcode_content = content.join('');
-		var image = showQRCode(qrcode_content, 40);
-		image.style.maxWidth = "700px";
-		qrcode.replaceChild(image, qrcode.firstChild);
-		elem.display('wg'+unit+'_qrcode', true);
+		displayQRCode(content, unit);
 	}
 
 }
 
-function generateWGConfig(unit, name, privkey, psk, ip, port) {
+function displayQRCode(content, unit) {
+	var qrcode = E('wg'+unit+'_qrcode');
+	var qrcode_content = content.join('');
+	var image = showQRCode(qrcode_content);
+	image.style.maxWidth = "700px";
+	qrcode.replaceChild(image, qrcode.firstChild);
+	elem.display('wg'+unit+'_qrcode', true);
+}
+
+function genPeerGridConfigQR(event, unit, row) {
+	var content = genPeerGridConfig(unit, row);
+	displayQRCode(content, unit);
+	event.stopPropagation();
+}
+
+function genPeerGridConfigFile(event, unit, row) {
+	var content = genPeerGridConfig(unit, row);
+	var filename = "peer.conf";
+	var alias = peerTables[unit].tb.rows[row]._data[0];
+	if (alias != "")
+		filename = `${alias}.conf`;
+	downloadConfig(content, filename);
+	event.stopPropagation();
+}
+
+function genPeerGridConfig(unit, row) {
+
+	var port = E('_f_wg'+unit+'_peer_port');
+	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
+	var row_data = peerTables[unit].tb.rows[row]._data;
+	var result = true;
+
+	if (!row_data[2]) {
+		alert('The selected peer does not have a private key stored, which is require for configuration generation');
+		result = false;
+	}
+
+	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
+		ferror.set(port, 'A valid port must be provided', !result);
+		result = false;
+	}
+	else
+		ferror.clear(port);
+
+	if (!verifyFWMark(fwmark.value)) {
+		ferror.set(fwmark, 'FWMark must be a hexadecimal number or 0', !result);
+		result = false;
+	}
+	else
+		ferror.clear(fwmark);
+
+	if (!result)
+		return;
+
+	return generateWGConfig(unit, row_data[0], row_data[2], row_data[4], row_data[5].split('/')[0], port.value, fwmark.value);
+}
+
+function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	
 	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split("/", 2)');
 	var content = [];
 	var dns = eval('nvram.wg'+unit+'_dns');
-	var fwmark = E('_f_wg'+unit+'_peer_fwmark').value;
 
 	/* build interface section */
 	content.push("[Interface]\n");
