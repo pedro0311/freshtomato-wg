@@ -1147,7 +1147,7 @@ function genPeerGridConfig(unit, row) {
 		alert('The selected peer does not have a private key stored, which is require for configuration generation');
 		result = false;
 	}
-	
+
 	if ((!port.value.match(/^ *[-\+]?\d+ *$/)) || (port.value < 1) || (port.value > 65535)) {
 		ferror.set(port, 'A valid port must be provided', !result);
 		result = false;
@@ -1161,6 +1161,9 @@ function genPeerGridConfig(unit, row) {
 	}
 	else
 		ferror.clear(fwmark);
+
+	if (!result)
+		return;
 
 	return generateWGConfig(unit, row_data[0], row_data[2], row_data[4], row_data[5], port.value, fwmark.value);
 }
