@@ -1106,6 +1106,10 @@ function generatePeerConfig(unit) {
 		displayQRCode(content, unit);
 	}
 
+	var button = E('wg'+unit+'_peer_add');
+	button.value = 'Add to Peers';
+	button.setAttribute('onclick', 'addPeer('+unit+')');
+
 }
 
 function displayQRCode(content, unit) {
