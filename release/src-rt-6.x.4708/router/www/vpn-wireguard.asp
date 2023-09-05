@@ -1050,6 +1050,10 @@ function generatePeer(unit) {
 	E('_f_wg'+unit+'_peer_psk').value = psk;
 	E('_f_wg'+unit+'_peer_ip').value = `${ip}/32`;
 	E('_f_wg'+unit+'_peer_ka').value = keepalive;
+
+	var button = E('wg'+unit+'_peer_add');
+	button.value = 'Add to Peers';
+	button.setAttribute('onclick', 'addPeer('+unit+')');
 	
 }
 
@@ -1105,10 +1109,6 @@ function generatePeerConfig(unit) {
 	if (E('_f_wg'+unit+'_peer_qr_enable').checked) {
 		displayQRCode(content, unit);
 	}
-
-	var button = E('wg'+unit+'_peer_add');
-	button.value = 'Add to Peers';
-	button.setAttribute('onclick', 'addPeer('+unit+')');
 
 }
 
