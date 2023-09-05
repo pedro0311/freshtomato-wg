@@ -198,8 +198,14 @@ function updateForm(num) {
 
 function loadConfig(unit) {
 	var [file] = E('wg'+unit+'_config_file').files;
-	var reader = new FileReader();
 
+	var index = file.name.lastIndexOf('.');
+	if (file.name.slice(index).toLowerCase() != ".conf") {
+		alert('Only files that end in ".conf" are accepted for import');
+		return;
+	}
+	
+	var reader = new FileReader();
 	reader.unit = unit;
 	reader.addEventListener('load', mapConfigToFields);
 	reader.readAsText(file);
@@ -1802,6 +1808,7 @@ function init() {
 			W('<div class="section-title">Import Config from File</div>');
 			W('<input type="file" id="'+t+'_config_file" accept=".conf" name="Browse File">');
 			W('<input type="button" id="'+t+'_config_import" value="Import" onclick="loadConfig('+i+')" >');
+			W('<br>');
 			W('</div>');
 			/* config tab stop */
 
