@@ -654,7 +654,8 @@ PeerGrid.prototype.edit = function(cell) {
 }
 
 PeerGrid.prototype.insertData = function(at, data) {
-	if ((this.footer) && (at == -1)) at = this.footer.rowIndex;
+	if (at == -1)
+		at = this.tb.rows.length ;
 	var view = this.dataToView(data);
 	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" height="16px" onclick="genPeerGridConfigQR('+this.unit+','+at+')">';
 	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" height="16px" onclick="genPeerGridConfigFile('+this.unit+','+at+')">';
@@ -1131,6 +1132,7 @@ function genPeerGridConfigFile(unit, row) {
 }
 
 function genPeerGridConfig(unit, row) {
+
 	var port = E('_f_wg'+unit+'_peer_port');
 	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
 
