@@ -1791,7 +1791,7 @@ function init() {
 				{ title: 'Respond to DNS', name: 'f_'+t+'_dns', type: 'checkbox', value: nvram.wg_dns.indexOf(''+i) >= 0 },
 			]);
 			W('<br>');
-			W('<div class="section-title">Peer</div>');
+			W('<div class="section-title">Peer Parameters</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Router', name: t+'_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: eval('nvram.'+t+'_ka') },
 				{ title: 'Endpoint', name: t+'_endpoint', type: 'text', maxlen: 64, size: 64, placeholder: '(leave blank to use WAN IP)', value: eval('nvram.'+t+'_endpoint') },
