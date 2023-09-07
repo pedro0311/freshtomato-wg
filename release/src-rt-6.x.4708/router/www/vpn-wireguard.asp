@@ -674,8 +674,30 @@ PeerGrid.prototype.rowDel = function(e) {
 }
 
 PeerGrid.prototype.rpDel = function(e) {
+
 	e = PR(e);
+	var qrcode = E('wg'+this.unit+'_qrcode');
+	if (qrcode.style.display != 'none') {
+
+		var qr_row_id = qrcode.getAttribute('row_id');
+
+		if (qr_row_id == e.rowIndex)
+			elem.display('wg'+this.unit+'_qrcode', false);
+
+		else {
+
+			if (qr_row_id > e.rowIndex) {
+				qr_row_id = qr_row_id - 1;
+				qrcode.setAttribute('row_id', qr_row_id)
+			}
+
+			var content = genPeerGridConfig(this.unit, qr_row_id);
+			displayQRCode(content, this.unit, qr_row_id);
+		}
+		
+	}
 	this.rowDel(e);
+
 }
 
 PeerGrid.prototype.getAllData = function() {
@@ -954,6 +976,13 @@ function addPeer(unit, quiet) {
 	clearPeerFields(unit);
 	updateForm(unit);
 
+	var qrcode = E('wg'+unit+'_qrcode');
+	if (qrcode.style.display != 'none') {
+		var row = qrcode.getAttribute('row_id');
+		var content = genPeerGridConfig(unit, row);
+		displayQRCode(content, unit, row);
+	}
+
 }
 
 function editPeer(unit, rowIndex, quiet) {
@@ -975,6 +1004,13 @@ function editPeer(unit, rowIndex, quiet) {
 	var button = E('wg'+unit+'_peer_add');
 	button.value = 'Add to Peers';
 	button.setAttribute('onclick', 'addPeer('+unit+')');
+
+	var qrcode = E('wg'+unit+'_qrcode');
+	if (qrcode.style.display != 'none') {
+		var row = qrcode.getAttribute('row_id');
+		var content = genPeerGridConfig(unit, row);
+		displayQRCode(content, unit, row);
+	}
 
 }
 
