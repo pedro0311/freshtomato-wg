@@ -309,11 +309,6 @@ function validateConfig(config) {
 		return false;
 	}
 
-	if (!config.interface.port) {
-		alert('The interface requires a ListenPort');
-		return false;
-	}
-
 	if (!config.interface.address) {
 		alert('The interface requires an Address');
 		return false;
@@ -957,6 +952,7 @@ function addPeer(unit, quiet) {
 	peerTables[unit].disableNewEditor(true);
 
 	clearPeerFields(unit);
+	updateForm(unit);
 
 }
 
@@ -974,6 +970,7 @@ function editPeer(unit, rowIndex, quiet) {
 	peerTables[unit].disableNewEditor(true);
 
 	clearPeerFields(unit);
+	updateForm(unit);
 
 	var button = E('wg'+unit+'_peer_add');
 	button.value = 'Add to Peers';
@@ -1061,61 +1058,6 @@ function generatePeer(unit) {
 	button.value = 'Add to Peers';
 	button.setAttribute('onclick', 'addPeer('+unit+')');
 	
-}
-
-function generatePeerConfig(unit) {
-	
-	var alias = E('_f_wg'+unit+'_peer_alias');
-	var endpoint = E('_f_wg'+unit+'_peer_ep');
-	var port = E('_f_wg'+unit+'_peer_port');
-	var privkey = E('_f_wg'+unit+'_peer_privkey');
-	var psk = E('_f_wg'+unit+'_peer_psk');
-	var ip = E('_f_wg'+unit+'_peer_ip');
-	var allowedips = E('_f_wg'+unit+'_peer_aip');
-	var keepalive = E('_f_wg'+unit+'_peer_ka');
-	var fwmark = E('_f_wg'+unit+'_peer_fwmark');
-
-	var data = [
-		true,
-		alias.value,
-		endpoint.value,
-		privkey.value,
-		psk.value,
-		ip.value,
-		allowedips.value,
-		keepalive.value,
-		fwmark.value
-	];
-
-	/* verify fields before generating config */
-	if (!verifyPeerFields(unit, true))
-		return;
-
-	/* generate config */
-	var alias = E('_f_wg'+unit+'_peer_alias').value;
-	var content = generateWGConfig(
-		unit,
-		data[1],
-		data[3],
-		data[4],
-		data[5].split('/', 1)[0],
-		port.value,
-		fwmark.value
-	);
-
-	/* download config file (if checked) */
-	if (E('_f_wg'+unit+'_peer_save').checked) {
-		var filename = "peer.conf";
-		if (alias != "")
-			filename = `${alias}.conf`;
-		downloadConfig(content, filename);
-	}
-
-	/* display config QR code (if checked) */
-	if (E('_f_wg'+unit+'_peer_qr_enable').checked) {
-		displayQRCode(content, unit);
-	}
-
 }
 
 function displayQRCode(content, unit) {
@@ -1475,7 +1417,7 @@ function CIDRToNetmask(bitCount) {
 }
 
 function verifyCIDR(cidr) {
-	return cidr.match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\/([1-2][0-9]|3[0-2])/)
+	return cidr.match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\/[0-9]|([1-2][0-9]|3[0-2])/)
 }
 
 function verifyFWMark(fwmark) {
@@ -1492,7 +1434,7 @@ function verifyFields(focused, quiet) {
 		var fom = E('t_fom');
 		var serveridx = focused.name.indexOf('wg');
 		if (serveridx >= 0) {
-			var num = focused.name.substring(serveridx + 5, serveridx + 6);
+			var num = focused.name.substring(serveridx + 2, serveridx + 3);
 
 			updateForm(num);
 
@@ -1830,6 +1772,20 @@ function init() {
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
 			W('<br>');
+			W('<div class="section-title">Config Generation</div>');
+			createFieldTable('', [
+				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port')},
+				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
+			]);
+			W('<br>');
+			W('<div id="'+t+'_qrcode" class="qrcode" style="display:none">');
+			W('<img alt="'+t+'_qrcode_img" style="max-width: 100px;">');
+			W('<div id="'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
+			W('Point your mobile phone camera<br>');
+			W('here above to connect automatically');
+			W('</div>');
+			W('<br>');
+			W('</div>');
 			W('<div class="section-title">Peer Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
@@ -1842,27 +1798,15 @@ function init() {
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
 				{ title: 'Endpoint', name: 'f_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
-				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port')},
 				{ title: 'Private Key', name: 'f_'+t+'_peer_privkey', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Public Key', name: 'f_'+t+'_peer_pubkey', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Preshared Key', name: 'f_'+t+'_peer_psk', type: 'text', maxlen: 44, size: 44},
 				{ title: 'Interface IP', name: 'f_'+t+'_peer_ip', type: 'text', placeholder: "(CIDR format)", maxlen: 64, size: 64},
 				{ title: 'Allowed IPs', name: 'f_'+t+'_peer_aip', type: 'text', placeholder: "(CIDR format)", suffix: '&nbsp;<small>comma separated<\/small>', maxlen: 128, size: 64},
 				{ title: 'Keepalive to this peer', name: 'f_'+t+'_peer_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: "0"},
-				{ title: 'FWMark for this peer', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
-				{ title: 'Generate Config QR Code', name: 'f_'+t+'_peer_qr_enable', type: 'checkbox', value: true },
-				{ title: 'Save Config to File', name: 'f_'+t+'_peer_save', type: 'checkbox', value: true },
 			]);
 			W('<div>');
 			W('<input type="button" value="Add to Peers" onclick="addPeer('+i+')" id="'+t+'_peer_add">');
-			W('<input type="button" value="Generate Config" onclick="generatePeerConfig('+i+')" id="'+t+'_peer_config">');
-			W('</div>');
-			W('<div id="'+t+'_qrcode" class="qrcode" style="display:none">');
-			W('<img alt="'+t+'_qrcode_img" style="max-width: 100px;">');
-			W('<div id="'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
-			W('Point your mobile phone camera<br>');
-			W('here above to connect automatically');
-			W('</div>');
 			W('</div>');
 			W('</div>');
 			/* peers tab stop */
