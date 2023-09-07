@@ -309,11 +309,6 @@ function validateConfig(config) {
 		return false;
 	}
 
-	if (!config.interface.port) {
-		alert('The interface requires a ListenPort');
-		return false;
-	}
-
 	if (!config.interface.address) {
 		alert('The interface requires an Address');
 		return false;
