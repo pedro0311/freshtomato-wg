@@ -1070,8 +1070,15 @@ function displayQRCode(content, unit) {
 }
 
 function genPeerGridConfigQR(event, unit, row) {
-	var content = genPeerGridConfig(unit, row);
-	displayQRCode(content, unit);
+	var qrcode = E('wg'+unit+'_qrcode');
+	if (qrcode.getAttribute('row_id') == row && qrcode.style.display != 'none') {
+		elem.display('wg'+unit+'_qrcode', false);
+	}
+	else {
+		var content = genPeerGridConfig(unit, row);
+		displayQRCode(content, unit, row);
+		qrcode.setAttribute('row_id', row);
+	}
 	event.stopPropagation();
 }
 
