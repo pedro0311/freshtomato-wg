@@ -952,6 +952,7 @@ function addPeer(unit, quiet) {
 	peerTables[unit].disableNewEditor(true);
 
 	clearPeerFields(unit);
+	updateForm(unit);
 
 }
 
@@ -969,6 +970,7 @@ function editPeer(unit, rowIndex, quiet) {
 	peerTables[unit].disableNewEditor(true);
 
 	clearPeerFields(unit);
+	updateForm(unit);
 
 	var button = E('wg'+unit+'_peer_add');
 	button.value = 'Add to Peers';
@@ -1432,7 +1434,7 @@ function verifyFields(focused, quiet) {
 		var fom = E('t_fom');
 		var serveridx = focused.name.indexOf('wg');
 		if (serveridx >= 0) {
-			var num = focused.name.substring(serveridx + 5, serveridx + 6);
+			var num = focused.name.substring(serveridx + 2, serveridx + 3);
 
 			updateForm(num);
 
