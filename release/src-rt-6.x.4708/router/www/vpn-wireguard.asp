@@ -1821,12 +1821,6 @@ function init() {
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
 			W('<br>');
-			W('<div class="section-title">Config Generation</div>');
-			createFieldTable('', [
-				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port')},
-				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
-			]);
-			W('<br>');
 			W('<div id="'+t+'_qrcode" class="qrcode" style="display:none">');
 			W('<img alt="'+t+'_qrcode_img" style="max-width: 100px;">');
 			W('<div id="'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
@@ -1835,6 +1829,12 @@ function init() {
 			W('</div>');
 			W('<br>');
 			W('</div>');
+			W('<div class="section-title">Config Generation</div>');
+			createFieldTable('', [
+				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port')},
+				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
+			]);
+			W('<br>');
 			W('<div class="section-title">Peer Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
