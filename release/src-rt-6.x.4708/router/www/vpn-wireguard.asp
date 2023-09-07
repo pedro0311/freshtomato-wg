@@ -1687,7 +1687,7 @@ function save(nomsg) {
 			E('wg_dns').value += ''+i+',';
 
 		if (E('wg'+i+'_qrcode').style.display != 'none') {
-			var content = genPeerGridConfig(unit, row);
+			var content = genPeerGridConfig(i, row);
 			var row = qrcode.getAttribute('row_id');
 			displayQRCode(content, i, row);
 		}
