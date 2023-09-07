@@ -1773,7 +1773,7 @@ function init() {
 			W('<div class="section-title">Config Generation</div>');
 			createFieldTable('', [
 				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port')},
-				{ title: 'FWMark for this peer', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
+				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
 			]);
 			W('<br>');
 			W('<div id="'+t+'_qrcode" class="qrcode" style="display:none">');
