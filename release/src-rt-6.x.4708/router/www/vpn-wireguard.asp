@@ -674,8 +674,30 @@ PeerGrid.prototype.rowDel = function(e) {
 }
 
 PeerGrid.prototype.rpDel = function(e) {
+
 	e = PR(e);
+	var qrcode = E('wg'+this.unit+'_qrcode');
+	if (qrcode.style.display != 'none') {
+
+		var qr_row_id = qrcode.getAttribute('row_id');
+
+		if (qr_row_id == e.rowIndex)
+			elem.display('wg'+this.unit+'_qrcode', false);
+
+		else {
+
+			if (qr_row_id > e.rowIndex) {
+				qr_row_id = qr_row_id - 1;
+				qrcode.setAttribute('row_id', qr_row_id)
+			}
+
+			var content = genPeerGridConfig(this.unit, qr_row_id);
+			displayQRCode(content, this.unit, qr_row_id);
+		}
+		
+	}
 	this.rowDel(e);
+
 }
 
 PeerGrid.prototype.getAllData = function() {
@@ -954,6 +976,13 @@ function addPeer(unit, quiet) {
 	clearPeerFields(unit);
 	updateForm(unit);
 
+	var qrcode = E('wg'+unit+'_qrcode');
+	if (qrcode.style.display != 'none') {
+		var row = qrcode.getAttribute('row_id');
+		var content = genPeerGridConfig(unit, row);
+		displayQRCode(content, unit, row);
+	}
+
 }
 
 function editPeer(unit, rowIndex, quiet) {
@@ -975,6 +1004,13 @@ function editPeer(unit, rowIndex, quiet) {
 	var button = E('wg'+unit+'_peer_add');
 	button.value = 'Add to Peers';
 	button.setAttribute('onclick', 'addPeer('+unit+')');
+
+	var qrcode = E('wg'+unit+'_qrcode');
+	if (qrcode.style.display != 'none') {
+		var row = qrcode.getAttribute('row_id');
+		var content = genPeerGridConfig(unit, row);
+		displayQRCode(content, unit, row);
+	}
 
 }
 
@@ -1070,8 +1106,15 @@ function displayQRCode(content, unit) {
 }
 
 function genPeerGridConfigQR(event, unit, row) {
-	var content = genPeerGridConfig(unit, row);
-	displayQRCode(content, unit);
+	var qrcode = E('wg'+unit+'_qrcode');
+	if (qrcode.getAttribute('row_id') == row && qrcode.style.display != 'none') {
+		elem.display('wg'+unit+'_qrcode', false);
+	}
+	else {
+		var content = genPeerGridConfig(unit, row);
+		displayQRCode(content, unit, row);
+		qrcode.setAttribute('row_id', row);
+	}
 	event.stopPropagation();
 }
 
@@ -1642,6 +1685,13 @@ function save(nomsg) {
 
 		if (E('_f_wg'+i+'_dns').checked)
 			E('wg_dns').value += ''+i+',';
+
+		var qrcode = E('wg'+i+'_qrcode');
+		if (qrcode.style.display != 'none') {
+			var row = qrcode.getAttribute('row_id');
+			var content = genPeerGridConfig(i, row);
+			displayQRCode(content, i, row);
+		}
 		
 	}
 
@@ -1772,12 +1822,6 @@ function init() {
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
 			W('<br>');
-			W('<div class="section-title">Config Generation</div>');
-			createFieldTable('', [
-				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port')},
-				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
-			]);
-			W('<br>');
 			W('<div id="'+t+'_qrcode" class="qrcode" style="display:none">');
 			W('<img alt="'+t+'_qrcode_img" style="max-width: 100px;">');
 			W('<div id="'+t+'_qrcode_labels" class="qrcode-labels" title="Message">');
@@ -1786,6 +1830,12 @@ function init() {
 			W('</div>');
 			W('<br>');
 			W('</div>');
+			W('<div class="section-title">Config Generation</div>');
+			createFieldTable('', [
+				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port')},
+				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
+			]);
+			W('<br>');
 			W('<div class="section-title">Peer Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
