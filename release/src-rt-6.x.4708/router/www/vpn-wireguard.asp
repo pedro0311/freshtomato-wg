@@ -1686,7 +1686,8 @@ function save(nomsg) {
 		if (E('_f_wg'+i+'_dns').checked)
 			E('wg_dns').value += ''+i+',';
 
-		if (E('wg'+i+'_qrcode').style.display != 'none') {
+		var qrcode = E('wg'+i+'_qrcode')''
+		if (qrcode.style.display != 'none') {
 			var row = qrcode.getAttribute('row_id');
 			var content = genPeerGridConfig(i, row);
 			displayQRCode(content, i, row);
