@@ -35,6 +35,13 @@ exit_trap() {
   trap "${EXIT_TRAP:--}" EXIT
 }
 
+# freshtomato doesn't have mktemp so we need to monkeypatch
+mktemp() {
+  FILENAME=$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 10)
+  echo "" > /tmp/var/tmp/$FILENAME
+  echo $FILENAME
+}
+
 # freshtomato doesn't have readlink so we need to monkeypatch
 readlink() {
   [ "${1:-}" ] || return 1
