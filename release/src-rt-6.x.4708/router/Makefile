@@ -3707,7 +3707,6 @@ wireguard-tools-install:
 	install -D wireguard-tools/staged/bin/wg $(INSTALLDIR)/wireguard-tools/usr/sbin/wg
 	install -D wireguard-tools/staged/bin/wg-quick $(INSTALLDIR)/wireguard-tools/usr/sbin/wg-quick
 	$(STRIP) -s $(INSTALLDIR)/wireguard-tools/usr/sbin/wg
-	$(STRIP) -s $(INSTALLDIR)/wireguard-tools/usr/sbin/wg-quick
 	chmod 0500 $(INSTALLDIR)/wireguard-tools/usr/sbin/wg
 	chmod 0500 $(INSTALLDIR)/wireguard-tools/usr/sbin/wg-quick
 
