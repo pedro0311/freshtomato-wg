@@ -343,15 +343,6 @@ read_bool() {
   esac
 }
 
-#shellcheck disable=SC2120
-auto_su() {
-  if [ "${UID}" -ne 0 ]; then
-    eval "set -- ${ARGS}"
-    exec sudo -p "${PROGRAM} must be run as root. Please enter the password for %u to continue: " -- \
-      "${SHELL:-/bin/sh}" -- "${SELF}" "${@}"
-  fi
-}
-
 add_if() {
   ret=0
   if ! cmd ip link add "${INTERFACE}" type wireguard; then
@@ -829,7 +820,6 @@ LC_ALL=C
 SELF="$(readlink "${0}")"
 PATH="$(printf %s "${SELF}" | sed -e 's:/[^/]*$::'):${PATH}"
 export LC_ALL PATH
-[ -n "${UID-}" ] || UID="$(id -u)"
 [ -n "${CONFIG_FILE_BASE}" ] ||
   CONFIG_FILE_BASE='/etc/wireguard'
 NL='
@@ -859,7 +849,6 @@ case "${#}:${1}" in
     cmd_usage
     ;;
   2:up | 2:down | 2:save | 2:strip)
-    auto_su
     parse_options "${2}"
     case "${1}" in
       up)
