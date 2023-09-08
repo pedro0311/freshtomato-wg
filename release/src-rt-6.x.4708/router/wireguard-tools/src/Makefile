@@ -96,7 +96,7 @@ install: wg
     install -v -m 0755 wg-quick/posix.sh "$(DESTDIR)$(BINDIR)/wg-quick"; \
     else \
     install -v -m 0755 wg-quick/$(PLATFORM).bash "$(DESTDIR)$(BINDIR)/wg-quick"; \
-    fi && install -v -m 0700 -d "$(DESTDIR)$(SYSCONFDIR)/wireguard"
+    fi && install -v -m 0700 -d "$(DESTDIR)$(SYSCONFDIR)" && install -v -m 0700 -d "$(DESTDIR)$(SYSCONFDIR)/wireguard"
 	@[ "$(WITH_WGQUICK)" = "yes" ] || exit 0; \
 	install -v -m 0644 man/wg-quick.8 "$(DESTDIR)$(MANDIR)/man8/wg-quick.8"
 	@[ "$(WITH_WGQUICK)" = "yes" -a "$(WITH_BASHCOMPLETION)" = "yes" -a "$(WITH_EMBEDDED)" != "yes" ] || exit 0; \
