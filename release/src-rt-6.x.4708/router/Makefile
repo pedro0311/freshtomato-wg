@@ -3701,7 +3701,7 @@ avahi-clean:
 	$(call unpatch_files,avahi)
 
 wireguard-tools:
-	WITH_BASHCOMPLETION=no WITH_WGQUICK=no WITH_SYSTEMDUNITS=no PREFIX=$(TOP)/wireguard-tools/staged CFLAGS="-I uapi/linux $(EXTRACFLAGS)" $(MAKE) -C wireguard-tools/src install
+	WITH_BASHCOMPLETION=no WITH_EMBEDDED=yes WITH_WGQUICK=yes WITH_SYSTEMDUNITS=no PREFIX=$(TOP)/wireguard-tools/staged CFLAGS="-I uapi/linux $(EXTRACFLAGS)" $(MAKE) -C wireguard-tools/src install
 
 wireguard-tools-install:
 	install -D wireguard-tools/staged/bin/wg $(INSTALLDIR)/wireguard-tools/usr/sbin/wg
