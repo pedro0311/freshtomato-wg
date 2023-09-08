@@ -35,6 +35,12 @@ exit_trap() {
   trap "${EXIT_TRAP:--}" EXIT
 }
 
+# freshtomato doesn't have readlink so we need to monkeypatch
+readlink() {
+  L=$(ls -dl ${1})
+  echo ${L#*-> } 
+}
+
 # embedded systems without char-classes in "tr" need monkeypatching
 if ! [ "$(printf 'aBcD' | tr '[:upper:]' '[:lower:]')" = 'abcd' ]; then
   REAL_TR="$(type -p tr 2>/dev/null)"
@@ -245,7 +251,7 @@ parse_options() {
   #shellcheck disable=SC2003
   expr match "${CONFIG_FILE}" '\(.*/\)\?\([a-zA-Z0-9_=+.-]\{1,15\}\)\.conf$' >/dev/null ||
     die 'The config file must be a valid interface name, followed by .conf'
-  CONFIG_FILE="$(readlink -f "${CONFIG_FILE}")"
+  CONFIG_FILE="$(readlink "${CONFIG_FILE}")"
   if {
     stat_octal "${CONFIG_FILE}" || :
     stat_octal "$(printf %s "${CONFIG_FILE}" | sed -e 's:/[^/]*$::')" || :
@@ -820,7 +826,7 @@ cmd_strip() { printf '%s\n' "${WG_CONFIG}"; }
 
 EXIT_TRAP=''
 LC_ALL=C
-SELF="$(readlink -f "${0}")"
+SELF="$(readlink "${0}")"
 PATH="$(printf %s "${SELF}" | sed -e 's:/[^/]*$::'):${PATH}"
 export LC_ALL PATH
 [ -n "${UID-}" ] || UID="$(id -u)"
