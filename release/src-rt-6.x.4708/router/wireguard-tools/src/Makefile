@@ -5,7 +5,7 @@
 PKG_CONFIG ?= pkg-config
 PREFIX ?= /usr
 DESTDIR ?=
-SYSCONFDIR ?= /etc
+SYSCONFDIR ?= $(PREFIX)/etc
 BINDIR ?= $(PREFIX)/bin
 LIBDIR ?= $(PREFIX)/lib
 MANDIR ?= $(PREFIX)/share/man
