@@ -37,7 +37,7 @@ exit_trap() {
 
 # embedded systems without char-classes in "tr" need monkeypatching
 if ! [ "$(printf 'aBcD' | tr '[:upper:]' '[:lower:]')" = 'abcd' ]; then
-  REAL_TR="$(command -v tr 2>/dev/null)"
+  REAL_TR="$(type -p tr 2>/dev/null)"
   tr() {
     args=''
     while [ "${#}" -ne 0 ]; do
@@ -94,7 +94,7 @@ else
 fi
 
 # embedded systems without "stat" need this drop-in
-if command -v stat >/dev/null 2>&1; then
+if type -p stat >/dev/null 2>&1; then
   stat_octal() {
     stat -c '%04a' "${@}"
   }
@@ -350,7 +350,7 @@ add_if() {
   ret=0
   if ! cmd ip link add "${INTERFACE}" type wireguard; then
     ret=${?}
-    ! [ -e /sys/module/wireguard ] && command -v "${WG_QUICK_USERSPACE_IMPLEMENTATION:-wireguard-go}" >/dev/null ||
+    ! [ -e /sys/module/wireguard ] && type -p "${WG_QUICK_USERSPACE_IMPLEMENTATION:-wireguard-go}" >/dev/null ||
       exit "${ret}"
     printf '[!] Missing WireGuard kernel module. Falling back to slow userspace implementation.\n' >&2
     cmd "${WG_QUICK_USERSPACE_IMPLEMENTATION:-wireguard-go}" "${INTERFACE}"
