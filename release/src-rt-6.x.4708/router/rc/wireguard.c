@@ -110,15 +110,16 @@ void start_wireguard(int unit)
 
 			}
 		}
-	}
 
-	/* bring up interface */
-	wg_iface_pre_up(unit);
-	if (wg_set_iface_up(iface)) {
-		stop_wireguard(unit);
-		return;
+		/* bring up interface */
+		wg_iface_pre_up(unit);
+		if (wg_set_iface_up(iface)) {
+			stop_wireguard(unit);
+			return;
+		}
+		wg_iface_post_up(unit);
+		
 	}
-	wg_iface_post_up(unit);
 
 	/* set iptables rules */
 	if (wg_set_iptables(iface, getNVRAMVar("wg%d_port", unit))) {
