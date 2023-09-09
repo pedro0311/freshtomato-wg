@@ -678,6 +678,8 @@ void write_wg_dnsmasq_config(FILE* f)
 	struct dirent *file;
 	int cur;
 
+	logmsg(LOG_INFO, "This is inside the WIREGUARD FUNCTION");
+
 	/* add interfaces to dns config */
 	strlcpy(buf, nvram_safe_get("wg_dns"), sizeof(buf));
 	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
