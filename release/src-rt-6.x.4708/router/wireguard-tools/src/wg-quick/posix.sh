@@ -443,7 +443,8 @@ set_mtu_up() {
   endpoint=''
   v6_addr=''
   if [ -n "${MTU}" ]; then
-    cmd ip link set mtu "${MTU}" up dev "${INTERFACE}"
+    cmd ip link set mtu "${MTU}" dev "${INTERFACE}"
+    cmd ifconfig "${INTERFACE}" up
   else
     wg show "${INTERFACE}" endpoints | {
       while read -r _ endpoint; do
@@ -465,7 +466,8 @@ set_mtu_up() {
       [ "${mtu}" -gt 0 ] ||
         mtu="$(get_mtu "$(ip route show default || :)" "${mtu}")"
       [ "${mtu}" -gt 0 ] || mtu=1500
-      cmd ip link set mtu $((mtu - 80)) up dev "${INTERFACE}"
+      cmd ip link set mtu $((mtu - 80)) dev "${INTERFACE}"
+      cmd ifconfig "${INTERFACE}" up
     }
   fi
   unset mtu endpoint v6_addr
