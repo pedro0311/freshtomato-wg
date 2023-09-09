@@ -683,9 +683,11 @@ void write_wg_dnsmasq_config(FILE* f)
 	/* add interfaces to dns config */
 	strlcpy(buf, nvram_safe_get("wg_dns"), sizeof(buf));
 	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
+		logmsg(LOG_INFO, "This is inside the WIREGUARD LOOP: %s", pos);
 		cur = atoi(pos);
+		logmsg(LOG_INFO, "WIREGUARD DEVICE WG%d", cur);
 		if (cur) {
-			logmsg(LOG_DEBUG, "*** %s: adding server %d interface to dns config", __FUNCTION__, cur);
+			logmsg(LOG_INFO, "*** %s: adding server %d interface to dns config", __FUNCTION__, cur);
 			fprintf(f, "interface=wg%d\n", cur);
 		}
 	}
