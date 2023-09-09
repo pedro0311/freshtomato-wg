@@ -869,7 +869,7 @@ ARGS=$(array_save "${@}")
 HAVE_SET_DNS=0
 HAVE_SET_FIREWALL=0
 
-# ~~ ensure directories exist ~~
+# ~~ ensure directories exist and module loaded ~~
 
 if [ ! -d "$CONFIG_FILE_BASE" ]; then
   mkdir "$CONFIG_FILE_BASE"
@@ -879,6 +879,8 @@ if [ ! -d "$CONFIG_FILE_BASE/dns" ]; then
   mkdir "$CONFIG_FILE_BASE/dns"
   chmod 700 "$CONFIG_FILE_BASE/dns"
 fi
+
+lsmod | grep wireguard 1>/dev/null || modprobe wireguard
 
 # ~~ function override insertion point ~~
 
