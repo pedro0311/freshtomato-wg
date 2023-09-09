@@ -6,7 +6,7 @@
 #define LOGMSG_DISABLE	DISABLE_SYSLOG_OSM
 #define LOGMSG_NVDEBUG	"wireguard_debug"
 
-#define WG_DIR		"/var/lib/wg"
+#define WG_DIR		"/etc/wireguard"
 
 #define BUF_SIZE		256
 #define IF_SIZE			8
