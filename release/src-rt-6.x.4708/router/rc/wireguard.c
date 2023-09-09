@@ -691,6 +691,7 @@ void write_wg_dnsmasq_config(FILE* f)
 	if ((dir = opendir(WG_DIR"/dns")) != NULL) {
 		while ((file = readdir(dir)) != NULL) {
 			fn = file->d_name;
+			logmsg(LOG_INFO, "found WG Dnsmasq config %s", fn);
 
 			if (fn[0] == '.')
 				continue;

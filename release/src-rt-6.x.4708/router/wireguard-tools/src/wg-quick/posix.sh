@@ -471,33 +471,25 @@ set_mtu_up() {
   unset mtu endpoint v6_addr
 }
 
-resolvconf_iface_prefix() {
-  if ! [ -f /etc/resolvconf/interface-order ]; then
-    iface=''
-    while read -r iface; do
-      #shellcheck disable=SC2003
-      expr match "${iface}" '\([A-Za-z0-9-]\+\)\*$' >/dev/null ||
-        continue
-      printf '%s\n' "${iface}" |
-        sed -e 's/\*\?$/./'
-      break
-    done </etc/resolvconf/interface-order
-    unset iface
-  fi
-}
+# [ ] set exclusive (use iptables)
+# [x] set nameservers
+# [ ] set search domains
+# [x] add interface to dnsmasq
+# [ ] set metric 0 (dunno)
+# [x] restart dnsmasq
 
 #shellcheck disable=SC2120
 set_dns() {
+  DNS_CONFIG="${CONFIG_FILE_BASE}/dns/${INTERFACE}.conf"
+  echo "interface=${INTERFACE}" > "${DNS_CONFIG}"
   eval "set -- ${DNS}"
   if [ ${#} -gt 0 ]; then
-    {
-      printf 'nameserver %s\n' "${@}"
-      eval "set -- ${DNS_SEARCH}"
-      [ ${#} -eq 0 ] ||
-        printf 'search %s\n' "${*}"
-    } | cmd resolvconf -a "$(resolvconf_iface_prefix)${INTERFACE}" -m 0 -x
+    for NAMESERVER in ${@}; do
+      echo "server=${NAMESERVER}" >> "${DNS_CONFIG}"
+    done
     HAVE_SET_DNS=1
   fi
+  service dnsmasq restart
 }
 
 unset_dns() {
