@@ -486,19 +486,32 @@ set_dns() {
   echo "interface=${INTERFACE}" > "${DNS_CONFIG}"
   eval "set -- ${DNS}"
   if [ ${#} -gt 0 ]; then
+    DNS_CHAIN="wg-${INTERFACE}-dns"
+    cmd iptables -N "${DNS_CHAIN}"
     for NAMESERVER in ${@}; do
       echo "server=${NAMESERVER}" >> "${DNS_CONFIG}"
+      cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p tcp --dst "${NAMESERVER}/32" --dport 53 -j ACCEPT
+      cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p udp --dst "${NAMESERVER}/32" --dport 53 -j ACCEPT
     done
+    cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p tcp --dport 53 -j DROP
+    cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p udp --dport 53 -j DROP
+    cmd iptables -A OUTPUT -j "${DNS_CHAIN}"
     HAVE_SET_DNS=1
   fi
-  service dnsmasq restart
+  cmd service dnsmasq restart
 }
 
 unset_dns() {
   DNS_CONFIG="${CONFIG_FILE_BASE}/dns/${INTERFACE}.conf"
   eval "set -- ${DNS}"
-  [ ${#} -eq 0 ] ||
-    rm "$DNS_CONFIG" && service dnsmasq restart
+  if [ ${#} -gt 0 ]; then
+    DNS_CHAIN="wg-${INTERFACE}-dns"
+    cmd iptables -D OUTPUT -j "${DNS_CHAIN}"
+    cmd iptables -F "${DNS_CHAIN}"
+    cmd iptables -X "${DNS_CHAIN}"
+    rm "$DNS_CONFIG"
+    cmd service dnsmasq restart
+  fi
 }
 
 add_route() {
