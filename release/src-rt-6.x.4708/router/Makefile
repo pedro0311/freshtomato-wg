@@ -3714,7 +3714,6 @@ wireguard-tools-clean:
 	-@$(MAKE) -C wireguard-tools/src clean
 	@rm -f $(TOP)/wireguard-tools/staged/bin/wg
 	@rm -f $(TOP)/wireguard-tools/staged/bin/wg-quick
-	@rm -rf $(TOP)/wireguard-tools/staged/etc/wireguard
 
 gettext-tiny/stamp-h1:
 	$(MAKE) -C gettext-tiny \
