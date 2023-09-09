@@ -683,21 +683,18 @@ save_config() {
   address=''
   cmd=''
   addr_match="$(
-    ip -all -brief address show dev "${INTERFACE}" |
-      sed -ne 's#^'"${INTERFACE}"' \+[A-Z]\+ \+\(.\+\)$#\1#; t P; b; : P; p'
+    ip -all -oneline address show dev ${INTERFACE} |
+      awk -F "[, ]+" '{print $4}'
   )"
   new_config='[Interface]'
   for address in ${addr_match}; do
     new_config="${new_config:+${new_config}${NL}}Address = ${address}"
   done
-  {
-    resolvconf -l "$(resolvconf_iface_prefix)${INTERFACE}" 2>/dev/null ||
-      cat "/etc/resolvconf/run/interface/$(resolvconf_iface_prefix)${INTERFACE}" 2>/dev/null
-  } | {
+  cat "/etc/wireguard/dns/${INTERFACE}.conf" 2>/dev/null | {
     while read -r address; do
       addr_match="$(
         printf %s "${address}" |
-          sed -ne 's#^nameserver \([a-zA-Z0-9_=+:%.-]\+\)$#\1#; t P; b; : P; p'
+          sed -ne 's#^server=\([a-zA-Z0-9_=+:%.-]\+\)$#\1#; t P; b; : P; p'
       )"
       [ -z "${addr_match}" ] ||
         new_config="${new_config:+${new_config}${NL}}DNS = ${addr_match}"
