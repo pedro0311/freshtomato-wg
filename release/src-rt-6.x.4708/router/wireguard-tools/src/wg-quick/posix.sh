@@ -493,8 +493,8 @@ set_dns() {
       cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p tcp --dst "${NAMESERVER}/32" --dport 53 -j ACCEPT
       cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p udp --dst "${NAMESERVER}/32" --dport 53 -j ACCEPT
     done
-    cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p tcp --dport 53 -j DROP
-    cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p udp --dport 53 -j DROP
+    cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p tcp --dport 53 -j REJECT
+    cmd iptables -A "${DNS_CHAIN}" -i "${INTERFACE}" -p udp --dport 53 -j REJECT
     cmd iptables -A OUTPUT -j "${DNS_CHAIN}"
     HAVE_SET_DNS=1
   fi
