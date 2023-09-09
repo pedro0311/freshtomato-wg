@@ -1,11 +1,13 @@
 #include "rc.h"
+#include <dirent.h>
 #include "curve25519.h"
 
 /* needed by logmsg() */
 #define LOGMSG_DISABLE	DISABLE_SYSLOG_OSM
 #define LOGMSG_NVDEBUG	"wireguard_debug"
 
-#define WG_DIR		"/var/lib/wg"
+#define WG_DIR		"/etc/wireguard"
+#define WG_DNS_DIR	WG_DIR"/dns"
 
 #define BUF_SIZE		256
 #define IF_SIZE			8
@@ -161,6 +163,11 @@ void wg_setup_dirs() {
 	/* keys dir */
 	if(mkdir_if_none(WG_DIR"/keys")) {
 		chmod(WG_DIR"/keys", (S_IRUSR | S_IWUSR | S_IXUSR));
+	}
+
+	/* dns dir */
+	if(mkdir_if_none(WG_DIR"/dns")) {
+		chmod(WG_DIR"/dns", (S_IRUSR | S_IWUSR | S_IXUSR));
 	}
 	
 	/* script to generate public keys from private keys */
@@ -666,18 +673,37 @@ int wg_load_iface(char *iface, char *file)
 
 void write_wg_dnsmasq_config(FILE* f)
 {
-	char buf[24];
-	char *pos;
+	char buf[BUF_SIZE], device[24];
+	char *pos, *fn, ch;;
+	DIR *dir;
+	struct dirent *file;
 	int cur;
 
 	/* add interfaces to dns config */
-	strlcpy(buf, nvram_safe_get("wg_dns"), sizeof(buf));
+	strlcpy(buf, nvram_safe_get("wg_dns"), BUF_SIZE);
 	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
 		cur = atoi(pos);
-		if (cur) {
-			logmsg(LOG_DEBUG, "*** %s: adding server %d interface to dns config", __FUNCTION__, cur);
+		if (cur || cur == 0) {
+			logmsg(LOG_INFO, "*** %s: adding server %d interface to Dnsmasq config", __FUNCTION__, cur);
 			fprintf(f, "interface=wg%d\n", cur);
 		}
+	}
+
+	if ((dir = opendir(WG_DIR"/dns")) != NULL) {
+		while ((file = readdir(dir)) != NULL) {
+			fn = file->d_name;
+
+			if (fn[0] == '.')
+				continue;
+
+			if (sscanf(fn, "%s.conf", device) == 1) {
+				logmsg(LOG_INFO, "*** %s: adding Dnsmasq config from %s", __FUNCTION__, fn);
+				memset(buf, 0, BUF_SIZE);
+				snprintf(buf, BUF_SIZE, WG_DNS_DIR"/%s", fn);
+				fappend(f, buf);
+			}
+		}
+		closedir(dir);
 	}
 }
 
