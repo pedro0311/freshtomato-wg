@@ -493,9 +493,10 @@ set_dns() {
 }
 
 unset_dns() {
+  DNS_CONFIG="${CONFIG_FILE_BASE}/dns/${INTERFACE}.conf"
   eval "set -- ${DNS}"
   [ ${#} -eq 0 ] ||
-    cmd resolvconf -d "$(resolvconf_iface_prefix)${INTERFACE}" -f
+    rm "$DNS_CONFIG" && service dnsmasq restart
 }
 
 add_route() {
