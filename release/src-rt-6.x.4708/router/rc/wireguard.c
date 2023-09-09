@@ -137,7 +137,7 @@ void stop_wireguard(int unit)
 	snprintf(iface, IF_SIZE, "wg%d", unit);
 
 	if(getNVRAMVar("wg%d_file", unit)[0] != '\0') {
-		wg_quick_iface_down(getNVRAMVar("wg%d_file", unit));
+		wg_quick_iface_down(iface, getNVRAMVar("wg%d_file", unit));
 	}
 	else {
 		/* Remove interface */
