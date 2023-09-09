@@ -7,6 +7,7 @@
 #define LOGMSG_NVDEBUG	"wireguard_debug"
 
 #define WG_DIR		"/etc/wireguard"
+#define WG_DNS_DIR	WG_DIR"/dns"
 
 #define BUF_SIZE		256
 #define IF_SIZE			8
@@ -672,36 +673,34 @@ int wg_load_iface(char *iface, char *file)
 
 void write_wg_dnsmasq_config(FILE* f)
 {
-	char buf[24], device[24];
+	char buf[BUF_SIZE], device[24];
 	char *pos, *fn, ch;;
 	DIR *dir;
 	struct dirent *file;
 	int cur;
 
-	logmsg(LOG_INFO, "This is inside the WIREGUARD FUNCTION");
-
 	/* add interfaces to dns config */
-	strlcpy(buf, nvram_safe_get("wg_dns"), sizeof(buf));
+	strlcpy(buf, nvram_safe_get("wg_dns"), BUF_SIZE);
 	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
 		cur = atoi(pos);
 		if (cur || cur == 0) {
-			logmsg(LOG_INFO, "*** %s: adding server %d interface to dns config", __FUNCTION__, cur);
+			logmsg(LOG_INFO, "*** %s: adding server %d interface to Dnsmasq config", __FUNCTION__, cur);
 			fprintf(f, "interface=wg%d\n", cur);
 		}
 	}
 
 	if ((dir = opendir(WG_DIR"/dns")) != NULL) {
-		logmsg(LOG_INFO, "WIREGUARD DNS DIR FOUND");
 		while ((file = readdir(dir)) != NULL) {
 			fn = file->d_name;
-			logmsg(LOG_INFO, "found WG Dnsmasq config %s", fn);
 
 			if (fn[0] == '.')
 				continue;
 
 			if (sscanf(fn, "%s.conf", device) == 1) {
-				logmsg(LOG_INFO, "adding Dnsmasq config from %s", fn);
-				fappend(f, fn);
+				logmsg(LOG_INFO, "*** %s: adding Dnsmasq config from %s", __FUNCTION__, fn);
+				memset(buf, 0, BUF_SIZE);
+				snprintf(buf, BUF_SIZE, WG_DNS_DIR"/%s", fn);
+				fappend(f, buf);
 			}
 		}
 		closedir(dir);
