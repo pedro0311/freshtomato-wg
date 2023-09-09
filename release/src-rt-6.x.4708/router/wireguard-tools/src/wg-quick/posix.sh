@@ -473,9 +473,9 @@ set_mtu_up() {
   unset mtu endpoint v6_addr
 }
 
-# [ ] set exclusive (use iptables)
+# [x] set exclusive (use iptables)
 # [x] set nameservers
-# [ ] set search domains
+# [ ] set search domains (dunno)
 # [x] add interface to dnsmasq
 # [ ] set metric 0 (dunno)
 # [x] restart dnsmasq
