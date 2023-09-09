@@ -486,7 +486,7 @@ set_dns() {
   echo "interface=${INTERFACE}" > "${DNS_CONFIG}"
   eval "set -- ${DNS}"
   if [ ${#} -gt 0 ]; then
-    DNS_CHAIN="wg-${INTERFACE}-dns"
+    DNS_CHAIN="wgquick-${INTERFACE}-dns"
     cmd iptables -N "${DNS_CHAIN}"
     for NAMESERVER in ${@}; do
       echo "server=${NAMESERVER}" >> "${DNS_CONFIG}"
@@ -505,7 +505,7 @@ unset_dns() {
   DNS_CONFIG="${CONFIG_FILE_BASE}/dns/${INTERFACE}.conf"
   eval "set -- ${DNS}"
   if [ ${#} -gt 0 ]; then
-    DNS_CHAIN="wg-${INTERFACE}-dns"
+    DNS_CHAIN="wgquick-${INTERFACE}-dns"
     cmd iptables -D OUTPUT -j "${DNS_CHAIN}"
     cmd iptables -F "${DNS_CHAIN}"
     cmd iptables -X "${DNS_CHAIN}"
