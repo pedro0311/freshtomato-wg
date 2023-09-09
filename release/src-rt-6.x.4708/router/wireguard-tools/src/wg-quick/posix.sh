@@ -869,6 +869,17 @@ ARGS=$(array_save "${@}")
 HAVE_SET_DNS=0
 HAVE_SET_FIREWALL=0
 
+# ~~ ensure directories exist ~~
+
+if [ ! -d "$CONFIG_FILE_BASE" ]; then
+  mkdir "$CONFIG_FILE_BASE"
+  chmod 700 "$CONFIG_FILE_BASE"
+fi
+if [ ! -d "$CONFIG_FILE_BASE/dns" ]; then
+  mkdir "$CONFIG_FILE_BASE/dns"
+  chmod 700 "$CONFIG_FILE_BASE/dns"
+fi
+
 # ~~ function override insertion point ~~
 
 case "${#}:${1}" in
