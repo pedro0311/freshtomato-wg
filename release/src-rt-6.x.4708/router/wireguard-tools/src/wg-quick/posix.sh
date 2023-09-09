@@ -486,7 +486,11 @@ set_dns() {
   echo "interface=${INTERFACE}" > "${DNS_CONFIG}"
   eval "set -- ${DNS}"
   if [ ${#} -gt 0 ]; then
-    DNS_CHAIN="wgquick-${INTERFACE}-dns"
+    DNS_CHAIN="wg-quick-${INTERFACE}-dns"
+    iptables -D OUTPUT -j "${DNS_CHAIN}" >/dev/null 2>&1 || $(exit 0)
+    iptables -L "${DNS_CHAIN}" >/dev/null 2>&1 && \
+      iptables -F "${DNS_CHAIN}"  >/dev/null 2>&1 && \
+      iptables -X "${DNS_CHAIN}" >/dev/null 2>&1
     cmd iptables -N "${DNS_CHAIN}"
     for NAMESERVER in ${@}; do
       echo "server=${NAMESERVER}" >> "${DNS_CONFIG}"
@@ -505,10 +509,10 @@ unset_dns() {
   DNS_CONFIG="${CONFIG_FILE_BASE}/dns/${INTERFACE}.conf"
   eval "set -- ${DNS}"
   if [ ${#} -gt 0 ]; then
-    DNS_CHAIN="wgquick-${INTERFACE}-dns"
-    cmd iptables -D OUTPUT -j "${DNS_CHAIN}"
-    cmd iptables -F "${DNS_CHAIN}"
-    cmd iptables -X "${DNS_CHAIN}"
+    DNS_CHAIN="wg-quick-${INTERFACE}-dns"
+    cmd iptables -D OUTPUT -j "${DNS_CHAIN}" || $(exit 0)
+    cmd iptables -F "${DNS_CHAIN}" || $(exit 0)
+    cmd iptables -X "${DNS_CHAIN}" || $(exit 0)
     rm "$DNS_CONFIG"
     cmd service dnsmasq restart
   fi
