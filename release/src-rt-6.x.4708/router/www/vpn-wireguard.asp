@@ -1179,10 +1179,10 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	);
 
 	if (dns != "")
-		content.push(`DNS = 0x${dns}\n`)
+		content.push(`DNS = ${dns}\n`)
 
 	if (fwmark != "0")
-		content.push (`FwMark = ${fwmark}\n`);
+		content.push (`FwMark = 0x${fwmark}\n`);
 
 	/* build router peer */
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg'+unit+'_key'));
