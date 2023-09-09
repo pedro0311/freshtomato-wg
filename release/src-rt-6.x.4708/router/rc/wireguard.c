@@ -642,7 +642,7 @@ int wg_quick_iface_up(char *iface, char *file)
 
 	/* copy config to wg dir with proper name */
 	memset(buf, 0, buf_size);
-	snprintf(buf, buf_size, WG_DIR"/%s", iface);
+	snprintf(buf, buf_size, WG_DIR"/%s.conf", iface);
 	if ((f = fopen(buf, "w")) != NULL) {
 		fappend(f, file);
 		fclose(f);
@@ -671,7 +671,7 @@ int wg_quick_iface_down(char *iface, char *file)
 
 	/* copy config to wg dir with proper name */
 	memset(buf, 0, buf_size);
-	snprintf(buf, buf_size, WG_DIR"/%s", iface);
+	snprintf(buf, buf_size, WG_DIR"/%s.conf", iface);
 	if ((f = fopen(buf, "w")) != NULL) {
 		fappend(f, file);
 		fclose(f);
