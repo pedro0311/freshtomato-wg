@@ -43,7 +43,7 @@ void start_wireguard(int unit)
 
 	/* check if file is specified */
 	if(getNVRAMVar("wg%d_file", unit)[0] != '\0') {
-		wg_load_iface(iface, getNVRAMVar("wg%d_file", unit));
+		wg_quick_iface_up(iface, getNVRAMVar("wg%d_file", unit));
 	}
 	else {
 
@@ -136,10 +136,15 @@ void stop_wireguard(int unit)
 	memset(iface, 0, IF_SIZE);
 	snprintf(iface, IF_SIZE, "wg%d", unit);
 
-	/* Remove interface */
-	wg_iface_pre_down(unit);
-    wg_remove_iface(iface);
-	wg_iface_post_down(unit);
+	if(getNVRAMVar("wg%d_file", unit)[0] != '\0') {
+		wg_quick_iface_down(getNVRAMVar("wg%d_file", unit));
+	}
+	else {
+		/* Remove interface */
+		wg_iface_pre_down(unit);
+		wg_remove_iface(iface);
+		wg_iface_post_down(unit);
+	}
 
 	/* remove iptables rules */
 	wg_remove_iptables(iface, getNVRAMVar("wg%d_port", unit));
@@ -206,34 +211,6 @@ void wg_setup_dirs() {
 						"/usr/sbin/iptables -nvL FORWARD | grep -q \".*ACCEPT.*all.*$2\" && /usr/sbin/iptables -D FORWARD -i \"$2\" -j ACCEPT\n");
 			fclose(fp);
 			chmod(WG_DIR"/scripts/fw-del.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
-		}
-	}
-
-	/* script to dump wireguard interface to file */
-	if(!(f_exists(WG_DIR"/scripts/wg-save.sh"))){
-		if((fp = fopen(WG_DIR"/scripts/wg-save.sh", "w"))) {
-			fprintf(fp, "#!/bin/sh\n"
-						"/usr/sbin/wg showconf $1 > $2\n"
-						"IPandNM=$(/usr/sbin/ip addr show $1 | grep inet | awk '{ print $2 }')\n"
-						"sed -i \"2i Address = $IPandNM\" $2\n");
-			fclose(fp);
-			chmod(WG_DIR"/scripts/wg-save.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
-		}
-	}
-
-	/* script to load wireguard interface from file */
-	if(!(f_exists(WG_DIR"/scripts/wg-load.sh"))){
-		if((fp = fopen(WG_DIR"/scripts/wg-load.sh", "w"))) {
-			fprintf(fp, "#!/bin/sh\n"
-						"TEMPFILE="WG_DIR"/$1-temp.conf\n"
-						"IPandNM=$(/bin/grep \"Address = \" \"$2\" | awk '{ print $3 }')\n"
-						"ip link add $1 type wireguard\n"
-                        "ip addr add $IPandNM dev $1\n"
-                        "/bin/sed '/Address = .*/d' $2 > $TEMPFILE\n"
-                        "/usr/sbin/wg setconf $1 $TEMPFILE\n"
-                        "rm $TEMPFILE\n");
-			fclose(fp);
-			chmod(WG_DIR"/scripts/wg-load.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
 		}
 	}
 
@@ -657,18 +634,68 @@ int wg_save_iface(char *iface, char *file)
 	return 0;
 }
 
-int wg_load_iface(char *iface, char *file)
+int wg_quick_iface_up(char *iface, char *file)
 {
+	int buf_size = 32;
+	char buf[buf_size];
+	FILE *f;
+
+	/* copy config to wg dir with proper name */
+	memset(buf, 0, buf_size);
+	snprintf(buf, buf_size, WG_DIR"/%s", iface);
+	if ((f = fopen(buf, "w")) != NULL) {
+		fappend(f, file);
+		fclose(f);
+	}
+	else {
+		logmsg(LOG_WARNING, "Unable to open wireguard configuration file %s for interface %s!", iface, file);
+	}
+
 	/* write wg config to file */
-	if(eval("/bin/sh", WG_DIR"/scripts/wg-load.sh", iface, file)) {
-		logmsg(LOG_WARNING, "Unable to load wireguard interface %s from file %s!", iface, file);
+	if(eval("/usr/sbin/wg-quick", "up", buf)) {
+		logmsg(LOG_WARNING, "Unable to set up wireguard interface %s from file %s!", iface, file);
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "Loaded wireguard interface %s from file %s", iface, file);
+		logmsg(LOG_DEBUG, "Wireguard interface %s from file %s set up", iface, file);
 	}
 
 	return 0;
+}
+
+int wg_quick_iface_down(char *iface, char *file)
+{
+	int buf_size = 32;
+	char buf[buf_size];
+	FILE *f;
+
+	/* copy config to wg dir with proper name */
+	memset(buf, 0, buf_size);
+	snprintf(buf, buf_size, WG_DIR"/%s", iface);
+	if ((f = fopen(buf, "w")) != NULL) {
+		fappend(f, file);
+		fclose(f);
+	}
+	else {
+		logmsg(LOG_WARNING, "Unable to open wireguard configuration file %s for interface %s!", iface, file);
+		return -1;
+	}
+
+	/* write wg config to file */
+	if(eval("/usr/sbin/wg-quick", "down", buf)) {
+		logmsg(LOG_WARNING, "Unable to set down wireguard interface %s from file %s!", iface, file);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "Wireguard interface %s from file %s set down", iface, file);
+	}
+
+	return 0;
+}
+
+int wg_quick_copy_conf()
+{
+
 }
 
 void write_wg_dnsmasq_config(FILE* f)
