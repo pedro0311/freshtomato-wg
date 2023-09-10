@@ -391,6 +391,9 @@ int wg_set_iface_dns(char *iface, char *dns)
 
 	fclose(fp);
 
+	stop_dnsmasq();
+	start_dnsmasq();
+
 	return 0;
 }
 
@@ -407,6 +410,9 @@ int wg_unset_iface_dns(char *iface)
 	}
 
 	remove(fn);
+
+	stop_dnsmasq();
+	start_dnsmasq();
 
 	return 0;
 }
