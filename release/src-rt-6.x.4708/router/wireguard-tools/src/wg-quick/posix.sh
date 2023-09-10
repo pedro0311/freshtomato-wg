@@ -39,7 +39,7 @@ exit_trap() {
 mktemp() {
   FILENAME=$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 10)
   echo "" > /tmp/var/tmp/$FILENAME
-  echo $FILENAME
+  echo "/tmp/var/tmp/$FILENAME"
 }
 
 # freshtomato doesn't have readlink so we need to monkeypatch
@@ -271,6 +271,12 @@ die() {
   exit 1
 }
 
+parse_dnsmasq_restart() {
+  if [ "${1}" = '--norestart' ]; then
+    RESTART_DNSMASQ=0
+  fi
+}
+
 parse_options() {
   interface_section=0
   line=''
@@ -280,6 +286,7 @@ parse_options() {
   v=''
   header_line=0
   CONFIG_FILE="${1}"
+  parse_dnsmasq_restart "${2}"
   #shellcheck disable=SC2003
   ! expr match "${CONFIG_FILE}" '[a-zA-Z0-9_=+.-]\{1,15\}$' >/dev/null ||
     CONFIG_FILE="${CONFIG_FILE_BASE}/${CONFIG_FILE}.conf"
@@ -502,7 +509,9 @@ set_dns() {
     cmd iptables -A OUTPUT -j "${DNS_CHAIN}"
     HAVE_SET_DNS=1
   fi
-  cmd service dnsmasq restart
+  if [ $RESTART_DNSMASQ -eq 1 ]; then
+    cmd service dnsmasq restart
+  fi
 }
 
 unset_dns() {
@@ -514,7 +523,9 @@ unset_dns() {
     cmd iptables -F "${DNS_CHAIN}" || $(exit 0)
     cmd iptables -X "${DNS_CHAIN}" || $(exit 0)
     rm "$DNS_CONFIG"
-    cmd service dnsmasq restart
+    if [ $RESTART_DNSMASQ -eq 1 ]; then
+      cmd service dnsmasq restart
+    fi
   fi
 }
 
@@ -885,6 +896,7 @@ SAVE_CONFIG=0
 CONFIG_FILE=''
 PROGRAM="$(printf %s "${0}" | sed -e 's:^.*/\([^/]*\)$:\1:')"
 ARGS=$(array_save "${@}")
+RESTART_DNSMASQ=1
 HAVE_SET_DNS=0
 HAVE_SET_FIREWALL=0
 
@@ -907,8 +919,8 @@ case "${#}:${1}" in
   1:--help | 1:-h | 1:help)
     cmd_usage
     ;;
-  2:up | 2:down | 2:save | 2:strip)
-    parse_options "${2}"
+  2:up | 2:down | 2:save | 2:strip | 3:up | 3:down)
+    parse_options "${2}" "${3}"
     case "${1}" in
       up)
         cmd_up
