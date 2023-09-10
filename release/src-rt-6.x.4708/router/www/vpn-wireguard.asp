@@ -1463,6 +1463,19 @@ function verifyCIDR(cidr) {
 	return cidr.match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\/[0-9]|([1-2][0-9]|3[0-2])/)
 }
 
+function verifyDNS(dns) {
+	var ok = true;
+	var ips = dns.split(',');
+	for(var i = 0; i < cidrs.length; i++) {
+		var ip = ips[i].trim();
+		if (!match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])/)) {
+			ok = false;
+			break;
+		}
+	}
+	return ok;
+}
+
 function verifyFWMark(fwmark) {
 	return fwmark == '0' || fwmark.match(/[0-9A-Fa-f]{8}/);
 }
@@ -1537,7 +1550,7 @@ function verifyFields(focused, quiet) {
 		E('_wg'+i+'_pubkey').value = pubkey;
 
 		/* autopopulate IP if it's empty */
-		var ip = E('_wg'+i+'_ip')
+		var ip = E('_wg'+i+'_ip');
 		if (ip.value == '') {
 			ip.value = '10.'+(10+i)+'.0.1/24';
 			ferror.clear(ip);
@@ -1551,6 +1564,15 @@ function verifyFields(focused, quiet) {
 			else
 				ferror.clear(ip);
 		}
+
+		/* verify interface dns */
+		var dns = E('_wg'+i+'_dns');
+		if (!verifyDNS(dns.value)) {
+			ferror.set(dns, 'DNS Servers must be a comma separated list of IPs');
+			ok = 0;
+		}
+		else
+			ferror.clear(dns);
 
 		/* autopopulate fwmark if it's empty */
 		var fwmark = E('_wg'+i+'_fwmark');
@@ -1599,6 +1621,15 @@ function verifyFields(focused, quiet) {
 			else
 				ferror.clear(keepalive);
 		}
+
+		/* verify peer dns */
+		var peer_dns = E('_wg'+i+'_peer_dns');
+		if (!verifyDNS(peer_dns.value)) {
+			ferror.set(peer_dns, 'DNS Servers must be a comma separated list of IPs');
+			ok = 0;
+		}
+		else
+			ferror.clear(peer_dns);
 
 		/* verify interface allowed ips */
 		var allowed_ips = E('_wg'+i+'_aip')
