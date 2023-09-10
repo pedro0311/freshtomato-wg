@@ -1728,7 +1728,10 @@ function save(nomsg) {
 
 		var endpoint = E('f_wg'+i+'_endpoint');
 		var custom_endpoint = E('f_wg'+i+'_custom_endpoint');
-		var endpoint_output = endpoint.in
+		var endpoint_output = endpoint.value + '';
+		if (endpoint.value == 2)
+			endpoint_output += '|' + custom_endpoint.value;
+		eval('nvram.wg'+i+'_endpoint = endpoint_output');
 
 		var qrcode = E('wg'+i+'_qrcode');
 		if (qrcode.style.display != 'none') {
