@@ -1726,6 +1726,10 @@ function save(nomsg) {
 		if (E('_f_wg'+i+'_adns').checked)
 			E('wg_adns').value += ''+i+',';
 
+		var endpoint = E('f_wg'+i+'_endpoint');
+		var custom_endpoint = E('f_wg'+i+'_custom_endpoint');
+		var endpoint_output = endpoint.in
+
 		var qrcode = E('wg'+i+'_qrcode');
 		if (qrcode.style.display != 'none') {
 			var row = qrcode.getAttribute('row_id');
@@ -1827,7 +1831,7 @@ function init() {
 			W('<div class="section-title">Peer Parameters</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Router', name: t+'_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: eval('nvram.'+t+'_ka') },
-				{ title: 'Endpoint', name: 'f_'+t+'_endpoint', type: 'select', options: [['0','FQDN'],['1','WAN IP'],['2','Custom Endpoint']], value: eval('nvram.'+t+'_endpoint').split('|', 2)[1] || 0}
+				{ title: 'Endpoint', name: 'f_'+t+'_endpoint', type: 'select', options: [['0','FQDN'],['1','WAN IP'],['2','Custom Endpoint']], value: eval('nvram.'+t+'_endpoint').split('|', 2)[1] || 0 },
 				{ title: 'Custom Endpoint', name: 'f_'+t+'_custom_endpoint', type: 'text', maxlen: 64, size: 64, placeholder: '(leave blank to use WAN IP)', value: eval('nvram.'+t+'_endpoint').split('|', 2)[1] || '' },
 				{ title: 'Allowed IPs', name: t+'_aip', type: 'text', placeholder: "(CIDR format)", maxlen: 128, size: 64, suffix: '&nbsp;<small>comma separated<\/small>', value: eval('nvram.'+t+'_aip') },
 				{ title: 'DNS Servers for Peers', name: t+'_peer_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.'+t+'_peer_dns') },
