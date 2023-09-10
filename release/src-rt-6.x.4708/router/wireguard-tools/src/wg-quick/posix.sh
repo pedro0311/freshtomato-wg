@@ -274,7 +274,7 @@ die() {
 parse_dnsmasq_restart() {
   if [ "${1}" = '--norestart' ]; then
     RESTART_DNSMASQ=0
-  else
+  fi
 }
 
 parse_options() {
@@ -286,6 +286,7 @@ parse_options() {
   v=''
   header_line=0
   CONFIG_FILE="${1}"
+  parse_dnsmasq_restart "${2}"
   #shellcheck disable=SC2003
   ! expr match "${CONFIG_FILE}" '[a-zA-Z0-9_=+.-]\{1,15\}$' >/dev/null ||
     CONFIG_FILE="${CONFIG_FILE_BASE}/${CONFIG_FILE}.conf"
@@ -508,8 +509,7 @@ set_dns() {
     cmd iptables -A OUTPUT -j "${DNS_CHAIN}"
     HAVE_SET_DNS=1
   fi
-  RESTART_DNSMASQ
-  if [ RESTART_DNSMASQ -eq 1 ]; then
+  if [ $RESTART_DNSMASQ -eq 1 ]; then
     cmd service dnsmasq restart
   fi
 }
@@ -523,7 +523,7 @@ unset_dns() {
     cmd iptables -F "${DNS_CHAIN}" || $(exit 0)
     cmd iptables -X "${DNS_CHAIN}" || $(exit 0)
     rm "$DNS_CONFIG"
-    if [ RESTART_DNSMASQ -eq 1 ]; then
+    if [ $RESTART_DNSMASQ -eq 1 ]; then
       cmd service dnsmasq restart
     fi
   fi
@@ -919,9 +919,8 @@ case "${#}:${1}" in
   1:--help | 1:-h | 1:help)
     cmd_usage
     ;;
-  2:up | 2:down | 2:save | 2:strip)
-    parse_options "${2}"
-    parse_dnsmasq_restart "${3}"
+  2:up | 2:down | 2:save | 2:strip | 3:up | 3:down)
+    parse_options "${2}" "${3}"
     case "${1}" in
       up)
         cmd_up
@@ -942,6 +941,7 @@ case "${#}:${1}" in
     ;;
   *)
     cmd_usage
+    echo "we hit this section :("
     exit 1
     ;;
 esac
