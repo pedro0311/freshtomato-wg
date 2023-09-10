@@ -710,7 +710,7 @@ void write_wg_dnsmasq_config(FILE* f)
 	int cur;
 
 	/* add interfaces to dns config */
-	strlcpy(buf, nvram_safe_get("wg_dns"), BUF_SIZE);
+	strlcpy(buf, nvram_safe_get("wg_adns"), BUF_SIZE);
 	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
 		cur = atoi(pos);
 		if (cur || cur == 0) {

@@ -1717,7 +1717,7 @@ static const nvset_t nvset_list[] = {
 
 #ifdef TCONFIG_WIREGUARD
 /* wireguard */
-    { "wg_dns",			V_NONE				},
+    { "wg_adns",			V_NONE				},
 	{ "wg0_enable",			V_01				},
 	{ "wg0_file",			V_TEXT(0, 64)		},
 	{ "wg0_key",			V_TEXT(0, 44)		},
