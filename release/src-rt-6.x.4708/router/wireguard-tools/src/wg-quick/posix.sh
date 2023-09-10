@@ -39,7 +39,7 @@ exit_trap() {
 mktemp() {
   FILENAME=$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 10)
   echo "" > /tmp/var/tmp/$FILENAME
-  echo $FILENAME
+  echo "/tmp/var/tmp/$FILENAME"
 }
 
 # freshtomato doesn't have readlink so we need to monkeypatch
