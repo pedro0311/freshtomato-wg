@@ -701,6 +701,7 @@ int wg_quick_copy_conf()
 
 void write_wg_dnsmasq_config(FILE* f)
 {
+	logmsg(LOG_INFO, "*** %s: got to wg dnsmasq", __FUNCTION__);
 	char buf[BUF_SIZE], device[24];
 	char *pos, *fn, ch;;
 	DIR *dir;
@@ -733,6 +734,7 @@ void write_wg_dnsmasq_config(FILE* f)
 		}
 		closedir(dir);
 	}
+	logmsg(LOG_INFO, "*** %s: got to end of wg dnsmasq", __FUNCTION__);
 }
 
 static inline void encode_base64(char dest[static 4], const uint8_t src[static 3])
