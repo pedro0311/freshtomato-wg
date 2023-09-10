@@ -71,14 +71,20 @@ void start_wireguard(int unit)
 			return;
 		}
 
-		/* set interface fwmark*/
+		/* set interface fwmark */
 		if (wg_set_iface_fwmark(iface, getNVRAMVar("wg%d_fwmark", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
 
-		/* set interface mtu*/
+		/* set interface mtu */
 		if (wg_set_iface_mtu(iface, getNVRAMVar("wg%d_mtu", unit))) {
+			stop_wireguard(unit);
+			return;
+		}
+
+		/* set interface dns */
+		if (wg_set_iface_dns(iface, getNVRAMVar("wg%d_dns", unit))) {
 			stop_wireguard(unit);
 			return;
 		}
@@ -145,6 +151,7 @@ void stop_wireguard(int unit)
 		wg_iface_pre_down(unit);
 		wg_remove_iface(iface);
 		wg_iface_post_down(unit);
+		wg_unset_iface_dns(iface);
 	}
 
 	/* remove iptables rules */
@@ -293,7 +300,7 @@ int wg_set_iface_port(char *iface, char *port)
 	return 0;
 }
 
-int wg_set_iface_privkey(char *iface, char* privkey)
+int wg_set_iface_privkey(char *iface, char *privkey)
 {
 	FILE *fp;
 	char buffer[BUF_SIZE];
@@ -323,7 +330,7 @@ int wg_set_iface_privkey(char *iface, char* privkey)
 	return 0;
 }
 
-int wg_set_iface_fwmark(char *iface, char* fwmark)
+int wg_set_iface_fwmark(char *iface, char *fwmark)
 {
 	int buffer_size = 10;
 	char buffer[buffer_size];
@@ -348,7 +355,7 @@ int wg_set_iface_fwmark(char *iface, char* fwmark)
 	return 0;
 }
 
-int wg_set_iface_mtu(char *iface, char* mtu)
+int wg_set_iface_mtu(char *iface, char *mtu)
 {
 	if (eval("/usr/sbin/ip", "link", "set", "dev", iface, "mtu", mtu)){
 		logmsg(LOG_WARNING, "unable to set wireguard interface %s mtu to %s!", iface, mtu);
@@ -357,6 +364,55 @@ int wg_set_iface_mtu(char *iface, char* mtu)
 	else {
 		logmsg(LOG_DEBUG, "wireguard interface %s has had its mtu set to %s", iface, mtu);
 	}
+
+	return 0;
+}
+
+int wg_set_iface_dns(char *iface, char *dns)
+{
+	int buf_size = 32;
+	char fn[buf_size];
+	char *nv, *b;
+	FILE *fp;
+
+	if (dns[0] == '\0') {
+		return 0;
+	}
+	
+	memset(fn, 0, buf_size);
+	snprintf(fn, buf_size, WG_DNS_DIR"/%s.conf", iface);
+
+	fp = fopen(fn, "w");
+
+	nv = strdup(dns);
+	while ((b = strsep(&nv, ",")) != NULL) {
+		fprintf(fp, "server=%s\n", b);
+	}
+
+	fclose(fp);
+
+	stop_dnsmasq();
+	start_dnsmasq();
+
+	return 0;
+}
+
+int wg_unset_iface_dns(char *iface)
+{
+	int buf_size = 32;
+	char fn[buf_size];
+	
+	memset(fn, 0, buf_size);
+	snprintf(fn, buf_size, WG_DNS_DIR"/%s.conf", iface);
+
+	if (!f_exists(fn)) {
+		return 0;
+	}
+
+	remove(fn);
+
+	stop_dnsmasq();
+	start_dnsmasq();
 
 	return 0;
 }
@@ -710,7 +766,7 @@ void write_wg_dnsmasq_config(FILE* f)
 	int cur;
 
 	/* add interfaces to dns config */
-	strlcpy(buf, nvram_safe_get("wg_dns"), BUF_SIZE);
+	strlcpy(buf, nvram_safe_get("wg_adns"), BUF_SIZE);
 	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
 		cur = atoi(pos);
 		if (cur || cur == 0) {
