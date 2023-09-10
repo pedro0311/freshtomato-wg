@@ -1567,7 +1567,7 @@ function verifyFields(focused, quiet) {
 
 		/* verify interface dns */
 		var dns = E('_wg'+i+'_dns');
-		if (dns.value != '' || !verifyDNS(dns.value)) {
+		if (dns.value != '' && !verifyDNS(dns.value)) {
 			ferror.set(dns, 'DNS Servers must be a comma separated list of IPs');
 			ok = 0;
 		}
@@ -1624,7 +1624,7 @@ function verifyFields(focused, quiet) {
 
 		/* verify peer dns */
 		var peer_dns = E('_wg'+i+'_peer_dns');
-		if (peer_dns.value != '' || !verifyDNS(peer_dns.value)) {
+		if (peer_dns.value != '' && !verifyDNS(peer_dns.value)) {
 			ferror.set(peer_dns, 'DNS Servers must be a comma separated list of IPs');
 			ok = 0;
 		}
