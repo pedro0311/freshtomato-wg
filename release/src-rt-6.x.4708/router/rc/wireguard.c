@@ -661,6 +661,9 @@ int wg_quick_iface_up(char *iface, char *file)
 		logmsg(LOG_DEBUG, "Wireguard interface %s from file %s set up", iface, file);
 	}
 
+	stop_dnsmasq();
+	start_dnsmasq();
+
 	return 0;
 }
 
@@ -691,12 +694,10 @@ int wg_quick_iface_down(char *iface, char *file)
 		logmsg(LOG_DEBUG, "Wireguard interface %s from file %s set down", iface, file);
 	}
 
+	stop_dnsmasq();
+	start_dnsmasq();
+
 	return 0;
-}
-
-int wg_quick_copy_conf()
-{
-
 }
 
 void write_wg_dnsmasq_config(FILE* f)

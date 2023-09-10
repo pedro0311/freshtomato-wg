@@ -271,6 +271,12 @@ die() {
   exit 1
 }
 
+parse_dnsmasq_restart() {
+  if [ "${1}" = '--norestart' ]; then
+    RESTART_DNSMASQ=0
+  else
+}
+
 parse_options() {
   interface_section=0
   line=''
@@ -502,7 +508,10 @@ set_dns() {
     cmd iptables -A OUTPUT -j "${DNS_CHAIN}"
     HAVE_SET_DNS=1
   fi
-  cmd service dnsmasq restart
+  RESTART_DNSMASQ
+  if [ RESTART_DNSMASQ -eq 1 ]; then
+    cmd service dnsmasq restart
+  fi
 }
 
 unset_dns() {
@@ -514,7 +523,9 @@ unset_dns() {
     cmd iptables -F "${DNS_CHAIN}" || $(exit 0)
     cmd iptables -X "${DNS_CHAIN}" || $(exit 0)
     rm "$DNS_CONFIG"
-    cmd service dnsmasq restart
+    if [ RESTART_DNSMASQ -eq 1 ]; then
+      cmd service dnsmasq restart
+    fi
   fi
 }
 
@@ -885,6 +896,7 @@ SAVE_CONFIG=0
 CONFIG_FILE=''
 PROGRAM="$(printf %s "${0}" | sed -e 's:^.*/\([^/]*\)$:\1:')"
 ARGS=$(array_save "${@}")
+RESTART_DNSMASQ=1
 HAVE_SET_DNS=0
 HAVE_SET_FIREWALL=0
 
@@ -909,6 +921,7 @@ case "${#}:${1}" in
     ;;
   2:up | 2:down | 2:save | 2:strip)
     parse_options "${2}"
+    parse_dnsmasq_restart "${3}"
     case "${1}" in
       up)
         cmd_up
