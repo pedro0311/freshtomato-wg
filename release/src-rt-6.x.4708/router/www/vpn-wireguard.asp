@@ -1466,9 +1466,9 @@ function verifyCIDR(cidr) {
 function verifyDNS(dns) {
 	var ok = true;
 	var ips = dns.split(',');
-	for(var i = 0; i < cidrs.length; i++) {
+	for(var i = 0; i < ips.length; i++) {
 		var ip = ips[i].trim();
-		if (!match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])/)) {
+		if (!ip.match(/(([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])\.){3}([1-9]{0,1}[0-9]{0,2}|2[0-4][0-9]|25[0-5])/)) {
 			ok = false;
 			break;
 		}
