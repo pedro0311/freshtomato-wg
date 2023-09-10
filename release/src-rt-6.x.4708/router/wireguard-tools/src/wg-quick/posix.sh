@@ -941,7 +941,6 @@ case "${#}:${1}" in
     ;;
   *)
     cmd_usage
-    echo "we hit this section :("
     exit 1
     ;;
 esac
