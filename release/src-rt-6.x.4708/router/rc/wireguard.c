@@ -653,7 +653,7 @@ int wg_quick_iface_up(char *iface, char *file)
 	}
 
 	/* write wg config to file */
-	if(eval("/usr/sbin/wg-quick", "up", iface)) {
+	if(eval("/bin/sh", "/usr/sbin/wg-quick", "up", iface)) {
 		logmsg(LOG_WARNING, "Unable to set up wireguard interface %s from file %s!", iface, file);
 		return -1;
 	}
@@ -683,7 +683,7 @@ int wg_quick_iface_down(char *iface, char *file)
 	}
 
 	/* write wg config to file */
-	if(eval("/usr/sbin/wg-quick", "down", buf)) {
+	if(eval("/bin/sh", "/usr/sbin/wg-quick", "down", buf)) {
 		logmsg(LOG_WARNING, "Unable to set down wireguard interface %s from file %s!", iface, file);
 		return -1;
 	}
