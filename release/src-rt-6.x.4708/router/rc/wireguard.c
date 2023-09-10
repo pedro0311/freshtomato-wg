@@ -118,7 +118,7 @@ void start_wireguard(int unit)
 			return;
 		}
 		wg_iface_post_up(unit);
-		
+
 	}
 
 	/* set iptables rules */
@@ -653,7 +653,7 @@ int wg_quick_iface_up(char *iface, char *file)
 	}
 
 	/* write wg config to file */
-	if(eval("/usr/sbin/wg-quick", "up", buf)) {
+	if(eval("/usr/sbin/wg-quick", "up", iface)) {
 		logmsg(LOG_WARNING, "Unable to set up wireguard interface %s from file %s!", iface, file);
 		return -1;
 	}
