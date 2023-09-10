@@ -591,6 +591,8 @@ extern int wg_set_iface_privkey(char *iface, char* privkey);
 extern int wg_set_iface_fwmark(char *iface, char* fwmark);
 extern int wg_set_iface_mtu(char *iface, char* mtu);
 extern int wg_set_iface_up(char *iface);
+extern int wg_set_iface_dns(char *iface, char *dns);
+extern int wg_unset_iface_dns(char *iface);
 extern int wg_add_peer(char *iface, char *peer_pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint);
 extern int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips);
 extern int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint);
