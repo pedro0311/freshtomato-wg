@@ -1197,7 +1197,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 		endpoint = nvram.wan_hostname + '.' + nvram.wan_domain;
 		break;
 	case 1:
-		endpoint = nvram.wan_ip
+		endpoint = nvram.wan_ipaddr
 		break;
 	case 2:
 		endpoint = custom_endpoint.value.split('|', 2)[1];
