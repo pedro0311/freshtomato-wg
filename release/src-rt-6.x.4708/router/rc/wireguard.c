@@ -222,6 +222,38 @@ void wg_setup_dirs() {
 		}
 	}
 
+	/* script to add fw rules for dns servers */
+	if(!(f_exists(WG_DIR"/scripts/fw-dns-set.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/fw-dns-set.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"DNS_CHAIN=\"wg-ft-${1}-dns\"\n"
+						"iptables -D OUTPUT -j \"${DNS_CHAIN}\" >/dev/null 2>&1 || $(exit 0)\n"
+						"iptables -L \"${DNS_CHAIN}\" >/dev/null 2>&1 && iptables -F \"${DNS_CHAIN}\" >/dev/null 2>&1 && iptables -X \"${DNS_CHAIN}\" >/dev/null 2>&1\n"
+						"iptables -N \"${DNS_CHAIN}\"\n"
+						"for NAMESERVER in $( echo \"${2}\" | tr \",\" \" \" ); do\n"
+						"iptables -A \"${DNS_CHAIN}\" -i \"${1}\" -p tcp --dst \"${NAMESERVER}/32\" --dport 53 -j ACCEPT\n"
+						"iptables -A \"${DNS_CHAIN}\" -i \"${1}\" -p udp --dst \"${NAMESERVER}/32\" --dport 53 -j ACCEPT\n"
+						"done\n"
+						"iptables -A OUTPUT -j \"${DNS_CHAIN}\"\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/fw-dns-set.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
+	/* script to remove fw rules for dns servers */
+	if(!(f_exists(WG_DIR"/scripts/fw-dns-unset.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/fw-dns-unset.sh", "w"))) {
+			fprintf(fp, "#!/bin/sh\n"
+						"INTERFACE=\"${1}\"\n"
+						"DNS_CHAIN=\"wg-ft-${INTERFACE}-dns\"\n"
+						"iptables -D OUTPUT -j \"${DNS_CHAIN}\" || $(exit 0)\n"
+						"iptables -F \"${DNS_CHAIN}\" || $(exit 0)\n"
+						"iptables -X \"${DNS_CHAIN}\" || $(exit 0)\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/fw-dns-unset.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
 }
 
 void wg_cleanup_dirs() {
@@ -378,6 +410,14 @@ int wg_set_iface_dns(char *iface, char *dns)
 	if (dns[0] == '\0') {
 		return 0;
 	}
+
+	if (eval(WG_DIR"/scripts/fw-dns-set.sh", iface, dns)){
+		logmsg(LOG_WARNING, "unable to add firewall rules for wireguard interface %s's dns server(s)!", iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "wireguard interface %s has added firewall rules for its dns server(s)", iface);
+	}
 	
 	memset(fn, 0, buf_size);
 	snprintf(fn, buf_size, WG_DNS_DIR"/%s.conf", iface);
@@ -413,6 +453,14 @@ int wg_unset_iface_dns(char *iface)
 
 	stop_dnsmasq();
 	start_dnsmasq();
+
+	if (eval(WG_DIR"/scripts/fw-dns-unset.sh", iface)){
+		logmsg(LOG_WARNING, "unable to remove firewall rules for wireguard interface %s's dns server(s)!", iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_DEBUG, "wireguard interface %s has removed firewall rules for its dns server(s)", iface);
+	}
 
 	return 0;
 }

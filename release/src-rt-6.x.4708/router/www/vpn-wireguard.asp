@@ -65,7 +65,7 @@
 <script src="html5-qrcode.js"></script>
 <script>
 
-//	<% nvram("wan_ipaddr,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_adns,wg0_enable,wg0_file,wg0_ip,wg0_fwmark,wg0_mtu,wg0_preup,wg0_postup,wg0_predown,wg0_postdown,wg0_aip,wg0_dns,wg0_peer_dns,wg0_ka,wg0_port,wg0_key,wg0_endpoint,wg0_lan,wg0_lan0,wg0_lan1,wg0_lan2,wg0_lan3,wg0_rgw,wg0_peers,wg1_enable,wg1_file,wg1_ip,wg1_fwmark,wg1_mtu,wg1_preup,wg1_postup,wg1_predown,wg1_postdown,wg1_aip,wg1_dns,wg1_peer_dns,wg1_ka,wg1_port,wg1_key,wg1_endpoint,wg1_lan,wg1_lan0,wg1_lan1,wg1_lan2,wg1_lan3,wg1_rgw,wg1_peers,wg2_enable,wg2_file,wg2_ip,wg2_fwmark,wg2_mtu,wg2_preup,wg2_postup,wg2_predown,wg2_postdown,wg2_aip,wg2_dns,wg2_peer_dns,wg2_ka,wg2_port,wg2_key,wg2_endpoint,wg2_lan,wg2_lan0,wg2_lan1,wg2_lan2,wg2_lan3,wg2_rgw,wg2_peers"); %>
+//	<% nvram("wan_ipaddr,wan_hostname,wan_domain,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_adns,wg0_enable,wg0_file,wg0_ip,wg0_fwmark,wg0_mtu,wg0_preup,wg0_postup,wg0_predown,wg0_postdown,wg0_aip,wg0_dns,wg0_peer_dns,wg0_ka,wg0_port,wg0_key,wg0_endpoint,wg0_lan,wg0_lan0,wg0_lan1,wg0_lan2,wg0_lan3,wg0_rgw,wg0_peers,wg1_enable,wg1_file,wg1_ip,wg1_fwmark,wg1_mtu,wg1_preup,wg1_postup,wg1_predown,wg1_postdown,wg1_aip,wg1_dns,wg1_peer_dns,wg1_ka,wg1_port,wg1_key,wg1_endpoint,wg1_lan,wg1_lan0,wg1_lan1,wg1_lan2,wg1_lan3,wg1_rgw,wg1_peers,wg2_enable,wg2_file,wg2_ip,wg2_fwmark,wg2_mtu,wg2_preup,wg2_postup,wg2_predown,wg2_postdown,wg2_aip,wg2_dns,wg2_peer_dns,wg2_ka,wg2_port,wg2_key,wg2_endpoint,wg2_lan,wg2_lan0,wg2_lan1,wg2_lan2,wg2_lan3,wg2_rgw,wg2_peers"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
@@ -248,8 +248,10 @@ function mapConfigToFields(event) {
 	if (config.interface.postdown)
 		E('_wg'+unit+'_postdown').value = config.interface.postdown;
 
-	if (config.interface.endpoint)
-		E('_wg'+unit+'_endpoint').value = config.interface.endpoint;
+	if (config.interface.endpoint) {
+		E('_f_wg'+unit+'_endpoint').value = config.interface.endpoint;
+		E('_f_wg'+unit+'_endpoint').selectedIndex = 2;
+	}
 
 	for (var i = 0; i < config.peers.length; ++i) {
 
@@ -287,7 +289,8 @@ function clearAllFields(unit) {
 	E('_wg'+unit+'_mtu').value = '';
 	E('_f_wg'+unit+'_adns').checked = 0;
 	E('_wg'+unit+'_ka').value = '';
-	E('_wg'+unit+'_endpoint').value = '';
+	E('_f_wg'+unit+'_endpoint').selectedIndex = 0;
+	E('_f_wg'+unit+'_custom_endpoint').value = '';
 	E('_wg'+unit+'_aip').value = '';
 	E('_wg'+unit+'_peer_dns').value = '';
 	E('_f_wg'+unit+'_lan').checked = 0;
@@ -1188,8 +1191,24 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg'+unit+'_key'));
 	var keepalive_interface = eval('nvram.wg'+unit+'_ka');
 	var endpoint = eval('nvram.wg'+unit+'_endpoint');
-	if (!endpoint)
+	var custom_endpoint = eval('nvram.wg'+unit+'_custom_endpoint');
+	switch(endpoint[0]) {
+	case '0':
+		if (nvram.wan_domain) {
+			endpoint = nvram.wan_domain;
+			if (nvram.wan_hostname && nvram.wan_hostname != 'unknown')
+				endpoint = nvram.wan_hostname + '.' + endpoint;
+		}
+		else	
+			endpoint = nvram.wan_ipaddr;
+		break;
+	case '1':
 		endpoint = nvram.wan_ipaddr;
+		break;
+	case '2':
+		endpoint = custom_endpoint.value.split('|', 2)[1];
+		break;
+	} 
 	endpoint += ":" + eval('nvram.wg'+unit+'_port');
 	var allowed_ips;
 
@@ -1622,6 +1641,15 @@ function verifyFields(focused, quiet) {
 				ferror.clear(keepalive);
 		}
 
+		/* hide/show custom endpoint based on option selected */
+		var endpoint = E('_f_wg'+i+'_endpoint');
+		var custom_endpoint = E('_f_wg'+i+'_custom_endpoint');
+		if (endpoint.value == 2)
+			elem.display(PR(custom_endpoint), true);
+		else
+			elem.display(PR(custom_endpoint), false);
+		
+
 		/* verify peer dns */
 		var peer_dns = E('_wg'+i+'_peer_dns');
 		if (peer_dns.value != '' && !verifyDNS(peer_dns.value)) {
@@ -1717,6 +1745,14 @@ function save(nomsg) {
 		if (E('_f_wg'+i+'_adns').checked)
 			E('wg_adns').value += ''+i+',';
 
+		var endpoint = E('_f_wg'+i+'_endpoint');
+		var custom_endpoint = E('_f_wg'+i+'_custom_endpoint');
+		var endpoint_output = endpoint.value + '';
+		if (endpoint.value == 2)
+			endpoint_output += '|' + custom_endpoint.value;
+		eval('fom.wg'+i+'_endpoint.value = endpoint_output');
+		eval('nvram.wg'+i+'_endpoint = endpoint_output');
+
 		var qrcode = E('wg'+i+'_qrcode');
 		if (qrcode.style.display != 'none') {
 			var row = qrcode.getAttribute('row_id');
@@ -1784,6 +1820,7 @@ function init() {
 			W('<input type="hidden" name="'+t+'_lan2">');
 			W('<input type="hidden" name="'+t+'_lan3">');
 			W('<input type="hidden" name="'+t+'_rgw">');
+			W('<input type="hidden" name="'+t+'_endpoint">');
 			W('<input type="hidden" name="'+t+'_peers">');
 
 			W('<ul class="tabs">');
@@ -1818,7 +1855,8 @@ function init() {
 			W('<div class="section-title">Peer Parameters</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Router', name: t+'_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: eval('nvram.'+t+'_ka') },
-				{ title: 'Endpoint', name: t+'_endpoint', type: 'text', maxlen: 64, size: 64, placeholder: '(leave blank to use WAN IP)', value: eval('nvram.'+t+'_endpoint') },
+				{ title: 'Endpoint', name: 'f_'+t+'_endpoint', type: 'select', options: [['0','FQDN'],['1','WAN IP'],['2','Custom Endpoint']], value: eval('nvram.'+t+'_endpoint')[0] || 0},
+				{ title: 'Custom Endpoint', name: 'f_'+t+'_custom_endpoint', type: 'text', maxlen: 64, size: 64, value: eval('nvram.'+t+'_endpoint').split('|', 2)[1] || '' },
 				{ title: 'Allowed IPs', name: t+'_aip', type: 'text', placeholder: "(CIDR format)", maxlen: 128, size: 64, suffix: '&nbsp;<small>comma separated<\/small>', value: eval('nvram.'+t+'_aip') },
 				{ title: 'DNS Servers for Peers', name: t+'_peer_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.'+t+'_peer_dns') },
 				{ title: 'Allow peers to communicate', name: 'f_'+t+'_lan', type: 'checkbox', value: eval('nvram.'+t+'_lan') == '1'},
