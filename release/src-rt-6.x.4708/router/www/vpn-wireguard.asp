@@ -1193,13 +1193,13 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	var endpoint = eval('nvram.wg'+unit+'_endpoint');
 	var custom_endpoint = eval('nvram.wg'+unit+'_custom_endpoint');
 	switch(endpoint[0]) {
-	case 0:
+	case '0':
 		endpoint = nvram.wan_hostname + '.' + nvram.wan_domain;
 		break;
-	case 1:
+	case '1':
 		endpoint = nvram.wan_ipaddr
 		break;
-	case 2:
+	case '2':
 		endpoint = custom_endpoint.value.split('|', 2)[1];
 		break;
 	} 
