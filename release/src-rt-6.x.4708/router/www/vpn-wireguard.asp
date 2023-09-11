@@ -1200,7 +1200,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 		endpoint = nvram.wan_ip
 		break;
 	case 2:
-		endpoint = custom_endpoint.value;
+		endpoint = custom_endpoint.value.split('|', 2)[1];
 		break;
 	} 
 	endpoint += ":" + eval('nvram.wg'+unit+'_port');
