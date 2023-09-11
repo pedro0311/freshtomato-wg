@@ -1745,6 +1745,7 @@ function save(nomsg) {
 		if (endpoint.value == 2)
 			endpoint_output += '|' + custom_endpoint.value;
 		eval('nvram.wg'+i+'_endpoint = endpoint_output');
+		eval('fom.wg'+i+'_endpoint = endpoint_output');
 
 		var qrcode = E('wg'+i+'_qrcode');
 		if (qrcode.style.display != 'none') {
@@ -1813,6 +1814,7 @@ function init() {
 			W('<input type="hidden" name="'+t+'_lan2">');
 			W('<input type="hidden" name="'+t+'_lan3">');
 			W('<input type="hidden" name="'+t+'_rgw">');
+			W('<input type="hidden" name="'+t+'_endpoint">');
 			W('<input type="hidden" name="'+t+'_peers">');
 
 			W('<ul class="tabs">');
