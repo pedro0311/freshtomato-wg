@@ -1745,7 +1745,7 @@ function save(nomsg) {
 		if (endpoint.value == 2)
 			endpoint_output += '|' + custom_endpoint.value;
 		eval('nvram.wg'+i+'_endpoint = endpoint_output');
-		eval('fom.wg'+i+'_endpoint = endpoint_output');
+		eval('fom.wg'+i+'_endpoint.value = endpoint_output');
 
 		var qrcode = E('wg'+i+'_qrcode');
 		if (qrcode.style.display != 'none') {
