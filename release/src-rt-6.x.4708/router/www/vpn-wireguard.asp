@@ -1639,9 +1639,9 @@ function verifyFields(focused, quiet) {
 		var endpoint = E('_f_wg'+i+'_endpoint');
 		var custom_endpoint = E('_f_wg'+i+'_custom_endpoint');
 		if (endpoint.value == 2)
-			elem.display(custom_endpoint, true);
+			elem.display(PR(custom_endpoint), true);
 		else
-			elem.display(custom_endpoint, false);
+			elem.display(PR(custom_endpoint), false);
 		
 
 		/* verify peer dns */
