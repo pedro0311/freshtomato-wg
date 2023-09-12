@@ -46,6 +46,7 @@
 #include "mountP.h"
 #include "fileutils.h"	/* statx() fallback */
 #include "mount-api-utils.h"
+#include "linux_version.h"
 
 #include <inttypes.h>
 
@@ -153,12 +154,19 @@ static int configure_superblock(struct libmnt_context *cxt,
 		const char *name = mnt_opt_get_name(opt);
 		const char *value = mnt_opt_get_value(opt);
 		const struct libmnt_optmap *ent = mnt_opt_get_mapent(opt);
+		const int is_linux = ent && mnt_opt_get_map(opt) == cxt->map_linux;
 
-		if (ent && mnt_opt_get_map(opt) == cxt->map_linux &&
-		    ent->id == MS_RDONLY) {
+		if (is_linux && ent->id == MS_RDONLY) {
+			/* Use ro/rw for superblock (for backward compatibility) */
 			value = NULL;
 			has_rwro = 1;
+
+		} else if (is_linux && ent->mask & MNT_SUPERBLOCK) {
+			/* Use some old MS_* (VFS) flags as superblock flags */
+			;
+
 		} else if (!name || mnt_opt_get_map(opt) || mnt_opt_is_external(opt))
+			/* Ignore VFS flags, userspace and external options */
 			continue;
 
 		rc = fsconfig_set_value(cxt, hs, fd, name, value);
@@ -239,6 +247,10 @@ static int hook_create_mount(struct libmnt_context *cxt,
 	int rc = 0;
 
 	assert(cxt);
+
+	if (mnt_context_helper_executed(cxt))
+		return 0;
+
 	assert(cxt->fs);
 
 	api = get_sysapi(cxt);
@@ -282,6 +294,7 @@ static int hook_create_mount(struct libmnt_context *cxt,
 		/* cleanup after fail (libmount may only try the FS type) */
 		close_sysapi_fds(api);
 
+#if defined(HAVE_STRUCT_STATX) && defined(HAVE_STRUCT_STATX_STX_MNT_ID)
 	if (!rc && cxt->fs) {
 		struct statx st;
 
@@ -294,6 +307,7 @@ static int hook_create_mount(struct libmnt_context *cxt,
 				fs->id = cxt->fs->id;
 		}
 	}
+#endif
 
 done:
 	DBG(HOOK, ul_debugobj(hs, "create FS done [rc=%d, id=%d]", rc, cxt->fs ? cxt->fs->id : -1));
@@ -308,6 +322,9 @@ static int hook_reconfigure_mount(struct libmnt_context *cxt,
 	int rc = 0;
 
 	assert(cxt);
+
+	if (mnt_context_helper_executed(cxt))
+		return 0;
 
 	api = get_sysapi(cxt);
 	assert(api);
@@ -378,6 +395,9 @@ static int hook_set_vfsflags(struct libmnt_context *cxt,
 	struct libmnt_optlist *ol;
 	uint64_t set = 0, clr = 0;
 	int rc = 0;
+
+	if (mnt_context_helper_executed(cxt))
+		return 0;
 
 	DBG(HOOK, ul_debugobj(hs, "setting VFS flags"));
 
@@ -452,7 +472,7 @@ static int hook_set_propagation(struct libmnt_context *cxt,
 			(uint64_t) attr.propagation));
 
 		rc = mount_setattr(api->fd_tree, "", flgs, &attr, sizeof(attr));
-		set_syscall_status(cxt, "move_setattr", rc == 0);
+		set_syscall_status(cxt, "mount_setattr", rc == 0);
 
 		if (rc && errno == EINVAL)
 			return -MNT_ERR_APPLYFLAGS;
@@ -470,6 +490,9 @@ static int hook_attach_target(struct libmnt_context *cxt,
 	struct libmnt_sysapi *api;
 	const char *target;
 	int rc = 0;
+
+	if (mnt_context_helper_executed(cxt))
+		return 0;
 
 	target = mnt_fs_get_target(cxt->fs);
 	if (!target)
@@ -510,6 +533,15 @@ static inline int fsopen_is_supported(void)
 	return rc;
 }
 
+static inline int mount_setattr_is_supported(void)
+{
+	int rc;
+
+	errno = 0;
+	rc = mount_setattr(-1, NULL, 0, NULL, 0);
+	return !(rc == -1 && errno == ENOSYS);
+}
+
 /*
  * open_tree() and fsopen()
  */
@@ -546,9 +578,6 @@ static int init_sysapi(struct libmnt_context *cxt,
 	if (!api)
 		return -ENOMEM;
 
-	if (mnt_context_is_fake(cxt))
-		goto fake;
-
 	if (path) {
 		api->fd_tree = open_mount_tree(cxt, path, flags);
 		if (api->fd_tree < 0)
@@ -581,11 +610,44 @@ static int init_sysapi(struct libmnt_context *cxt,
 fail:
 	DBG(HOOK, ul_debugobj(hs, "init fs/tree failed [errno=%d %m]", errno));
 	return -errno;
-fake:
-	DBG(CXT, ul_debugobj(cxt, " FAKE (-f)"));
-	cxt->syscall_status = 0;
+}
+
+static int force_classic_mount(struct libmnt_context *cxt)
+{
+	const char *env = getenv("LIBMOUNT_FORCE_MOUNT2");
+
+	if (env) {
+		if (strcmp(env, "always") == 0)
+			return 1;
+		if (strcmp(env, "never") == 0)
+			return 0;
+	}
+
+	/* "auto" (default) -- try to be smart */
+
+	/* For external /sbin/mount.<type> helpers we use the new API only for
+	 * propagation setting. In this case, the usability of mount_setattr()
+	 * will be verified later */
+	if (cxt->helper)
+		return 0;
+
+	/*
+	 * The current kernel btrfs driver does not completely implement
+	 * fsconfig() as it does not work with selinux stuff.
+	 *
+	 * Don't use the new mount API in this situation. Let's hope this issue
+	 * is temporary.
+	 */
+	{
+		const char *type = mnt_fs_get_fstype(cxt->fs);
+
+		if (type && strcmp(type, "btrfs") == 0 && cxt->has_selinux_opt)
+			return 1;
+	}
+
 	return 0;
 }
+
 
 /*
  * Analyze library context and register hook to call mount-like syscalls.
@@ -607,20 +669,9 @@ static int hook_prepare(struct libmnt_context *cxt,
 	assert(cxt);
 	assert(hs == &hookset_mount);
 
-	/*
-	 * The current kernel btrfs driver does not completely implement
-	 * fsconfig() as it does not work with selinux stuff.
-	 *
-	 * Don't use the new mount API in this situation. Let's hope this issue
-	 * is temporary.
-	 */
-	{
-		const char *type = mnt_fs_get_fstype(cxt->fs);
-
-		if (type && strcmp(type, "btrfs") == 0 && cxt->has_selinux_opt) {
-			DBG(HOOK, ul_debugobj(hs, "don't use new API (btrfs issue)"));
-			return 0;
-		}
+	if (force_classic_mount(cxt)) {
+		DBG(HOOK, ul_debugobj(hs, "new API disabled"));
+		return 0;
 	}
 
 	DBG(HOOK, ul_debugobj(hs, "prepare mount"));
@@ -639,13 +690,8 @@ static int hook_prepare(struct libmnt_context *cxt,
 	/* open_tree() or fsopen() */
 	if (!rc) {
 		rc = init_sysapi(cxt, hs, flags);
-		if (rc && cxt->syscall_status == -ENOSYS) {
-			/* we need to recover from this error, so hook_mount_legacy.c
-			 * can try to continue */
-			reset_syscall_status(cxt);
-			free_hookset_data(cxt, hs);
-			return 1;
-		}
+		if (rc && cxt->syscall_status == -ENOSYS)
+			goto enosys;
 	}
 
 	/* check mutually exclusive operations */
@@ -675,9 +721,20 @@ static int hook_prepare(struct libmnt_context *cxt,
 	/* call mount_setattr() */
 	if (!rc
 	    && cxt->helper == NULL
-	    && (set != 0 || clr != 0 || (flags & MS_REMOUNT)))
+	    && (set != 0 || clr != 0 || (flags & MS_REMOUNT))) {
+		/*
+		 * mount_setattr() supported, but not usable for remount
+		 * https://github.com/torvalds/linux/commit/dd8b477f9a3d8edb136207acb3652e1a34a661b7
+		 */
+		if (get_linux_version() < KERNEL_VERSION(5, 14, 0))
+			goto enosys;
+
+		if (!mount_setattr_is_supported())
+			goto enosys;
+
 		rc = mnt_context_append_hook(cxt, hs, MNT_STAGE_MOUNT, NULL,
 					hook_set_vfsflags);
+	}
 
 	/* call move_mount() to attach target */
 	if (!rc
@@ -688,12 +745,24 @@ static int hook_prepare(struct libmnt_context *cxt,
 					hook_attach_target);
 
 	/* set propagation (has to be attached to VFS) */
-	if (!rc && mnt_optlist_get_propagation(ol))
+	if (!rc && mnt_optlist_get_propagation(ol)) {
+		if (!mount_setattr_is_supported())
+			goto enosys;
+
 		rc = mnt_context_append_hook(cxt, hs, MNT_STAGE_MOUNT_POST, NULL,
 					hook_set_propagation);
+	}
 
 	DBG(HOOK, ul_debugobj(hs, "prepare mount done [rc=%d]", rc));
 	return rc;
+
+enosys:
+	/* we need to recover from this error, so hook_mount_legacy.c
+	 * can try to continue */
+	DBG(HOOK, ul_debugobj(hs, "failed to init new API"));
+	reset_syscall_status(cxt);
+	hookset_deinit(cxt, hs);
+	return 1;
 }
 
 const struct libmnt_hookset hookset_mount =

@@ -1,35 +1,40 @@
 /*
-
-	Copyright 2003, CyberTAN  Inc.  All Rights Reserved
-
-	This is UNPUBLISHED PROPRIETARY SOURCE CODE of CyberTAN Inc.
-	the contents of this file may not be disclosed to third parties,
-	copied or duplicated in any form without the prior written
-	permission of CyberTAN Inc.
-
-	This software should be used as a reference only, and it not
-	intended for production use!
-
-
-	THIS SOFTWARE IS OFFERED "AS IS", AND CYBERTAN GRANTS NO WARRANTIES OF ANY
-	KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE.  CYBERTAN
-	SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-	FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE
-*/
+ *
+ * Copyright 2003, CyberTAN  Inc.  All Rights Reserved
+ *
+ * This is UNPUBLISHED PROPRIETARY SOURCE CODE of CyberTAN Inc.
+ * the contents of this file may not be disclosed to third parties,
+ * copied or duplicated in any form without the prior written
+ * permission of CyberTAN Inc.
+ *
+ * This software should be used as a reference only, and it not
+ * intended for production use!
+ *
+ *
+ * THIS SOFTWARE IS OFFERED "AS IS", AND CYBERTAN GRANTS NO WARRANTIES OF ANY
+ * KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE.  CYBERTAN
+ * SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE
+ */
 /*
-
-	Copyright 2005, Broadcom Corporation
-	All Rights Reserved.
-
-	THIS SOFTWARE IS OFFERED "AS IS", AND BROADCOM GRANTS NO WARRANTIES OF ANY
-	KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. BROADCOM
-	SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-	FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE.
-
-*/
+ *
+ * Copyright 2005, Broadcom Corporation
+ * All Rights Reserved.
+ *
+ * THIS SOFTWARE IS OFFERED "AS IS", AND BROADCOM GRANTS NO WARRANTIES OF ANY
+ * KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. BROADCOM
+ * SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE.
+ *
+ */
 /*
-	$Id: ppp.c,v 1.27 2005/03/29 02:00:06 honor Exp $
-*/
+ * $Id: ppp.c,v 1.27 2005/03/29 02:00:06 honor Exp $
+ */
+/*
+ *
+ * Fixes/updates (C) 2018 - 2023 pedro
+ *
+ */
 
 
 #include "rc.h"
@@ -49,7 +54,7 @@ int ipup_main(int argc, char **argv)
 	char *wan_ifname;
 	int proto;
 	char prefix[] = "wanXX";
-	char tmp[100];
+	char tmp[100], tmp2[32];
 	char ppplink_file[32];
 	char buf[256];
 	char *value;
@@ -61,7 +66,7 @@ int ipup_main(int argc, char **argv)
 	logmsg(LOG_DEBUG, "*** IN %s: IFNAME=%s DEVICE=%s LINKNAME=%s IPREMOTE=%s IPLOCAL=%s DNS1=%s DNS2=%s", __FUNCTION__, getenv("IFNAME"), getenv("DEVICE"), getenv("LINKNAME"), getenv("IPREMOTE"), getenv("IPLOCAL"), getenv("DNS1"), getenv("DNS2"));
 
 	wan_ifname = safe_getenv("IFNAME");
-	strcpy(prefix, safe_getenv("LINKNAME"));
+	strlcpy(prefix, safe_getenv("LINKNAME"), sizeof(prefix));
 	logmsg(LOG_DEBUG, "*** %s: wan_ifname = %s, prefix = %s.", __FUNCTION__, wan_ifname, prefix);
 
 	if ((!wan_ifname) || (!*wan_ifname))
@@ -74,8 +79,8 @@ int ipup_main(int argc, char **argv)
 	 *   <interface name>  <tty device>  <speed> <local IP address> <remote IP address> <ipparam>
 	 *   ppp1              vlan1         0       71.135.98.32       151.164.184.87      0
 	 */
-	memset(ppplink_file, 0, 32);
-	sprintf(ppplink_file, "/tmp/ppp/%s_link", prefix);
+	memset(ppplink_file, 0, sizeof(ppplink_file));
+	snprintf(ppplink_file, sizeof(ppplink_file), "/tmp/ppp/%s_link", prefix);
 	f_write_string(ppplink_file, argv[1], 0, 0);
 
 	if ((p = getenv("IPREMOTE"))) {
@@ -90,15 +95,15 @@ int ipup_main(int argc, char **argv)
 			case WP_PPPOE:
 			case WP_PPP3G:
 				if ((proto == WP_PPPOE) && using_dhcpc(prefix)) /* PPPoE with DHCP MAN */
-					nvram_set(strlcat_r(prefix, "_ipaddr_buf", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix, "_ppp_get_ip", tmp, sizeof(tmp))));
+					nvram_set(strlcat_r(prefix, "_ipaddr_buf", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix, "_ppp_get_ip", tmp2, sizeof(tmp2))));
 				else { /* PPPoE / 3G */
-					nvram_set(strlcat_r(prefix, "_ipaddr_buf", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix, "_ipaddr", tmp, sizeof(tmp))));
+					nvram_set(strlcat_r(prefix, "_ipaddr_buf", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix, "_ipaddr", tmp2, sizeof(tmp2))));
 					nvram_set(strlcat_r(prefix, "_ipaddr", tmp, sizeof(tmp)), value);
 				}
 				break;
 			case WP_PPTP:
 			case WP_L2TP:
-				nvram_set(strlcat_r(prefix, "_ipaddr_buf", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix, "_ppp_get_ip", tmp, sizeof(tmp))));
+				nvram_set(strlcat_r(prefix, "_ipaddr_buf", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix, "_ppp_get_ip", tmp2, sizeof(tmp2))));
 				break;
 		}
 
@@ -144,7 +149,7 @@ int ipdown_main(int argc, char **argv)
 {
 	int proto;
 	char prefix[] = "wanXX";
-	char tmp[100];
+	char tmp[100], tmp2[32], tmp3[32];
 	char ppplink_file[32];
 	struct in_addr ipaddr;
 	int mwan_num;
@@ -156,10 +161,10 @@ int ipdown_main(int argc, char **argv)
 	if (!wait_action_idle(10))
 		return -1;
 
-	strcpy(prefix, safe_getenv("LINKNAME"));
+	strlcpy(prefix, safe_getenv("LINKNAME"), sizeof(prefix));
 
-	memset(ppplink_file, 0, 32);
-	sprintf(ppplink_file, "/tmp/ppp/%s_link", prefix);
+	memset(ppplink_file, 0, sizeof(ppplink_file));
+	snprintf(ppplink_file, sizeof(ppplink_file), "/tmp/ppp/%s_link", prefix);
 	unlink(ppplink_file);
 
 	proto = get_wanx_proto(prefix);
@@ -172,28 +177,28 @@ int ipdown_main(int argc, char **argv)
 
 		if (proto == WP_L2TP) {
 			if (inet_pton(AF_INET, nvram_safe_get(strlcat_r(prefix, "_l2tp_server_ip", tmp, sizeof(tmp))), &(ipaddr.s_addr))) {
-				route_del(nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), 0, nvram_safe_get(strlcat_r(prefix, "_l2tp_server_ip", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp, sizeof(tmp))), "255.255.255.255"); /* fixed routing problem in Israel */
-				logmsg(LOG_DEBUG, "*** %s: route_del(%s, 0, %s, %s, 255.255.255.255)", __FUNCTION__, nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_l2tp_server_ip", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp, sizeof(tmp))));
+				route_del(nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), 0, nvram_safe_get(strlcat_r(prefix, "_l2tp_server_ip", tmp2, sizeof(tmp2))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp3, sizeof(tmp3))), "255.255.255.255"); /* fixed routing problem in Israel */
+				logmsg(LOG_DEBUG, "*** %s: route_del(%s, 0, %s, %s, 255.255.255.255)", __FUNCTION__, nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_l2tp_server_ip", tmp2, sizeof(tmp2))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp3, sizeof(tmp3))));
 			}
 		}
 
 		if (proto == WP_PPTP) {
 			if (inet_pton(AF_INET, nvram_safe_get(strlcat_r(prefix, "_pptp_server_ip", tmp, sizeof(tmp))), &(ipaddr.s_addr))) {
-				route_del(nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), 0, nvram_safe_get(strlcat_r(prefix, "_pptp_server_ip", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp, sizeof(tmp))), "255.255.255.255");
-				logmsg(LOG_DEBUG, "*** %s: route_del(%s, 0, %s, %s, 255.255.255.255)", __FUNCTION__, nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_pptp_server_ip", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp, sizeof(tmp))));
+				route_del(nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), 0, nvram_safe_get(strlcat_r(prefix, "_pptp_server_ip", tmp2, sizeof(tmp2))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp3, sizeof(tmp3))), "255.255.255.255");
+				logmsg(LOG_DEBUG, "*** %s: route_del(%s, 0, %s, %s, 255.255.255.255)", __FUNCTION__, nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_pptp_server_ip", tmp2, sizeof(tmp2))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp3, sizeof(tmp3))));
 			}
 		}
 
 		if (!nvram_get_int(strlcat_r(prefix, "_ppp_demand", tmp, sizeof(tmp)))) { /* don't setup temp gateway for demand connections */
 			/* restore the default gateway for WAN interface */
-			nvram_set(strlcat_r(prefix, "_gateway_get", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp, sizeof(tmp))));
+			nvram_set(strlcat_r(prefix, "_gateway_get", tmp, sizeof(tmp)), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp2, sizeof(tmp2))));
 			logmsg(LOG_DEBUG, "*** %s: restore default gateway: nvram_set(%s_gateway_get, %s)", __FUNCTION__, prefix, nvram_safe_get(strlcat_r(prefix, "_gateway", tmp, sizeof(tmp))));
 
 			if (mwan_num == 1) {
 				/* set default route to gateway if specified */
-				route_del(nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), 0, "0.0.0.0", nvram_safe_get(strlcat_r(prefix, "_gateway", tmp, sizeof(tmp))), "0.0.0.0");
-				route_add(nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), 0, "0.0.0.0", nvram_safe_get(strlcat_r(prefix, "_gateway", tmp, sizeof(tmp))), "0.0.0.0");
-				logmsg(LOG_DEBUG, "*** %s: route_add(%s, 0, 0.0.0.0, %s, 0.0.0.0)", __FUNCTION__, nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp, sizeof(tmp))));
+				route_del(nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), 0, "0.0.0.0", nvram_safe_get(strlcat_r(prefix, "_gateway", tmp2, sizeof(tmp2))), "0.0.0.0");
+				route_add(nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), 0, "0.0.0.0", nvram_safe_get(strlcat_r(prefix, "_gateway", tmp2, sizeof(tmp2))), "0.0.0.0");
+				logmsg(LOG_DEBUG, "*** %s: route_add(%s, 0, 0.0.0.0, %s, 0.0.0.0)", __FUNCTION__, nvram_safe_get(strlcat_r(prefix, "_ifname", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(prefix, "_gateway", tmp2, sizeof(tmp2))));
 			}
 		}
 
@@ -228,7 +233,7 @@ int ipdown_main(int argc, char **argv)
  */
 int ippreup_main(int argc, char **argv)
 {
-	/* nothing to do righ now! */
+	/* nothing to do right now! */
 	return 0;
 }
 
@@ -247,7 +252,7 @@ int ip6up_main(int argc, char **argv)
 		return -1;
 
 	wan_ifname = safe_getenv("IFNAME");
-	strcpy(prefix, safe_getenv("LINKNAME"));
+	strlcpy(prefix, safe_getenv("LINKNAME"), sizeof(prefix));
 	logmsg(LOG_DEBUG, "*** %s: wan_ifname = %s, prefix = %s.", __FUNCTION__, wan_ifname, prefix);
 
 	if ((!wan_ifname) || (!*wan_ifname))
@@ -292,7 +297,7 @@ int pppevent_main(int argc, char **argv)
 	char prefix[] = "wanXX";
 	char ppplog_file[32];
 
-	strcpy(prefix, safe_getenv("LINKNAME"));
+	strlcpy(prefix, safe_getenv("LINKNAME"), sizeof(prefix));
 	int i;
 
 	for (i = 1; i < argc; ++i) {
@@ -301,8 +306,8 @@ int pppevent_main(int argc, char **argv)
 				return 1;
 
 			if ((strcmp(argv[i], "PAP_AUTH_FAIL") == 0) || (strcmp(argv[i], "CHAP_AUTH_FAIL") == 0)) {
-				memset(ppplog_file, 0, 32);
-				sprintf(ppplog_file, "/tmp/ppp/%s_log", prefix);
+				memset(ppplog_file, 0, sizeof(ppplog_file));
+				snprintf(ppplog_file, sizeof(ppplog_file), "/tmp/ppp/%s_log", prefix);
 				f_write_string(ppplog_file, argv[i], 0, 0);
 				notice_set(prefix, "Authentication failed");
 

@@ -1,32 +1,32 @@
 /*
-
-	Copyright 2003, CyberTAN  Inc.  All Rights Reserved
-
-	This is UNPUBLISHED PROPRIETARY SOURCE CODE of CyberTAN Inc.
-	the contents of this file may not be disclosed to third parties,
-	copied or duplicated in any form without the prior written
-	permission of CyberTAN Inc.
-
-	This software should be used as a reference only, and it not
-	intended for production use!
-
-	THIS SOFTWARE IS OFFERED "AS IS", AND CYBERTAN GRANTS NO WARRANTIES OF ANY
-	KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE.  CYBERTAN
-	SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-	FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE
-
-*/
+ *
+ * Copyright 2003, CyberTAN  Inc.  All Rights Reserved
+ *
+ * This is UNPUBLISHED PROPRIETARY SOURCE CODE of CyberTAN Inc.
+ * the contents of this file may not be disclosed to third parties,
+ * copied or duplicated in any form without the prior written
+ * permission of CyberTAN Inc.
+ *
+ * This software should be used as a reference only, and it not
+ * intended for production use!
+ *
+ * THIS SOFTWARE IS OFFERED "AS IS", AND CYBERTAN GRANTS NO WARRANTIES OF ANY
+ * KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE.  CYBERTAN
+ * SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE
+ *
+ */
 /*
-
-	Copyright 2005, Broadcom Corporation
-	All Rights Reserved.
-
-	THIS SOFTWARE IS OFFERED "AS IS", AND BROADCOM GRANTS NO WARRANTIES OF ANY
-	KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. BROADCOM
-	SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
-	FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE.
-
-*/
+ *
+ * Copyright 2005, Broadcom Corporation
+ * All Rights Reserved.
+ *
+ * THIS SOFTWARE IS OFFERED "AS IS", AND BROADCOM GRANTS NO WARRANTIES OF ANY
+ * KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. BROADCOM
+ * SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE.
+ *
+ */
 /*
  *
  * Modified for Tomato Firmware
@@ -289,7 +289,7 @@ void start_dnsmasq_wet()
 		if (br != 0)
 			bridge[0] += br;
 		else
-			strcpy(bridge, "");
+			memset(bridge, 0, sizeof(bridge));
 
 		snprintf(lanN_ifname, sizeof(lanN_ifname), "lan%s_ifname", bridge);
 		nv = nvram_safe_get(lanN_ifname);
@@ -495,7 +495,7 @@ void start_dnsmasq()
 		if (br != 0)
 			bridge[0] += br;
 		else
-			strcpy(bridge, "");
+			memset(bridge, 0, sizeof(bridge));
 
 		snprintf(lanN_proto, sizeof(lanN_proto), "lan%s_proto", bridge);
 		snprintf(lanN_ifname, sizeof(lanN_ifname), "lan%s_ifname", bridge);
@@ -551,7 +551,7 @@ void start_dnsmasq()
 						buf[0] = 0;
 						for (n = 0 ; n < dns->count; ++n) {
 							if (dns->dns[n].port == 53) /* check: option 6 doesn't seem to support other ports */
-								sprintf(buf + strlen(buf), ",%s", inet_ntoa(dns->dns[n].addr));
+								snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), ",%s", inet_ntoa(dns->dns[n].addr));
 						}
 						fprintf(f, "dhcp-option=tag:%s,6%s\n", nvram_safe_get(lanN_ifname), buf); /* dns-server */
 					}
@@ -817,8 +817,7 @@ void start_dnsmasq()
 			 */
 			foreach (word, nvram_safe_get("ipv6_dns_lan"), next) {
 				if ((cntdns < MAX_DNS6_SERVER_LAN) && (inet_pton(AF_INET6, word, &addr) == 1)) {
-					strncpy(dns6[cntdns], ipv6_address(word), INET6_ADDRSTRLEN-1);
-					dns6[cntdns][INET6_ADDRSTRLEN-1] = '\0';
+					strlcpy(dns6[cntdns], ipv6_address(word), INET6_ADDRSTRLEN);
 					cntdns++;
 				}
 			}
@@ -933,6 +932,7 @@ void start_dnscrypt(void)
 	const static char *dnscrypt_resolv_alt = "/etc/dnscrypt-resolvers-alt.csv";
 	char dnscrypt_local[30];
 	char *dnscrypt_ekeys;
+	char *edns1, *edns2;
 
 	if (!nvram_get_int("dnscrypt_proxy"))
 		return;
@@ -942,7 +942,10 @@ void start_dnscrypt(void)
 
 	memset(dnscrypt_local, 0, sizeof(dnscrypt_local));
 	snprintf(dnscrypt_local, sizeof(dnscrypt_local), "127.0.0.1:%s", nvram_safe_get("dnscrypt_port"));
+
 	dnscrypt_ekeys = nvram_get_int("dnscrypt_ephemeral_keys") ? "-E" : "";
+	edns1 = nvram_get_int("dnsmasq_edns_size") < 1252 ? "-e" : ""; /* in case of EDNS packet size is set lower than 1252 in dnsmasq, set it also for dnscrypt-proxy */
+	edns2 = nvram_get_int("dnsmasq_edns_size") < 1252 ? nvram_safe_get("dnsmasq_edns_size") : "";
 
 	if (nvram_get_int("dnscrypt_manual"))
 		eval("dnscrypt-proxy", "-d", dnscrypt_ekeys,
@@ -950,30 +953,34 @@ void start_dnscrypt(void)
 		     "-m", nvram_safe_get("dnscrypt_log"),
 		     "-N", nvram_safe_get("dnscrypt_provider_name"),
 		     "-k", nvram_safe_get("dnscrypt_provider_key"),
-		     "-r", nvram_safe_get("dnscrypt_resolver_address"));
+		     "-r", nvram_safe_get("dnscrypt_resolver_address"),
+		     edns1, edns2);
 	else
 		eval("dnscrypt-proxy", "-d", dnscrypt_ekeys,
 		     "-a", dnscrypt_local,
 		     "-m", nvram_safe_get("dnscrypt_log"),
 		     "-R", nvram_safe_get("dnscrypt_resolver"),
+		     edns1, edns2,
 		     "-L", f_exists(dnscrypt_resolv_alt) ? (char *) dnscrypt_resolv_alt : (char *) dnscrypt_resolv);
 #ifdef TCONFIG_IPV6
-	memset(dnscrypt_local, 0, sizeof(dnscrypt_local));
-	snprintf(dnscrypt_local, sizeof(dnscrypt_local), "::1:%s", nvram_safe_get("dnscrypt_port"));
+	if (get_ipv6_service()) { /* when ipv6 enabled */
+		memset(dnscrypt_local, 0, sizeof(dnscrypt_local));
+		snprintf(dnscrypt_local, sizeof(dnscrypt_local), "::1:%s", nvram_safe_get("dnscrypt_port"));
 
-	if (get_ipv6_service() != *("NULL")) { /* when ipv6 enabled */
 		if (nvram_get_int("dnscrypt_manual"))
 			eval("dnscrypt-proxy", "-d", dnscrypt_ekeys,
 			     "-a", dnscrypt_local,
 			     "-m", nvram_safe_get("dnscrypt_log"),
 			     "-N", nvram_safe_get("dnscrypt_provider_name"),
 			     "-k", nvram_safe_get("dnscrypt_provider_key"),
-			     "-r", nvram_safe_get("dnscrypt_resolver_address"));
+			     "-r", nvram_safe_get("dnscrypt_resolver_address"),
+			     edns1, edns2);
 		else
 			eval("dnscrypt-proxy", "-d", dnscrypt_ekeys,
 			     "-a", dnscrypt_local,
 			     "-m", nvram_safe_get("dnscrypt_log"),
 			     "-R", nvram_safe_get("dnscrypt_resolver"),
+			     edns1, edns2,
 			     "-L", f_exists(dnscrypt_resolv_alt) ? (char *) dnscrypt_resolv_alt : (char *) dnscrypt_resolv);
 	}
 #endif
@@ -1052,7 +1059,7 @@ void start_stubby(void)
 	            nvram_get_int("stubby_force_tls13") ? "GETDNS_TLS1_3" : "GETDNS_TLS1_2",
 	            nvram_safe_get("stubby_port"));
 #ifdef TCONFIG_IPV6
-	if (get_ipv6_service() != *("NULL")) /* when ipv6 enabled */
+	if (get_ipv6_service()) /* when ipv6 enabled */
 		fprintf(fp, "  - 0::1@%s\n", nvram_safe_get("stubby_port"));
 #endif
 	/* upstreams */
@@ -1841,7 +1848,7 @@ void start_upnp(void)
 		if (br != 0)
 			bridge[0] += br;
 		else
-			strcpy(bridge, "");
+			memset(bridge, 0, sizeof(bridge));
 
 		snprintf(lanN_ipaddr, sizeof(lanN_ipaddr), "lan%s_ipaddr", bridge);
 		snprintf(lanN_netmask, sizeof(lanN_netmask), "lan%s_netmask", bridge);
@@ -2295,7 +2302,7 @@ void start_igmp_proxy(void)
 				if (br != 0)
 					bridge[0] += br;
 				else
-					strcpy(bridge, "");
+					memset(bridge, 0, sizeof(bridge));
 
 				snprintf(lanN_ifname, sizeof(lanN_ifname), "lan%s_ifname", bridge);
 				snprintf(multicast_lanN, sizeof(multicast_lanN), "multicast_lan%s", bridge);
@@ -2395,8 +2402,8 @@ void start_ntpd(void)
 {
 	FILE *f;
 	char *servers, *ptr;
-	int servers_len = 0, ntp_updates_int = 0, index = 3, ret;
-	char *ntpd_argv[] = { "/usr/sbin/ntpd", "-t", "-N", NULL, NULL, NULL, NULL, NULL, NULL }; /* -ddddddd -q -S /sbin/ntpd_synced -l */
+	int servers_len = 0, ntp_updates_int = 0, index = 2, ret;
+	char *ntpd_argv[] = { "/usr/sbin/ntpd", "-t", NULL, NULL, NULL, NULL, NULL, NULL }; /* -ddddddd -q -S /sbin/ntpd_synced -l */
 	pid_t pid;
 
 	if (serialize_restart("ntpd", 1))
@@ -2608,7 +2615,7 @@ static void start_media_server(int force)
 	char serial[18], uuident[37];
 	char buffer[32], buffer2[8], buffer3[32];
 	char *buf, *p, *q;
-	char *path, *restrict;
+	char *path, *restricted;
 
 	/* only if enabled or forced */
 	if (!nvram_get_int("ms_enable") && force == 0)
@@ -2658,9 +2665,9 @@ static void start_media_server(int force)
 					snprintf(buffer2, sizeof(buffer2), "br%d", i);
 					if ((strlen(nvram_safe_get(buffer)) > 0) && (strstr(msi, buffer2) != NULL)) { /* bridge is up & present in 'ms_ifname' */
 						if (strlen(buffer3) > 0)
-							strcat(buffer3, ",");
+							strlcat(buffer3, ",", sizeof(buffer3));
 
-						strcat(buffer3, buffer2);
+						strlcat(buffer3, buffer2, sizeof(buffer3));
 					}
 				}
 				msi = buffer3;
@@ -2698,14 +2705,14 @@ static void start_media_server(int force)
 
 			/* media directories */
 			if ((buf = strdup(nvram_safe_get("ms_dirs"))) && (*buf)) {
-				/* path<restrict[A|V|P|] */
+				/* path<restricted[A|V|P|] */
 				p = buf;
 				while ((q = strsep(&p, ">")) != NULL) {
-					if ((vstrsep(q, "<", &path, &restrict) < 1) || (!path) || (!*path))
+					if ((vstrsep(q, "<", &path, &restricted) < 1) || (!path) || (!*path))
 						continue;
 
 					fprintf(f, "media_dir=%s%s%s\n",
-						restrict ? : "", (restrict && *restrict) ? "," : "", path);
+						restricted ? : "", (restricted && *restricted) ? "," : "", path);
 				}
 				free(buf);
 			}
@@ -2723,10 +2730,8 @@ static void start_media_server(int force)
 	ret = _eval(argv, NULL, 0, &pid);
 	sleep(1);
 
-	if ((pidof("minidlna") > 0) && !ret) {
-		logmsg(LOG_INFO, "minidlna is started");
+	if ((pidof("minidlna") > 0) && !ret)
 		once = 0;
-	}
 	else
 		logmsg(LOG_ERR, "starting minidlna failed ...");
 }
@@ -2736,10 +2741,8 @@ static void stop_media_server(void)
 	if (serialize_restart("minidlna", 0))
 		return;
 
-	if (pidof("minidlna") > 0) {
+	if (pidof("minidlna") > 0)
 		killall_tk_period_wait("minidlna", 50);
-		logmsg(LOG_INFO, "minidlna is stopped");
-	}
 
 	/* clean-up */
 	eval("rm", "-rf", "/var/run/minidlna");

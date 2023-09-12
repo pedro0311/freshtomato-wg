@@ -2,6 +2,8 @@
  * Tomato Firmware
  * Copyright (C) 2006-2010 Jonathan Zarate
  *
+ * Fixes/updates (C) 2018 - 2023 pedro
+ *
  */
 
 
@@ -225,7 +227,7 @@ static const nvset_t nvset_list[] = {
 	{ "wan_status_script",		V_01				},
 #endif
 	{ "wan_ckmtd",			V_LENGTH(1, 2)			},	/* check method: 1 - ping, 2 - traceroute, 3 - curl */
-	{ "wan_ck_pause",		V_01				},	/* skip watchdog check for this wan */
+	{ "wan_ck_pause",		V_01				},	/* skip mwwatchdog check for this wan */
 
 #ifdef TCONFIG_MULTIWAN
 	{ "mwan_num",			V_RANGE(1, 4)			},
@@ -275,7 +277,7 @@ static const nvset_t nvset_list[] = {
 	{ "wan2_status_script",		V_01				},
 #endif
 	{ "wan2_ckmtd",			V_LENGTH(1, 2)			},	/* check method: 1 - ping, 2 - traceroute, 3 - curl */
-	{ "wan2_ck_pause",		V_01				},	/* skip watchdog check for this wan */
+	{ "wan2_ck_pause",		V_01				},	/* skip mwwatchdog check for this wan */
 
 #ifdef TCONFIG_MULTIWAN
 	{ "wan3_proto",			V_LENGTH(1, 16)			},	/* disabled, dhcp, static, pppoe, pptp, l2tp */
@@ -311,7 +313,7 @@ static const nvset_t nvset_list[] = {
 	{ "wan3_status_script",		V_01				},
 #endif
 	{ "wan3_ckmtd",			V_LENGTH(1, 2)			},	/* check method: 1 - ping, 2 - traceroute, 3 - curl */
-	{ "wan3_ck_pause",		V_01				},	/* skip watchdog check for this wan */
+	{ "wan3_ck_pause",		V_01				},	/* skip mwwatchdog check for this wan */
 
 	{ "wan4_proto",			V_LENGTH(1, 16)			},	/* disabled, dhcp, static, pppoe, pptp, l2tp */
 	{ "wan4_weight",		V_RANGE(0, 256)			},
@@ -346,7 +348,7 @@ static const nvset_t nvset_list[] = {
 	{ "wan4_status_script",		V_01				},
 #endif
 	{ "wan4_ckmtd",			V_LENGTH(1, 2)			},	/* check method: 1 - ping, 2 - traceroute, 3 - curl */
-	{ "wan4_ck_pause",		V_01				},	/* skip watchdog check for this wan */
+	{ "wan4_ck_pause",		V_01				},	/* skip mwwatchdog check for this wan */
 #endif /* TCONFIG_MULTIWAN */
 
 	/* LAN */
@@ -1901,7 +1903,7 @@ static void _execute_command(char *url, char *command, char *query, wofilter_t w
 		}
 	}
 
-	if ((f = fdopen(fe, "wb")) != NULL) {
+	if ((f = fdopen(fe, "wb"))) {
 		fprintf(f,
 			"#!/bin/sh\n"
 			"export REQUEST_METHOD=\"%s\"\n"
@@ -1933,7 +1935,7 @@ static void _execute_command(char *url, char *command, char *query, wofilter_t w
 	chmod(webExecFile, 0700);
 
 	if (query) {
-		if ((f = fdopen(fq, "wb")) != NULL) {
+		if ((f = fdopen(fq, "wb"))) {
 			fprintf(f, "%s\n", query);
 			fclose(f);
 		}
@@ -2224,7 +2226,7 @@ static int nv_wl_bwcap_chanspec(int idx, int unit, int subunit, void *param)
 		return 1;
 
 	memset(chan_spec, 0, sizeof(chan_spec));
-	strncpy(chan_spec, ch, sizeof(chan_spec));
+	strlcpy(chan_spec, ch, sizeof(chan_spec));
 	switch (atoi(nbw_cap)) {
 		case 0:
 			if (write)
@@ -2240,7 +2242,7 @@ static int nv_wl_bwcap_chanspec(int idx, int unit, int subunit, void *param)
 			if (write)
 				nvram_set(wl_nvname("bw_cap", unit, 0), "7");
 			if (*ch != '0')
-				strcpy(chan_spec + strlen(chan_spec), "/80");
+				strlcpy(chan_spec + strlen(chan_spec), "/80", sizeof(chan_spec) - strlen(chan_spec)); /* size of the chan_spec array - the currently used */
 			break;
 	}
 	if (write)
@@ -2308,7 +2310,7 @@ static int save_variables(int write)
 		if ((p = webcgi_get(s)) != NULL) {
 			if (strlen(p) > 2048) {
 				memset(t, 0, sizeof(t));
-				strncpy(t, s, sizeof(s));
+				strlcpy(t, s, sizeof(t));
 				snprintf(s, sizeof(s), msgf, t);
 				resmsg_set(s);
 				return 0;

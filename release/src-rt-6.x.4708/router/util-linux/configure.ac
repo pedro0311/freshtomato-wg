@@ -29,7 +29,7 @@ PACKAGE_VERSION_RELEASE=$(echo $PACKAGE_VERSION | awk -F. '{
 
 dnl libblkid version
 LIBBLKID_VERSION="$PACKAGE_VERSION_MAJOR.$PACKAGE_VERSION_MINOR.$PACKAGE_VERSION_RELEASE"
-LIBBLKID_DATE="17-May-2023"
+LIBBLKID_DATE="17-Aug-2023"
 LIBBLKID_LT_MAJOR=1
 LIBBLKID_LT_MINOR=1
 LIBBLKID_LT_MICRO=0
@@ -378,6 +378,12 @@ AC_CHECK_HEADERS([linux/fs.h ], [], [],
   #endif
 ])
 
+AC_CHECK_HEADERS([linux/mount.h ], [], [],
+ [#ifdef HAVE_LINUX_MOUNT_H
+   # include <linux/mount.h>
+   #endif
+])
+
 AC_CHECK_HEADERS([linux/gsmmux.h ], [], [],
  [#ifdef LINUX_GSMMUX_H
    # include <linux/gsmmux.h>
@@ -468,6 +474,7 @@ have_linux_blkzoned_h=$ac_cv_header_linux_blkzoned_h
 have_linux_btrfs_h=$ac_cv_header_linux_btrfs_h
 have_linux_capability_h=$ac_cv_header_linux_capability_h
 have_linux_kcmp_h=$ac_cv_header_linux_kcmp_h
+have_linux_mount_h=$ac_cv_header_linux_mount_h
 have_linux_pr_h=$ac_cv_header_linux_pr_h
 have_linux_raw_h=$ac_cv_header_linux_raw_h
 have_linux_securebits_h=$ac_cv_header_linux_securebits_h
@@ -500,13 +507,17 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 ])
 
 AC_CHECK_TYPES([struct mount_attr], [], [], [[#include <linux/mount.h>]])
+AC_CHECK_TYPES([struct statx], [], [], [[#include <linux/stat.h>]])
 AC_CHECK_TYPES([enum fsconfig_command], [], [], [[#include <linux/mount.h>]])
 
 AC_CHECK_MEMBERS([struct termios.c_line],,,
     [[#include <termios.h>]])
 
 AC_CHECK_MEMBERS([struct stat.st_mtim.tv_nsec],,,
-	[#include <sys/stat.h>])
+    [[#include <sys/stat.h>]])
+
+AC_CHECK_MEMBERS([struct statx.stx_mnt_id],,,
+    [[#include <linux/stat.h>]])
 
 AC_CHECK_DECLS([_NL_TIME_WEEK_1STDAY],[],[],[[#include <langinfo.h>]])
 
@@ -802,6 +813,17 @@ AC_ARG_ENABLE([asciidoc],
 UL_BUILD_INIT([asciidoc])
 UL_REQUIRES_PROGRAM([asciidoc], [ASCIIDOCTOR], [asciidoctor], [man pages])
 AM_CONDITIONAL([ENABLE_ASCIIDOC], [test "x$build_asciidoc" = xyes])
+have_asciidoctor_failure_level=no
+AS_IF([test "x$build_asciidoc" = xyes], [
+       AC_MSG_CHECKING([whether ${ASCIIDOCTOR} supports --failure-level])
+       AS_IF([${ASCIIDOCTOR} --help | grep failure-level >/dev/null 2>&1 ], [
+         AC_MSG_RESULT([yes])
+         have_asciidoctor_failure_level=yes
+       ], [
+         AC_MSG_RESULT([no])
+       ])
+])
+AM_CONDITIONAL([HAVE_ASCIIDOCTOR_FAILURE_LEVEL], [test "x$have_asciidoctor_failure_level" = xyes])
 
 have_manpages=no
 AS_IF([test -f "$srcdir/sys-utils/mount.8"], [
@@ -1221,6 +1243,7 @@ UL_BUILD_INIT([libmount_mountfd_support])
 UL_REQUIRES_BUILD([libmount_mountfd_support], [libmount])
 UL_REQUIRES_LINUX([libmount_mountfd_support])
 UL_REQUIRES_HAVE([libmount_mountfd_support], [mountfd_api], [mount FDs based API])
+UL_REQUIRES_HAVE([libmount_mountfd_support], [linux_mount_h], [linux/mount.h])
 AS_IF([test "x$build_libmount_mountfd_support" = xyes ], [
   AC_DEFINE([USE_LIBMOUNT_MOUNTFD_SUPPORT], [1], [Enable support for new mount FD based kernel API])
 ])
@@ -1847,8 +1870,13 @@ UL_BUILD_INIT([fadvise], [check])
 UL_REQUIRES_LINUX([fadvise])
 AM_CONDITIONAL([BUILD_FADVISE], [test "x$build_fadvise" = xyes])
 
-UL_BUILD_INIT([waitpid], [check])
+AC_ARG_ENABLE([waitpid],
+  AS_HELP_STRING([--disable-waitpid], [do not build waitpid]),
+  [], [UL_DEFAULT_ENABLE([waitpid], [check])]
+)
+UL_BUILD_INIT([waitpid])
 UL_REQUIRES_LINUX([waitpid])
+UL_REQUIRES_SYSCALL_CHECK([waitpid], [UL_CHECK_SYSCALL([pidfd_open])], [pidfd_open])
 AM_CONDITIONAL([BUILD_WAITPID], [test "x$build_waitpid" = xyes])
 
 UL_BUILD_INIT([getopt], [yes])
@@ -2591,8 +2619,14 @@ AS_IF([test "x$with_python" != xno], [
        [AC_MSG_WARN([python interpreter not found, do not build python bindings])],
     [*:yes],
        # check for python development stuff
-       [PKG_CHECK_MODULES([PYTHON], [python-$PYTHON_VERSION],
-			  [have_libpython=yes], [have_libpython=no])]
+       [
+         PKG_CHECK_MODULES([PYTHON], [python-$PYTHON_VERSION], [have_libpython=yes], [have_libpython=no])
+
+         # https://github.com/util-linux/util-linux/issues/2366
+         AX_COMPARE_VERSION([$PYTHON_VERSION], [ge], [3.12], [
+           UL_WARN_ADD([-Wno-error=redundant-decls], [PYTHON_CFLAGS])
+         ])
+       ]
   )
 ])
 

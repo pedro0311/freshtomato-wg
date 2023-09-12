@@ -90,7 +90,7 @@ function verifyFields(focused, quiet) {
 	vis._stubby_priority = v;
 	vis._stubby_log = v;
 	vis._stubby_port = v;
-	vis._stubby_servers = v;
+	vis._stubby_servers = v && E('_f_stubby_show_hide').checked;
 	vis._f_stubby_force_tls13 = v;
 	vis._dnssec_enable = v;
 	vis._dnssec_method_1 = (v && E('_dnssec_enable').checked);
@@ -98,6 +98,8 @@ function verifyFields(focused, quiet) {
 	if (E('_dnssec_method_0') != null)
 		if (!E('_dnssec_method_0').checked)
 			E('_dnssec_method_0').checked = !v;
+
+	PR(E('_f_stubby_show_hide')).style.display = (v ? 'table-row' : 'none');;
 /* STUBBY-END */
 /* DNSSEC-BEGIN */
 	vis._dnssec_enable = 1;
@@ -106,14 +108,6 @@ function verifyFields(focused, quiet) {
 /* MDNS-BEGIN */
 	E('_f_mdns_reflector').disabled = !E('_f_mdns_enable').checked;
 /* MDNS-END */
-/* TOR-BEGIN */
-	if (E('_f_dnsmasq_onion_support').checked) { /* disable/uncheck 'DNS Rebind protection' when onion support is enabled */
-		E('_f_dns_norebind').disabled = 1;
-		E('_f_dns_norebind').checked = 0;
-	}
-	else
-		E('_f_dns_norebind').disabled = 0;
-/* TOR-END */
 /* TFTP-BEGIN */
 	v = E('_f_dnsmasq_tftp').checked;
 	vis._dnsmasq_tftp_path = v;
@@ -125,12 +119,37 @@ function verifyFields(focused, quiet) {
 	if (v && !v_length('_dnsmasq_tftp_path', quiet, 0, 128))
 		return 0;
 /* TFTP-END */
+/* IPV6-BEGIN */
+	v = !nvram.ipv6_service == '';
+	vis._f_ipv6_dhcpd = v;
+	vis._f_ipv6_radvd = v;
+	vis._f_ipv6_lease_time = v;
+	vis._f_ipv6_fast_ra = v;
+	vis._f_dnsmasq_qr = v;
+	vis._f_dnsmasq_q6 = v;
+
+	if (nvram.ipv6_service == 'native-pd') /* for case DHCPv6 PD use IPv6 preferred lifetime provided by your ISP/Server and hide lease time option */
+		vis._f_ipv6_lease_time = 0;
+/* IPV6-END */
+
 	for (i in vis) {
 		var b = E(i);
 		var c = vis[i];
 		b.disabled = (c != 1);
 		PR(b).style.display = (c ? 'table-row' : 'none');
 	}
+
+/* TOR-BEGIN */
+	a = !E('_f_dhcpd_dmdns').checked;
+	if (E('_f_dnsmasq_onion_support').checked) { /* disable/uncheck 'DNS Rebind protection' when onion support is enabled */
+		E('_f_dns_norebind').disabled = 1;
+		E('_f_dns_norebind').checked = 0;
+	}
+	else
+		E('_f_dns_norebind').disabled = a;
+
+	E('_f_dnsmasq_onion_support').disabled = a;
+/* TOR-END */
 
 	if (!v_range('_f_dnsmasq_edns_size', quiet, 512, 4096))
 		return 0;
@@ -147,6 +166,7 @@ function verifyFields(focused, quiet) {
 	a = ['_f_ipv6_dns1_lan', '_f_ipv6_dns2_lan']; /* optional IPv6 DNS Server address */
 	for (i = a.length - 1; i >= 0; --i) {
 		E(a[i]).disabled = !enable_ipv6_dns_lan;
+		PR(E(a[i])).style.display = ((enable_ipv6_dns_lan && (!nvram.ipv6_service == '')) ? 'table-row' : 'none');
 
 		if (enable_ipv6_dns_lan && (E(a[i]).value.length > 0) && (!v_ipv6_addr(a[i], quiet)))
 			return 0;
@@ -412,7 +432,7 @@ function save() {
 
 function init() {
 	var c;
-	if (((c = cookie.get(cprefix + '_notes_vis')) != null) && (c == '1'))
+	if (((c = cookie.get(cprefix+'_notes_vis')) != null) && (c == '1'))
 		toggleVisibility(cprefix, 'notes');
 
 	var e = E('_dnsmasq_custom');
@@ -536,7 +556,8 @@ function init() {
 		]);
 /* STUBBY-BEGIN */
 		createFieldTable('noopen,noclose', [
-			{ title: 'Use Stubby', name: 'f_stubby_proxy', type: 'checkbox', value: nvram.stubby_proxy == 1 }
+			{ title: 'Use Stubby', name: 'f_stubby_proxy', type: 'checkbox', value: nvram.stubby_proxy == 1 },
+			{ title: 'Show/Hide Servers', indent: 2, name: 'f_stubby_show_hide', type: 'checkbox', value: 0 }
 		]);
 
 		W('<tr><td class="title indent2">Upstream resolvers<br> (max. 8)<\/td><td class="content" id="_stubby_servers"><table class="tomato-grid" id="stubby-grid">');
@@ -584,7 +605,7 @@ function init() {
 /* STUBBY-END */
 		createFieldTable('noopen', [
 			{ title: 'WINS <small>(for DHCP)<\/small>', name: 'wan_wins', type: 'text', maxlen: 15, size: 17, value: nvram.wan_wins },
-			{ title: '<a href="https://wiki.freshtomato.org/doku.php/dns_flag_day_2020" class="new_window">EDNS packet size<\/a>', name: 'f_dnsmasq_edns_size', type: 'text', maxlen: 4, size: 8, suffix: ' <small>(default: 1280)<\/small>', value: nvram.dnsmasq_edns_size },
+			{ title: '<a href="https://wiki.freshtomato.org/doku.php/dns_flag_day_2020" class="new_window">EDNS packet size<\/a>', name: 'f_dnsmasq_edns_size', type: 'text', maxlen: 4, size: 8, suffix: ' <small>(default: 1232)<\/small>', value: nvram.dnsmasq_edns_size },
 			null,
 			{ title: 'DHCPC Options', name: 'dhcpc_custom', type: 'text', maxlen: 256, size: 70, value: nvram.dhcpc_custom },
 			{ title: 'Reduce packet size', name: 'f_dhcpc_minpkt', type: 'checkbox', value: nvram.dhcpc_minpkt == 1 }
@@ -619,7 +640,7 @@ function init() {
 			{ title: 'Announce IPv6 on LAN (SLAAC)', name: 'f_ipv6_radvd', type: 'checkbox', value: nvram.ipv6_radvd == 1 },
 			{ title: 'Announce IPv6 on LAN (DHCP)', name: 'f_ipv6_dhcpd', type: 'checkbox', value: nvram.ipv6_dhcpd == 1 },
 			{ title: 'Fast RA mode', name: 'f_ipv6_fast_ra', type: 'checkbox', value: nvram.ipv6_fast_ra == 1 },
-			{ title: 'DHCP IPv6 lease time', name: 'f_ipv6_lease_time', type: 'text', maxlen: 3, size: 8, suffix: ' <small>(in hours)<\/small>', value: nvram.ipv6_lease_time || 12, hidden: nvram.ipv6_service == 'native-pd' },
+			{ title: 'DHCP IPv6 lease time', name: 'f_ipv6_lease_time', type: 'text', maxlen: 3, size: 8, suffix: ' <small>(in hours)<\/small>', value: nvram.ipv6_lease_time || 12 },
 			{ title: 'IPv6 DNS Server', name: 'f_ipv6_dns1_lan', type: 'text', maxlen: 40, size: 42, value: dns_ip6[0] || '', suffix: ' <small>(optional; usually empty)<\/small>' },
 			{ title: '',                name: 'f_ipv6_dns2_lan', type: 'text', maxlen: 40, size: 42, value: dns_ip6[1] || '', suffix: ' <small>(optional; usually empty)<\/small>' },
 /* IPV6-END */
@@ -693,7 +714,6 @@ function init() {
 	<ul>
 		<li><b>Use internal DNS</b> - Allow dnsmasq to be your DNS server on LAN.</li>
 		<li><b>Use received DNS with user-entered DNS</b> - Add DNS servers received from your WAN connection to the static DNS server list (see <a href="basic-network.asp">Network</a> configuration).</li>
-		<li><b>Prevent DNS-rebind attacks</b> - Enable DNS rebinding protection on Dnsmasq.</li>
 		<li><b>Intercept DNS port</b> - Any DNS requests/packets sent out to UDP/TCP port 53 are redirected to the internal DNS server. Currently only IPv4 DNS is intercepted.</li>
 		<li><b>Use user-entered gateway if WAN is disabled</b> - DHCP will use the IP address of the router as the default gateway on each LAN.</li>
 		<li><b>Ignore DHCP requests (...)</b> - Dnsmasq will ignore DHCP requests to only MAC addresses listed on the <a href="basic-static.asp">Static DHCP/ARP</a> page won't be able to obtain an IP address through DHCP.</li>

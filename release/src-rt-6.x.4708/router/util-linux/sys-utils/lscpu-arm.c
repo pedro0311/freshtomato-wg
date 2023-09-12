@@ -79,8 +79,11 @@ static const struct id_part arm_part[] = {
     { 0xd0e, "Cortex-A76AE" },
     { 0xd13, "Cortex-R52" },
     { 0xd15, "Cortex-R82" },
+    { 0xd16, "Cortex-R52+" },
     { 0xd20, "Cortex-M23" },
     { 0xd21, "Cortex-M33" },
+    { 0xd22, "Cortex-M55" },
+    { 0xd23, "Cortex-M85" },
     { 0xd40, "Neoverse-V1" },
     { 0xd41, "Cortex-A78" },
     { 0xd42, "Cortex-A78AE" },
@@ -96,6 +99,9 @@ static const struct id_part arm_part[] = {
     { 0xd4d, "Cortex-A715" },
     { 0xd4e, "Cortex-X3" },
     { 0xd4f, "Neoverse-V2" },
+    { 0xd80, "Cortex-A520" },
+    { 0xd81, "Cortex-A720" },
+    { 0xd82, "Cortex-X4" },
     { -1, "unknown" },
 };
 
@@ -206,6 +212,12 @@ static const struct id_part apple_part[] = {
     { 0x031, "Avalanche-A15" },
     { 0x032, "Blizzard-M2" },
     { 0x033, "Avalanche-M2" },
+    { 0x034, "Blizzard-M2-Pro" },
+    { 0x035, "Avalanche-M2-Pro" },
+    { 0x036, "Sawtooth-A16" },
+    { 0x037, "Everest-A16" },
+    { 0x038, "Blizzard-M2-Max" },
+    { 0x039, "Avalanche-M2-Max" },
     { -1, "unknown" },
 };
 
