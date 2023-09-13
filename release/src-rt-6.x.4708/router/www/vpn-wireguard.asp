@@ -1115,19 +1115,23 @@ function genPeerGridConfigQR(event, unit, row) {
 	}
 	else {
 		var content = genPeerGridConfig(unit, row);
-		displayQRCode(content, unit, row);
-		qrcode.setAttribute('row_id', row);
+		if (content != false) {
+			displayQRCode(content, unit, row);
+			qrcode.setAttribute('row_id', row);
+		}
 	}
 	event.stopPropagation();
 }
 
 function genPeerGridConfigFile(event, unit, row) {
 	var content = genPeerGridConfig(unit, row);
-	var filename = "peer.conf";
-	var alias = peerTables[unit].tb.rows[row]._data[0];
-	if (alias != "")
-		filename = `${alias}.conf`;
-	downloadConfig(content, filename);
+	if (content != false) {
+		var filename = "peer.conf";
+		var alias = peerTables[unit].tb.rows[row]._data[0];
+		if (alias != "")
+			filename = `${alias}.conf`;
+		downloadConfig(content, filename);
+	}
 	event.stopPropagation();
 }
 
@@ -1158,7 +1162,7 @@ function genPeerGridConfig(unit, row) {
 		ferror.clear(fwmark);
 
 	if (!result)
-		return;
+		return false;
 
 	return generateWGConfig(unit, row_data[0], row_data[2], row_data[4], row_data[5].split('/')[0], port.value, fwmark.value);
 }
