@@ -249,7 +249,7 @@ function mapConfigToFields(event) {
 		E('_wg'+unit+'_postdown').value = config.interface.postdown;
 
 	if (config.interface.endpoint) {
-		E('_f_wg'+unit+'_endpoint').value = config.interface.endpoint;
+		E('_f_wg'+unit+'_custom_endpoint').value = config.interface.endpoint;
 		E('_f_wg'+unit+'_endpoint').selectedIndex = 2;
 	}
 
@@ -1115,19 +1115,23 @@ function genPeerGridConfigQR(event, unit, row) {
 	}
 	else {
 		var content = genPeerGridConfig(unit, row);
-		displayQRCode(content, unit, row);
-		qrcode.setAttribute('row_id', row);
+		if (content != false) {
+			displayQRCode(content, unit, row);
+			qrcode.setAttribute('row_id', row);
+		}
 	}
 	event.stopPropagation();
 }
 
 function genPeerGridConfigFile(event, unit, row) {
 	var content = genPeerGridConfig(unit, row);
-	var filename = "peer.conf";
-	var alias = peerTables[unit].tb.rows[row]._data[0];
-	if (alias != "")
-		filename = `${alias}.conf`;
-	downloadConfig(content, filename);
+	if (content != false) {
+		var filename = "peer.conf";
+		var alias = peerTables[unit].tb.rows[row]._data[0];
+		if (alias != "")
+			filename = `${alias}.conf`;
+		downloadConfig(content, filename);
+	}
 	event.stopPropagation();
 }
 
@@ -1158,7 +1162,7 @@ function genPeerGridConfig(unit, row) {
 		ferror.clear(fwmark);
 
 	if (!result)
-		return;
+		return false;
 
 	return generateWGConfig(unit, row_data[0], row_data[2], row_data[4], row_data[5].split('/')[0], port.value, fwmark.value);
 }
@@ -1191,7 +1195,6 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg'+unit+'_key'));
 	var keepalive_interface = eval('nvram.wg'+unit+'_ka');
 	var endpoint = eval('nvram.wg'+unit+'_endpoint');
-	var custom_endpoint = eval('nvram.wg'+unit+'_custom_endpoint');
 	switch(endpoint[0]) {
 	case '0':
 		if (nvram.wan_domain) {
@@ -1206,7 +1209,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 		endpoint = nvram.wan_ipaddr;
 		break;
 	case '2':
-		endpoint = custom_endpoint.value.split('|', 2)[1];
+		endpoint = endpoint.split('|', 2)[1];
 		break;
 	} 
 	endpoint += ":" + eval('nvram.wg'+unit+'_port');
@@ -1914,7 +1917,7 @@ function init() {
 			W('<input type="button" value="Generate Peer" onclick="generatePeer('+i+')" id="'+t+'_peer_gen">');
 			W('<br>');
 			W('<br>');
-			W('<div class="section-title">Peer Parameters</div>');
+			W('<div class="section-title">Peer\'s Parameters</div>');
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
 				{ title: 'Endpoint', name: 'f_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
