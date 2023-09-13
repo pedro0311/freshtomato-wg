@@ -1917,7 +1917,7 @@ function init() {
 			W('<input type="button" value="Generate Peer" onclick="generatePeer('+i+')" id="'+t+'_peer_gen">');
 			W('<br>');
 			W('<br>');
-			W('<div class="section-title">Peer Parameters</div>');
+			W('<div class="section-title">Peer\'s Parameters</div>');
 			createFieldTable('', [
 				{ title: 'Alias', name: 'f_'+t+'_peer_alias', type: 'text', maxlen: 32, size: 32},
 				{ title: 'Endpoint', name: 'f_'+t+'_peer_ep', type: 'text', maxlen: 64, size: 64},
