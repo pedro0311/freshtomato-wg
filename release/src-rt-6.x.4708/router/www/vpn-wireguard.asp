@@ -1195,7 +1195,6 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg'+unit+'_key'));
 	var keepalive_interface = eval('nvram.wg'+unit+'_ka');
 	var endpoint = eval('nvram.wg'+unit+'_endpoint');
-	var custom_endpoint = eval('nvram.wg'+unit+'_custom_endpoint');
 	switch(endpoint[0]) {
 	case '0':
 		if (nvram.wan_domain) {
@@ -1210,7 +1209,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 		endpoint = nvram.wan_ipaddr;
 		break;
 	case '2':
-		endpoint = custom_endpoint.value.split('|', 2)[1];
+		endpoint = endpoint.value.split('|', 2)[1];
 		break;
 	} 
 	endpoint += ":" + eval('nvram.wg'+unit+'_port');
