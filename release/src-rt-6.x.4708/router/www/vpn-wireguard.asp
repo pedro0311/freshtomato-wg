@@ -249,7 +249,7 @@ function mapConfigToFields(event) {
 		E('_wg'+unit+'_postdown').value = config.interface.postdown;
 
 	if (config.interface.endpoint) {
-		E('_f_wg'+unit+'_endpoint').value = config.interface.endpoint;
+		E('_f_wg'+unit+'_custom_endpoint').value = config.interface.endpoint;
 		E('_f_wg'+unit+'_endpoint').selectedIndex = 2;
 	}
 
