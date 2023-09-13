@@ -71,6 +71,7 @@ RUN apt-get update \
   wget \
   util-linux \
   bsdmainutils \
+  autoconf-archive \
   && dpkg --add-architecture i386 \
   && apt-get update \
   && apt-get install --no-install-suggests --no-install-recommends -y \
