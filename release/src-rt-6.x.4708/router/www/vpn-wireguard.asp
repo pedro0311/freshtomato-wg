@@ -938,7 +938,8 @@ function generateInterfaceKey(unit) {
 		var keys = window.wireguard.generateKeypair();
 		E('_wg'+unit+'_key').value = keys.privateKey;
 		E('_wg'+unit+'_pubkey').value = keys.publicKey;
-		updateForm(unit)
+		updateForm(unit);
+		changed = 1;
 	}
 }
 
