@@ -1266,15 +1266,19 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	}
 
 	/* add remaining peers to config */
+	var pubkey = window.wireguard.generatePublicKey(privkey);
 	if (eval('nvram.wg'+unit+'_lan') == "1") {
 		var interface_peers = peerTables[unit].getAllData();
 		
 		for (var i = 0; i < interface_peers.length; ++i) {
 			var peer = interface_peers[i]
 
-			if (peer[3] == window.wireguard.generatePublicKey(privkey)) {
+			var peer_pubkey = peer[3];
+			if (peer[0] == 1)
+				peer_pubkey = window.wireguard.generatePublicKey(peer_pubkey);
+
+			if (peer_pubkey == pubkey)
 				continue;
-			}
 
 			content.push(
 				"\n",
@@ -1284,10 +1288,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 			if (peer[1] != "")
 				content.push(`#Alias = ${peer[1]}\n`,);
 
-			if (peer[0] == 1)
-				content.push(`PublicKey = ${window.wireguard.generatePublicKey(peer[3])}\n`,);
-			else
-				content.push(`PublicKey = ${peer[3]}\n`,);
+			content.push(`PublicKey = ${peer_pubkey}\n`,);
 
 			if (peer[4] != "")
 				content.push(`PresharedKey = ${peer[4]}\n`,);
@@ -1300,8 +1301,8 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 			if (peer[7] != "0")
 				content.push(`PersistentKeepalive = ${peer[7]}\n`,);
 
-			if (peer[1] != "")
-				content.push(`Endpoint = ${peer[1]}\n`);
+			if (peer[2] != "")
+				content.push(`Endpoint = ${peer[2]}\n`);
 			
 		}
 	}
