@@ -944,24 +944,27 @@ function generateInterfaceKey(unit) {
 }
 
 function peerFieldsToData(unit) {
-	var alias = E('_f_wg'+unit+'_peer_alias');
-	var endpoint = E('_f_wg'+unit+'_peer_ep');
-	var privkey = E('_f_wg'+unit+'_peer_privkey');
-	var pubkey = E('_f_wg'+unit+'_peer_pubkey');
-	var psk = E('_f_wg'+unit+'_peer_psk');
-	var ip = E('_f_wg'+unit+'_peer_ip');
-	var allowedips = E('_f_wg'+unit+'_peer_aip');
-	var keepalive = E('_f_wg'+unit+'_peer_ka');
+	var alias = E('_f_wg'+unit+'_peer_alias').value;
+	var endpoint = E('_f_wg'+unit+'_peer_ep').value;
+	var privkey = E('_f_wg'+unit+'_peer_privkey').value;
+	var pubkey = E('_f_wg'+unit+'_peer_pubkey').value;
+	var psk = E('_f_wg'+unit+'_peer_psk').value;
+	var ip = E('_f_wg'+unit+'_peer_ip').value;
+	var allowedips = E('_f_wg'+unit+'_peer_aip').value;
+	var keepalive = E('_f_wg'+unit+'_peer_ka').value;
+
+	if (privkey != '')
+		pubkey = window.wireguard.generatePublicKey(privkey);
 
 	return [
-		alias.value,
-		endpoint.value,
-		privkey.value,
-		pubkey.value,
-		psk.value,
-		ip.value,
-		allowedips.value,
-		keepalive.value
+		alias,
+		endpoint,
+		privkey,
+		pubkey,
+		psk,
+		ip,
+		allowedips,
+		keepalive
 	];
 }
 
