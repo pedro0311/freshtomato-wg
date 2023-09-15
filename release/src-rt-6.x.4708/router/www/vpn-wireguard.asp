@@ -150,6 +150,7 @@ form.submit = function(fom, async, url) {
 				msg.innerHTML = escapeHTML(RegExp.$1);
 			else
 				msg.innerHTML = 'Saved';
+				update_nvram(fom);
 		}
 		setTimeout(
 			function() {
@@ -159,7 +160,6 @@ form.submit = function(fom, async, url) {
 				if (typeof(submit_complete) != 'undefined') submit_complete();
 			}, wait * 1100);
 		form.xhttp = null;
-		update_nvram(fom);
 	}
 	this.xhttp.onError = function(x) {
 		if (url) fom.action = url;
