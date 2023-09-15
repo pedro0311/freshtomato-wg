@@ -1300,8 +1300,8 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 			if (peer[7] != "0")
 				content.push(`PersistentKeepalive = ${peer[7]}\n`,);
 
-			if (peer[1] != "")
-				content.push(`Endpoint = ${peer[1]}\n`);
+			if (peer[2] != "")
+				content.push(`Endpoint = ${peer[2]}\n`);
 			
 		}
 	}
