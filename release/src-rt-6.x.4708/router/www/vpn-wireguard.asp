@@ -90,7 +90,7 @@ window.addEventListener("beforeunload", function (e) {
 function update_nvram(fom) {
 	for (var i = 0; i < fom.length; ++i) {
 		if (fom[i].name in nvram)
-			eval('nvram.'+fom[i].name+' = '+fom[i].value);
+			nvram[fom[i].name] = fom[i].value;
 	}
 }
 
