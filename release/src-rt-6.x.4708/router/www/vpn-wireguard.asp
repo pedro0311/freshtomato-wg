@@ -1438,6 +1438,11 @@ function downloadConfig(content, name) {
 	URL.revokeObjectURL(link.href);
 }
 
+function downloadAllConfigs(event, unit) {
+	for (var i = 1; i < peerTables[unit].tb.rows.length; ++i)
+		genPeerGridConfigFile(event, unit, i);
+}
+
 function updateStatus(unit) {
 	var result = E('wg'+unit+'_result');
 	elem.setInnerHTML(result, '');
@@ -2024,6 +2029,8 @@ function init() {
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
+			W('<br>');
+			W('<input type="button" value="Download All Configs" onclick="downloadAllConfigs(event,'+i+')" id="'+t+'_download_all">')
 			W('<br>');
 			W('<div id="'+t+'_qrcode" class="qrcode" style="display:none">');
 			W('<img alt="'+t+'_qrcode_img" style="max-width: 100px;">');
