@@ -72,6 +72,11 @@ var cprefix = 'vpn_wireguard';
 var changed = 0;
 var serviceType = 'wireguard';
 
+var tabs =  [];
+for (i = 0; i < WG_INTERFACE_COUNT; ++i)
+	tabs.push(['wg'+i,'wg'+i]);
+var sections = [['config','Configuration'],['scripts','Scripts'],['peers','Peers'],['status','Status']];
+
 window.addEventListener("beforeunload", function (e) {
 	if (changed) {
 		var confirmationMessage = 'It looks like you have changed the values of some fields.'
@@ -82,11 +87,87 @@ window.addEventListener("beforeunload", function (e) {
 	}
 });
 
+function update_nvram(fom) {
+	for (var i = 0; i < fom.length; ++i) {
+		if (fom[i].name in nvram)
+			nvram[fom[i].name] = fom[i].value;
+	}
+}
 
-var tabs =  [];
-for (i = 0; i < WG_INTERFACE_COUNT; ++i)
-	tabs.push(['wg'+i,'wg'+i]);
-var sections = [['config','Configuration'],['scripts','Scripts'],['peers','Peers'],['status','Status']];
+form.submit = function(fom, async, url) {
+	var e, v, f, i, wait, msg, sb, cb, nomsg = 0;
+
+	fom = E(fom);
+
+	if (isLocal()) {
+		this.dump(fom, async, url);
+		return;
+	}
+
+	if (this.xhttp) return;
+
+	if ((sb = E('save-button')) != null) sb.disabled = 1;
+	if ((cb = E('cancel-button')) != null) cb.disabled = 1;
+
+	if ((!async) || (!useAjax())) {
+		this.addId(fom);
+		if (url) fom.action = url;
+		fom.submit();
+		update_nvram(fom);
+		return;
+	}
+
+	v = ['_ajax=1'];
+	wait = 5;
+	for (var i = 0; i < fom.elements.length; ++i) {
+		f = fom.elements[i];
+		if ((f.disabled) || (f.name == '') || (f.name.substr(0, 2) == 'f_')) continue;
+		if ((f.tagName == 'INPUT') && ((f.type == 'CHECKBOX') || (f.type == 'RADIO')) && (!f.checked)) continue;
+		if (f.name == '_nextwait') {
+			wait = f.value * 1;
+			if (isNaN(wait))
+				wait = 5;
+			else
+				wait = Math.abs(wait);
+		}
+		if (f.name == '_nofootermsg') {
+			nomsg = f.value * 1;
+			if (isNaN(nomsg))
+				nomsg = 0;
+		}
+		v.push(escapeCGI(f.name) + '=' + escapeCGI(f.value));
+	}
+
+	if ((msg = E('footer-msg')) != null && !nomsg) {
+		msg.innerHTML = 'Saving...';
+		msg.style.display = 'inline';
+	}
+
+	this.xhttp = new XmlHttp();
+	this.xhttp.onCompleted = function(text, xml) {
+		if (msg && !nomsg) {
+			if (text.match(/@msg:(.+)/))
+				msg.innerHTML = escapeHTML(RegExp.$1);
+			else
+				msg.innerHTML = 'Saved';
+				update_nvram(fom);
+		}
+		setTimeout(
+			function() {
+				if (sb) sb.disabled = 0;
+				if (cb) cb.disabled = 0;
+				if (msg) msg.style.display = 'none';
+				if (typeof(submit_complete) != 'undefined') submit_complete();
+			}, wait * 1100);
+		form.xhttp = null;
+	}
+	this.xhttp.onError = function(x) {
+		if (url) fom.action = url;
+		fom.submit();
+	}
+
+	this.xhttp.post(url ? url : fom.action, v.join('&'));
+}
 
 function PeerGrid() {return this;}
 PeerGrid.prototype = new TomatoGrid;
