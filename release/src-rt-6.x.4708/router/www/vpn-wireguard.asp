@@ -1390,12 +1390,15 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 		var interface_peers = peerTables[unit].getAllData();
 		
 		for (var i = 0; i < interface_peers.length; ++i) {
-			var peer = interface_peers[i]
+
+			var peer = interface_peers[i];
+
+			if (peer[2] == '')
+				continue;
 
 			var peer_pubkey = peer[3];
 			if (peer[0] == 1)
 				peer_pubkey = window.wireguard.generatePublicKey(peer_pubkey);
-
 			if (peer_pubkey == pubkey)
 				continue;
 
