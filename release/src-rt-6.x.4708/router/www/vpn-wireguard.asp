@@ -1241,7 +1241,7 @@ function genPeerGridConfigQR(event, unit, row) {
 function genPeerGridConfigFile(event, unit, row) {
 	var content = genPeerGridConfig(unit, row);
 	if (content != false) {
-		var filename = "peer.conf";
+		var filename = "peer"+row+".conf";
 		var alias = peerTables[unit].tb.rows[row]._data[0];
 		if (alias != "")
 			filename = `${alias}.conf`;
@@ -2029,8 +2029,8 @@ function init() {
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
-			W('<br>');
 			W('<input type="button" value="Download All Configs" onclick="downloadAllConfigs(event,'+i+')" id="'+t+'_download_all">')
+			W('<br>');
 			W('<br>');
 			W('<div id="'+t+'_qrcode" class="qrcode" style="display:none">');
 			W('<img alt="'+t+'_qrcode_img" style="max-width: 100px;">');
