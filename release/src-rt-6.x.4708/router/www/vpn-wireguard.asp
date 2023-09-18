@@ -1702,8 +1702,8 @@ function verifyFields(focused, quiet) {
 			var ip_valid = true;
 			if(ip.value != '') {
 				var cidrs = ip.value.split(',')
-				for(var i = 0; i < cidrs.length; i++) {
-					var cidr = cidrs[i].trim();
+				for(var j = 0; j < cidrs.length; j++) {
+					var cidr = cidrs[j].trim();
 					if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
 						ip_valid = false;
 						break;
@@ -1798,8 +1798,8 @@ function verifyFields(focused, quiet) {
 		var aip_valid = true;
 		if(allowed_ips.value != '') {
 			var cidrs = allowed_ips.value.split(',')
-			for(var i = 0; i < cidrs.length; i++) {
-				var cidr = cidrs[i].trim();
+			for(var j = 0; j < cidrs.length; j++) {
+				var cidr = cidrs[j].trim();
 				if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
 					aip_valid = false;
 					break;
