@@ -1165,7 +1165,7 @@ function generatePeer(unit) {
 		psk = window.wireguard.generatePresharedKey();
 
 	/* retrieve existing IPs of interface/peers to calculate new ip */
-	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split("/", 2)');
+	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split(",")[0].split("/", 2)');
 	var existing_ips = peerTables[unit].getAllData();
 	existing_ips = existing_ips.map(x => x[5].split('/',1)[0]);
 	existing_ips.push(interface_ip);
@@ -1284,7 +1284,7 @@ function genPeerGridConfig(unit, row) {
 
 function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	
-	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split("/", 2)');
+	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split(",",1)[0].split("/", 2)');
 	var content = [];
 	var dns = eval('nvram.wg'+unit+'_peer_dns');
 
@@ -1343,7 +1343,11 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 			netmask = "/32";
 		}
 		allowed_ips = interface_ip + netmask;
-		for(let i = 0; i <= 3; i++){
+		var other_ips_index = eval('nvram.wg'+unit+'_ip.indexOf(",")');
+		if (other_ips_index > -1) {
+			allowed_ips += eval('nvram.wg'+unit+'_ip.substring('+(other_ips_index+1)+')');
+		}
+		for (var i = 0; i <= 3; ++i){
 			if (eval('nvram.wg'+unit+'_lan'+i) == "1") {
 				let t = (i == 0 ? '' : i);
 				var nm = eval(`nvram.lan${t}_netmask`);
@@ -1697,6 +1701,24 @@ function verifyFields(focused, quiet) {
 		else {
 			if (!verifyCIDR(ip.value)) {
 				ferror.set(ip, 'A valid CIDR address is required for the interface', quiet || !ok);
+				ok = 0;
+			}
+			else
+				ferror.clear(ip);
+
+			var ip_valid = true;
+			if(ip.value != '') {
+				var cidrs = ip.value.split(',')
+				for(var i = 0; i < cidrs.length; i++) {
+					var cidr = cidrs[i].trim();
+					if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
+						ip_valid = false;
+						break;
+					}
+				}
+			}
+			if (!ip_valid) {
+				ferror.set(ip, 'The interface allowed ips must be a comma separated list of valid CIDRs', quiet || !ok);
 				ok = 0;
 			}
 			else
