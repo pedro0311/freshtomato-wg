@@ -474,10 +474,16 @@ function mapConfig(contents) {
 				target.fwmark = value;
 				break;
 			case 'address':
-				target.address = value;
+				if (!target.address)
+					target.address = value;
+				else
+					target.address = [target.address, value].join(',');
 				break;
 			case 'dns':
-				target.dns = value;
+				if (!target.dns)
+					target.dns = value;
+				else
+					target.dns = [target.dns, value].join(',');
 				break;
 			case 'mtu':
 				target.mtu = value;
@@ -486,16 +492,28 @@ function mapConfig(contents) {
 				target.table = value;
 				break;
 			case 'preup':
-				target.preup = value;
+				if (!target.preup)
+					target.preup = value;
+				else
+					target.preup = [target.preup, value].join('\n');
 				break;
 			case 'postup':
-				target.postup = value;
+				if (!target.postup)
+					target.postup = value;
+				else
+					target.postup = [target.postup, value].join('\n');
 				break;
 			case 'predown':
-				target.predown = value;
+				if (!target.predown)
+					target.predown = value;
+				else
+					target.predown = [target.predown, value].join('\n');
 				break;
 			case 'postdown':
-				target.postdown = value;
+				if (!target.postdown)
+					target.postdown = value;
+				else
+					target.postdown = [target.postdown, value].join('\n');
 				break;
 			case 'publickey':
 				target.pubkey = value;
@@ -1147,7 +1165,7 @@ function generatePeer(unit) {
 		psk = window.wireguard.generatePresharedKey();
 
 	/* retrieve existing IPs of interface/peers to calculate new ip */
-	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split("/", 2)');
+	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split(",")[0].split("/", 2)');
 	var existing_ips = peerTables[unit].getAllData();
 	existing_ips = existing_ips.map(x => x[5].split('/',1)[0]);
 	existing_ips.push(interface_ip);
@@ -1266,7 +1284,7 @@ function genPeerGridConfig(unit, row) {
 
 function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	
-	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split("/", 2)');
+	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split(",",1)[0].split("/", 2)');
 	var content = [];
 	var dns = eval('nvram.wg'+unit+'_peer_dns');
 
@@ -1325,7 +1343,11 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 			netmask = "/32";
 		}
 		allowed_ips = interface_ip + netmask;
-		for(let i = 0; i <= 3; i++){
+		var other_ips_index = eval('nvram.wg'+unit+'_ip.indexOf(",")');
+		if (other_ips_index > -1) {
+			allowed_ips += eval('nvram.wg'+unit+'_ip.substring('+(other_ips_index)+')');
+		}
+		for (var i = 0; i <= 3; ++i){
 			if (eval('nvram.wg'+unit+'_lan'+i) == "1") {
 				let t = (i == 0 ? '' : i);
 				var nm = eval(`nvram.lan${t}_netmask`);
@@ -1677,8 +1699,19 @@ function verifyFields(focused, quiet) {
 		}
 		/* otherwise verify interface CIDR address */
 		else {
-			if (!verifyCIDR(ip.value)) {
-				ferror.set(ip, 'A valid CIDR address is required for the interface', quiet || !ok);
+			var ip_valid = true;
+			if(ip.value != '') {
+				var cidrs = ip.value.split(',')
+				for(var j = 0; j < cidrs.length; j++) {
+					var cidr = cidrs[j].trim();
+					if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
+						ip_valid = false;
+						break;
+					}
+				}
+			}
+			if (!ip_valid) {
+				ferror.set(ip, 'The interface ips must be a comma separated list of valid CIDRs', quiet || !ok);
 				ok = 0;
 			}
 			else
@@ -1765,8 +1798,8 @@ function verifyFields(focused, quiet) {
 		var aip_valid = true;
 		if(allowed_ips.value != '') {
 			var cidrs = allowed_ips.value.split(',')
-			for(var i = 0; i < cidrs.length; i++) {
-				var cidr = cidrs[i].trim();
+			for(var j = 0; j < cidrs.length; j++) {
+				var cidr = cidrs[j].trim();
 				if (!cidr.match(/^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/)) {
 					aip_valid = false;
 					break;
@@ -2042,7 +2075,7 @@ function init() {
 			W('<input type="button" value="Refresh" onclick="toggleRefresh('+i+')" id="'+t+'_status_refresh_button"></div>');
 			W('<div style="display:none;padding-left:5px" id="'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
 			statRefreshes[i].setup();
-			statRefreshes[i].initPage(3000, 3);
+			statRefreshes[i].initPage(3000, 0);
 			W('</div>');
 			/* status tab end */
 
