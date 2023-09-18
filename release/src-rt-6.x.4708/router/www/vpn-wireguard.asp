@@ -1345,7 +1345,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 		allowed_ips = interface_ip + netmask;
 		var other_ips_index = eval('nvram.wg'+unit+'_ip.indexOf(",")');
 		if (other_ips_index > -1) {
-			allowed_ips += eval('nvram.wg'+unit+'_ip.substring('+(other_ips_index+1)+')');
+			allowed_ips += eval('nvram.wg'+unit+'_ip.substring('+(other_ips_index)+')');
 		}
 		for (var i = 0; i <= 3; ++i){
 			if (eval('nvram.wg'+unit+'_lan'+i) == "1") {
