@@ -474,10 +474,16 @@ function mapConfig(contents) {
 				target.fwmark = value;
 				break;
 			case 'address':
-				target.address = value;
+				if (!target.address)
+					target.address = value;
+				else
+					target.address = [target.address, value].join(',');
 				break;
 			case 'dns':
-				target.dns = value;
+				if (!target.dns)
+					target.dns = value;
+				else
+					target.dns = [target.dns, value].join(',');
 				break;
 			case 'mtu':
 				target.mtu = value;
@@ -486,16 +492,28 @@ function mapConfig(contents) {
 				target.table = value;
 				break;
 			case 'preup':
-				target.preup = value;
+				if (!target.preup)
+					target.preup = value;
+				else
+					target.preup = [target.preup, value].join('\n');
 				break;
 			case 'postup':
-				target.postup = value;
+				if (!target.postup)
+					target.postup = value;
+				else
+					target.postup = [target.postup, value].join('\n');
 				break;
 			case 'predown':
-				target.predown = value;
+				if (!target.predown)
+					target.predown = value;
+				else
+					target.predown = [target.predown, value].join('\n');
 				break;
 			case 'postdown':
-				target.postdown = value;
+				if (!target.postdown)
+					target.postdown = value;
+				else
+					target.postdown = [target.postdown, value].join('\n');
 				break;
 			case 'publickey':
 				target.pubkey = value;

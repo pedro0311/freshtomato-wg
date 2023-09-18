@@ -295,13 +295,19 @@ int wg_flush_iface_addr(char *iface)
 
 int wg_set_iface_addr(char *iface, char *addr)
 {
+	char *nv, *b;
+
     /* Flush all addresses from interface */
 	// wg_flush_iface_addr(iface)
 
-    /* Set wireguard interface address */
-	if(wg_add_iface_addr(iface, addr)) {
-		return -1;
+    /* Set wireguard interface address(es) */
+	nv = strdup(addr);
+	while ((b = strsep(&nv, ",")) != NULL) {
+		if(wg_add_iface_addr(iface, b)) {
+			return -1;
+		}
 	}
+	
 
     return 0;
 }
@@ -309,11 +315,11 @@ int wg_set_iface_addr(char *iface, char *addr)
 int wg_add_iface_addr(char *iface, char *addr)
 {
 	if (eval("/usr/sbin/ip", "addr", "add", addr, "dev", iface)) {
-		logmsg(LOG_WARNING, "unable to set wireguard interface %s address to %s!", iface, addr);
+		logmsg(LOG_WARNING, "unable to add wireguard interface %s address of %s!", iface, addr);
 		return -1;
 	}
 	else {
-		logmsg(LOG_DEBUG, "wireguard interface %s has had its address set to %s", iface, addr);
+		logmsg(LOG_DEBUG, "wireguard interface %s has had address %s add to it", iface, addr);
 	}
 
 	return 0;
