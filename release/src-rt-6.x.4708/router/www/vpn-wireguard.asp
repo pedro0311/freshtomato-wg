@@ -2075,7 +2075,7 @@ function init() {
 			W('<input type="button" value="Refresh" onclick="toggleRefresh('+i+')" id="'+t+'_status_refresh_button"></div>');
 			W('<div style="display:none;padding-left:5px" id="'+t+'_status_wait"> Please wait... <img src="spin.gif" alt="" style="vertical-align:top"><\/div>');
 			statRefreshes[i].setup();
-			statRefreshes[i].initPage(3000, 3);
+			statRefreshes[i].initPage(3000, 0);
 			W('</div>');
 			/* status tab end */
 
