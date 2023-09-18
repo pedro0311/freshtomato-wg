@@ -1779,9 +1779,9 @@ function verifyFields(focused, quiet) {
 		var endpoint = E('_f_wg'+i+'_endpoint');
 		var custom_endpoint = E('_f_wg'+i+'_custom_endpoint');
 		if (endpoint.value == 2)
-			elem.display(PR(custom_endpoint), true);
+			elem.display(custom_endpoint, true);
 		else
-			elem.display(PR(custom_endpoint), false);
+			elem.display(custom_endpoint, false);
 		
 
 		/* verify peer dns */
@@ -1989,7 +1989,7 @@ function init() {
 			W('<div class="section-title">Peer Parameters</div>');
 			createFieldTable('', [
 				{ title: 'Keepalive to Router', name: t+'_ka', type: 'text', suffix: '&nbsp;<small>0 = disabled<\/small>', maxlen: 2, size: 4, value: eval('nvram.'+t+'_ka') },
-				{ title: 'Endpoint', name: 'f_'+t+'_endpoint', type: 'select', options: [['0','FQDN'],['1','WAN IP'],['2','Custom Endpoint']], value: eval('nvram.'+t+'_endpoint')[0] || 0, suffix: '<input type="text" name="f_'+t+'_custom_endpoint" value="'+(eval('nvram.'+t+'_endpoint').split('|', 2)[1] || '')+'" onchange="verifyFields(this, 1)" id="_f_'+t+'_custom_endpoint" maxlength="64" size="46">'},
+				{ title: 'Endpoint', name: 'f_'+t+'_endpoint', type: 'select', options: [['0','FQDN'],['1','WAN IP'],['2','Custom Endpoint']], value: eval('nvram.'+t+'_endpoint')[0] || 0, suffix: '&nbsp;<input type="text" name="f_'+t+'_custom_endpoint" value="'+(eval('nvram.'+t+'_endpoint').split('|', 2)[1] || '')+'" onchange="verifyFields(this, 1)" id="_f_'+t+'_custom_endpoint" maxlength="64" size="46">'},
 				{ title: 'Allowed IPs', name: t+'_aip', type: 'text', placeholder: "(CIDR format)", maxlen: 128, size: 64, suffix: '&nbsp;<small>comma separated<\/small>', value: eval('nvram.'+t+'_aip') },
 				{ title: 'DNS Servers for Peers', name: t+'_peer_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.'+t+'_peer_dns') },
 				{ title: 'Allow peers to communicate', name: 'f_'+t+'_lan', type: 'checkbox', value: eval('nvram.'+t+'_lan') == '1'},
