@@ -1699,13 +1699,6 @@ function verifyFields(focused, quiet) {
 		}
 		/* otherwise verify interface CIDR address */
 		else {
-			if (!verifyCIDR(ip.value)) {
-				ferror.set(ip, 'A valid CIDR address is required for the interface', quiet || !ok);
-				ok = 0;
-			}
-			else
-				ferror.clear(ip);
-
 			var ip_valid = true;
 			if(ip.value != '') {
 				var cidrs = ip.value.split(',')
@@ -1718,7 +1711,7 @@ function verifyFields(focused, quiet) {
 				}
 			}
 			if (!ip_valid) {
-				ferror.set(ip, 'The interface allowed ips must be a comma separated list of valid CIDRs', quiet || !ok);
+				ferror.set(ip, 'The interface ips must be a comma separated list of valid CIDRs', quiet || !ok);
 				ok = 0;
 			}
 			else
