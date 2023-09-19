@@ -354,8 +354,8 @@ function mapConfigToFields(event) {
 		ip = ip.trim().split('/')[0] + '/32';
 
 		var data = [
-			'',
-			peer.endpoint ? peer.endpoint: '',
+			peer.alias ? peer.alias : '',
+			peer.endpoint ? peer.endpoint : '',
 			peer.privkey ? peer.privkey : '',
 			peer.pubkey,
 			peer.psk ? peer.psk : '',
@@ -442,8 +442,12 @@ function mapConfig(contents) {
 		var line = lines[i].trim();
 
 		var comment_index = line.indexOf('#');
-		if (comment_index != -1)
+		if (comment_index != -1) {
+			if (line.match(/\#[a-zA-z]\s?.*\=\s?[a-zA-z0-9].*$/))
+				line = line.substr(1);
+			else
 			line = line.slice(0, comment_index);
+		}
 
 		if (!line)
 			continue;
@@ -464,6 +468,8 @@ function mapConfig(contents) {
 		var value = line.slice(index + 1).trim();
 
 		switch(key) {
+			case 'alias':
+				target.alias = value;
 			case 'privatekey':
 				target.privkey = value;
 				break;
