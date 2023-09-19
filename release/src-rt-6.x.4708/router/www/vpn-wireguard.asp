@@ -1364,10 +1364,14 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark) {
 	}
 
 	/* populate router peer */
+	var router_alias = "Router";
+	if (nvram.wan_hostname && nvram.wan_hostname != "unknown")
+		router_alias = nvram.wan_hostname;
+	
 	content.push(
 		"\n",
 		"[Peer]\n",
-		"#Alias = Router\n",
+		"#Alias = "+router_alias+"\n",
 		`PublicKey = ${publickey_interface}\n`
 	);
 
