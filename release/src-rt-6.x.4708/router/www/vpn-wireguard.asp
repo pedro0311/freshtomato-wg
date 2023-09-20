@@ -361,7 +361,7 @@ function mapConfigToFields(event) {
 			peer.psk ? peer.psk : '',
 			ip,
 			allowed_ips ? allowed_ips: '',
-			peer.keepalive ? peer.keepalive : 0
+			0
 		];
 
 		peerTables[unit].insertData(-1, data)
