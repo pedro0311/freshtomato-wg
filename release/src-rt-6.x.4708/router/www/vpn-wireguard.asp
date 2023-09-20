@@ -318,7 +318,10 @@ function mapConfigToFields(event) {
 		E('_wg'+unit+'_key').value = config.interface.privkey;
 
 	if (config.interface.port)
-		E('_wg'+unit+'_port').value = config.interface.port;
+		if (config.interface.port == 51820 + unit)
+			E('_wg'+unit+'_port').value = "";
+		else
+			E('_wg'+unit+'_port').value = config.interface.port;
 
 	if (config.interface.fwmark)
 		E('_wg'+unit+'_fwmark').value = config.interface.fwmark;
@@ -761,10 +764,14 @@ PeerGrid.prototype.edit = function(cell) {
 	var allowedips = E('_f_wg'+this.unit+'_peer_aip');
 	var keepalive = E('_f_wg'+this.unit+'_peer_ka');
 	var fwmark = E('_f_wg'+this.unit+'_peer_fwmark');
+
+	var interface_port = eval('nvram.'+this.interface_name+'_port');
+	if (interface_port == '')
+		interface_port = 51820 + this.unit;
 	
 	alias.value = data[0];
 	endpoint.value = data[1];
-	port.value = eval('nvram.'+this.interface_name+'_port');
+	port.value = interface_port;
 	privkey.value = data[2];
 	pubkey.value = data[3];
 	psk.value = data[4];
@@ -1072,9 +1079,12 @@ function peerFieldsToData(unit) {
 }
 
 function clearPeerFields(unit) {
+	var port = eval('nvram.wg'+unit+'_port');
+	if (port == '')
+		port = 51820 + unit;
 	E('_f_wg'+unit+'_peer_alias').value = '';
 	E('_f_wg'+unit+'_peer_ep').value = '';
-	E('_f_wg'+unit+'_peer_port').value = eval('nvram.wg'+unit+'_port');
+	E('_f_wg'+unit+'_peer_port').value = port;
 	E('_f_wg'+unit+'_peer_privkey').value = '';
 	E('_f_wg'+unit+'_peer_pubkey').value = '';
 	E('_f_wg'+unit+'_peer_psk').value = '';
@@ -1324,8 +1334,11 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark, keepalive)
 	case '2':
 		endpoint = endpoint.split('|', 2)[1];
 		break;
-	} 
-	endpoint += ":" + eval('nvram.wg'+unit+'_port');
+	}
+	var port = eval('nvram.wg'+unit+'_port');
+	if (port == '')
+		port = 51820 + unit;
+	endpoint += ":" + port;
 	var allowed_ips;
 
 	/* build allowed ips for router peer */
@@ -1658,21 +1671,13 @@ function verifyFields(focused, quiet) {
 
 	for (var i = 0; i < WG_INTERFACE_COUNT; i++) {
 
-		/* autopopulate port if it's empty */
-		var port = E('_wg'+i+'_port')
-		if (port.value == '') {
-			port.value = 51820+i;
+		/* verify valid port */
+		if (port.value && (!port.value.match(/^ *[-\+]?\d+ *$/) || (port.value < 1) || (port.value > 65535))) {
+			ferror.set(port, 'The interface port must be a valid port', quiet || !ok);
+			ok = 0;
+		}
+		else
 			ferror.clear(port);
-		}
-		/* otherwise verify valid port */
-		else {
-			if (!port.value.match(/^ *[-\+]?\d+ *$/) || (port.value < 1) || (port.value > 65535)) {
-				ferror.set(port, 'The interface port must be a valid port', quiet || !ok);
-				ok = 0;
-			}
-			else
-				ferror.clear(port);
-		}
 
 		/* disable lan checkbox if lan is not in use */
 		for (let j = 0; j <= 3; ++j) {
@@ -1966,7 +1971,7 @@ function init() {
 			createFieldTable('', [
 				{ title: 'Enable on Start', name: 'f_'+t+'_enable', type: 'checkbox', value: eval('nvram.'+t+'_enable') == '1' },
 				{ title: 'Config file', name: t+'_file', type: 'text', placeholder: '(optional)', maxlen: 64, size: 64, value: eval('nvram.'+t+'_file') },
-				{ title: 'Port', name: t+'_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port') },
+				{ title: 'Port', name: t+'_port', type: 'text', maxlen: 5, size: 10, placeholder: (51820+i), value: eval('nvram.'+t+'_port') },
 				{ title: 'Private Key', multi: [
 					{ title: '', name: t+'_key', type: 'password', maxlen: 44, size: 44, value: eval('nvram.'+t+'_key'), peekaboo: 1 },
 					{ title: '', custom: '<input type="button" value="Generate" onclick="generateInterfaceKey('+i+')" id="'+t+'_keygen">' },
@@ -2033,7 +2038,7 @@ function init() {
 			W('</div>');
 			W('<div class="section-title">Config Generation</div>');
 			createFieldTable('', [
-				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port')},
+				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port') == '' ? 51820+unit : eval('nvram.'+t+'_port')},
 				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
 			]);
 			W('<br>');
