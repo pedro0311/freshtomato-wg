@@ -510,8 +510,8 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey
 	}
 
 	/* set peer keepalive */
-	if (atoi(keepalive) == 1) {
-		wg_set_peer_keepalive(iface, pubkey, "25");
+	if (atoi(keepalive) > 0) {
+		wg_set_peer_keepalive(iface, pubkey, keepalive);
 	}
 
 	/* set peer endpoint */
