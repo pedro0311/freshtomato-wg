@@ -369,6 +369,8 @@ function mapConfigToFields(event) {
 	}
 
 	verifyFields();
+	
+	alert('Wireguard configuration imported successfully');
 
 }
 
