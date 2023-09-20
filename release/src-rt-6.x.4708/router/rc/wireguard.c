@@ -29,7 +29,7 @@ void start_wg_enable()
 
 void start_wireguard(int unit)
 {
-	char *nv, *nvp, *b;
+	char *nv, *nvp, *rka, *b;
 	char *priv, *name, *key, *psk, *ip, *ka, *aip, *ep;
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
@@ -89,6 +89,14 @@ void start_wireguard(int unit)
 			return;
 		}
 
+		/* check if keepalives are enabled from the router */
+		if (getNVRAMVar("wg%d_ip", unit)[0] == '1') {
+			rka = "25";
+		}
+		else {
+			rka = "0";
+		}
+
 		/* add stored peers */
 		nvp = nv = strdup(getNVRAMVar("wg%d_peers", unit));
 		if (nv){
@@ -108,10 +116,10 @@ void start_wireguard(int unit)
 
 				/* add peer to interface */
 				if (priv[0] == '1') {
-					wg_add_peer_privkey(iface, key, buffer, psk, ka, ep);
+					wg_add_peer_privkey(iface, key, buffer, psk, rka, ep);
 				}
 				else {
-					wg_add_peer(iface, key, buffer, psk, ka, ep);
+					wg_add_peer(iface, key, buffer, psk, rka, ep);
 				}
 
 			}
