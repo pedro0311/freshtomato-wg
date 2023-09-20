@@ -1943,6 +1943,7 @@ function init() {
 			t = tabs[i][0];
 			W('<div id="'+t+'-tab">');
 			W('<input type="hidden" name="'+t+'_enable">');
+			W('<input type="hidden" name="'+t+'_ka">');
 			W('<input type="hidden" name="'+t+'_lan">');
 			W('<input type="hidden" name="'+t+'_lan0">');
 			W('<input type="hidden" name="'+t+'_lan1">');
