@@ -470,6 +470,7 @@ function mapConfig(contents) {
 		switch(key) {
 			case 'alias':
 				target.alias = value;
+				break;
 			case 'privatekey':
 				target.privkey = value;
 				break;
