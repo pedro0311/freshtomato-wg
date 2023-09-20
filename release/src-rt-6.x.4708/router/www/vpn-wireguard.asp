@@ -2038,7 +2038,7 @@ function init() {
 			W('</div>');
 			W('<div class="section-title">Config Generation</div>');
 			createFieldTable('', [
-				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port') == '' ? 51820+unit : eval('nvram.'+t+'_port')},
+				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port') == '' ? 51820+i : eval('nvram.'+t+'_port')},
 				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
 			]);
 			W('<br>');
