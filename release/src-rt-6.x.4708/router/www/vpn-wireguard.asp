@@ -1673,12 +1673,17 @@ function verifyFields(focused, quiet) {
 
 		/* verify valid port */
 		var port = E('_wg'+i+'_port');
-		if (port.value && (!port.value.match(/^ *[-\+]?\d+ *$/) || (port.value < 1) || (port.value > 65535))) {
+		if (port.value != "" && (!port.value.match(/^ *[-\+]?\d+ *$/) || (port.value < 1) || (port.value > 65535))) {
 			ferror.set(port, 'The interface port must be a valid port', quiet || !ok);
 			ok = 0;
 		}
-		else
+		else {
 			ferror.clear(port);
+			if (port.value == "")
+				E('_wg'+i+'_peer_port').value = 51820 + i;
+			else
+				E('_wg'+i+'_peer_port').value = port.value;
+		}
 
 		/* disable lan checkbox if lan is not in use */
 		for (let j = 0; j <= 3; ++j) {
