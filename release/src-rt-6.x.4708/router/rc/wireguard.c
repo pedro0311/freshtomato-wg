@@ -90,7 +90,6 @@ void start_wireguard(int unit)
 		}
 
 		/* check if keepalives are enabled from the router */
-		memset(rka, 0, 2);
 		if (getNVRAMVar("wg%d_ip", unit)[0] == '1') {
 			rka = "25";
 		}
