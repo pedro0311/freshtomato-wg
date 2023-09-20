@@ -749,6 +749,8 @@ PeerGrid.prototype.edit = function(cell) {
 	var row = PR(cell);
 	var data = row.getRowData();
 
+	clearPeerFields(this.unit);
+
 	var alias = E('_f_wg'+this.unit+'_peer_alias');
 	var endpoint = E('_f_wg'+this.unit+'_peer_ep');
 	var port = E('_f_wg'+this.unit+'_peer_port');
