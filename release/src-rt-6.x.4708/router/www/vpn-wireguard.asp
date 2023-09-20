@@ -1672,6 +1672,7 @@ function verifyFields(focused, quiet) {
 	for (var i = 0; i < WG_INTERFACE_COUNT; i++) {
 
 		/* verify valid port */
+		var port = E('_wg'+i+'_port');
 		if (port.value && (!port.value.match(/^ *[-\+]?\d+ *$/) || (port.value < 1) || (port.value > 65535))) {
 			ferror.set(port, 'The interface port must be a valid port', quiet || !ok);
 			ok = 0;
