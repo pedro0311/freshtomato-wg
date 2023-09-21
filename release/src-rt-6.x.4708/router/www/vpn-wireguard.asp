@@ -1215,6 +1215,7 @@ function generatePeer(unit) {
 
 	/* set fields with generated data */
 	E('_f_wg'+unit+'_peer_privkey').value = keys.privateKey;
+	E('_f_wg'+unit+'_peer_privkey').disabled = false;
 	E('_f_wg'+unit+'_peer_pubkey').value = keys.publicKey;
 	E('_f_wg'+unit+'_peer_pubkey').disabled = true;
 	E('_f_wg'+unit+'_peer_psk').value = psk;
