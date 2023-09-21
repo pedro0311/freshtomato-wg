@@ -1288,10 +1288,10 @@ function genPeerGridConfig(unit, row) {
 	if (!result)
 		return false;
 
-	return generateWGConfig(unit, row_data[0], row_data[2], row_data[4], row_data[5].split('/')[0], port.value, fwmark.value, row_data[7]=='1');
+	return generateWGConfig(unit, row_data[0], row_data[2], row_data[4], row_data[5].split('/')[0], port.value, fwmark.value, row_data[7]=='1', row_data[1]);
 }
 
-function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark, keepalive) {
+function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark, keepalive, endpoint) {
 	
 	var [interface_ip, interface_nm] = eval('nvram.wg'+unit+'_ip.split(",",1)[0].split("/", 2)');
 	var content = [];
@@ -1317,28 +1317,28 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark, keepalive)
 
 	/* build router peer */
 	var publickey_interface = window.wireguard.generatePublicKey(eval('nvram.wg'+unit+'_key'));
-	var endpoint = eval('nvram.wg'+unit+'_endpoint');
-	switch(endpoint[0]) {
+	var router_endpoint = eval('nvram.wg'+unit+'_endpoint');
+	switch(router_endpoint[0]) {
 	case '0':
 		if (nvram.wan_domain) {
-			endpoint = nvram.wan_domain;
+			router_endpoint = nvram.wan_domain;
 			if (nvram.wan_hostname && nvram.wan_hostname != 'unknown')
-				endpoint = nvram.wan_hostname + '.' + endpoint;
+				router_endpoint = nvram.wan_hostname + '.' + router_endpoint;
 		}
 		else	
-			endpoint = nvram.wan_ipaddr;
+			router_endpoint = nvram.wan_ipaddr;
 		break;
 	case '1':
-		endpoint = nvram.wan_ipaddr;
+		router_endpoint = nvram.wan_ipaddr;
 		break;
 	case '2':
-		endpoint = endpoint.split('|', 2)[1];
+		router_endpoint = router_endpoint.split('|', 2)[1];
 		break;
 	}
 	var port = eval('nvram.wg'+unit+'_port');
 	if (port == '')
 		port = 51820 + unit;
-	endpoint += ":" + port;
+	router_endpoint += ":" + port;
 	var allowed_ips;
 
 	/* build allowed ips for router peer */
@@ -1392,7 +1392,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark, keepalive)
 
 	content.push(
 		`AllowedIPs = ${allowed_ips}\n`,
-		`Endpoint = ${endpoint}\n`
+		`Endpoint = ${router_endpoint}\n`
 	);
 
 	if (keepalive) {
@@ -1408,7 +1408,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark, keepalive)
 
 			var peer = interface_peers[i];
 
-			if (peer[2] == '')
+			if (endpoint == '' && peer[2] == '')
 				continue;
 
 			var peer_pubkey = peer[3];
