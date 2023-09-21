@@ -60,7 +60,16 @@ void start_wireguard(int unit)
 		}
 
 		/* set interface port */
-		if (wg_set_iface_port(iface, getNVRAMVar("wg%d_port", unit))) {
+		b = getNVRAMVar("wg%d_port", unit);
+		memset(buffer, 0, BUF_SIZE);
+		if (b[0] == '\0') {
+			snprintf(buffer, BUF_SIZE, "%d", 51820 + unit);
+		}
+		else {
+			snprintf(buffer, BUF_SIZE, "%s", b);
+		}
+
+		if (wg_set_iface_port(iface, buffer)) {
 			stop_wireguard(unit);
 			return;
 		}
