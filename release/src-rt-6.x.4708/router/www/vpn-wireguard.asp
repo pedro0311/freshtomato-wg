@@ -1680,9 +1680,9 @@ function verifyFields(focused, quiet) {
 		else {
 			ferror.clear(port);
 			if (port.value == "")
-				E('_wg'+i+'_peer_port').value = 51820 + i;
+				E('_f_wg'+i+'_peer_port').value = 51820 + i;
 			else
-				E('_wg'+i+'_peer_port').value = port.value;
+				E('_f_wg'+i+'_peer_port').value = port.value;
 		}
 
 		/* disable lan checkbox if lan is not in use */
