@@ -790,8 +790,12 @@ PeerGrid.prototype.insertData = function(at, data) {
 	if (at == -1)
 		at = this.tb.rows.length ;
 	var view = this.dataToView(data);
-	var qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" height="16px" onclick="genPeerGridConfigQR(event,'+this.unit+','+at+')">';
-	var cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" height="16px" onclick="genPeerGridConfigFile(event,'+this.unit+','+at+')">';
+	var qr = '';
+	var cfg = '';
+	if (data[2] != '') {
+		qr = '<img src="qr-icon.svg" alt="" title="Display QR Code" height="16px" onclick="genPeerGridConfigQR(event,'+this.unit+','+at+')">';
+		cfg = '<img src="cfg-icon.svg" alt="" title="Download Config File" height="16px" onclick="genPeerGridConfigFile(event,'+this.unit+','+at+')">';
+	}
 	view.unshift(qr, cfg);
 	return this.insert(at, data, view, false);
 }
@@ -1211,6 +1215,7 @@ function generatePeer(unit) {
 
 	/* set fields with generated data */
 	E('_f_wg'+unit+'_peer_privkey').value = keys.privateKey;
+	E('_f_wg'+unit+'_peer_privkey').disabled = false;
 	E('_f_wg'+unit+'_peer_pubkey').value = keys.publicKey;
 	E('_f_wg'+unit+'_peer_pubkey').disabled = true;
 	E('_f_wg'+unit+'_peer_psk').value = psk;
@@ -1457,8 +1462,11 @@ function downloadConfig(content, name) {
 }
 
 function downloadAllConfigs(event, unit) {
-	for (var i = 1; i < peerTables[unit].tb.rows.length; ++i)
-		genPeerGridConfigFile(event, unit, i);
+	for (var i = 1; i < peerTables[unit].tb.rows.length; ++i) {
+		var privkey = peerTables[unit].tb.rows[i].getRowData()[2];
+		if (privkey != '')
+			genPeerGridConfigFile(event, unit, i);
+	}
 }
 
 function updateStatus(unit) {
