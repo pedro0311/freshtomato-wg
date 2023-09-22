@@ -75,7 +75,7 @@ var serviceType = 'wireguard';
 var tabs =  [];
 for (i = 0; i < WG_INTERFACE_COUNT; ++i)
 	tabs.push(['wg'+i,'wg'+i]);
-var sections = [['config','Configuration'],['scripts','Scripts'],['peers','Peers'],['status','Status']];
+var sections = [['config','Config'],['peers','Peers'],['scripts','Scripts'],['status','Status']];
 
 window.addEventListener("beforeunload", function (e) {
 	if (changed) {
@@ -2012,18 +2012,6 @@ function init() {
 			W('</div>');
 			/* config tab stop */
 
-			/* scripts tab start */
-			W('<div id="'+t+'-scripts">');
-			W('<div class="section-title">Custom Interface Scripts</div>');
-			createFieldTable('', [
-				{ title: 'Pre-Up Script', name: t+'_preup', type: 'textarea', value: eval('nvram.'+t+'_preup') },
-				{ title: 'Post-Up Script', name: t+'_postup', type: 'textarea', value: eval('nvram.'+t+'_postup') },
-				{ title: 'Pre-Down Script', name: t+'_predown', type: 'textarea', value: eval('nvram.'+t+'_predown') },
-				{ title: 'Post-Down Script', name: t+'_postdown', type: 'textarea', value: eval('nvram.'+t+'_postdown') },
-			]);
-			W('</div>');
-			/* scripts tab stop */
-
 			/* peers tab start */
 			W('<div id="'+t+'-peers">');
 			W('<div class="section-title">Peers</div>');
@@ -2070,6 +2058,17 @@ function init() {
 			W('</div>');
 			/* peers tab stop */
 
+			/* scripts tab start */
+			W('<div id="'+t+'-scripts">');
+			W('<div class="section-title">Custom Interface Scripts</div>');
+			createFieldTable('', [
+				{ title: 'Pre-Up Script', name: t+'_preup', type: 'textarea', value: eval('nvram.'+t+'_preup') },
+				{ title: 'Post-Up Script', name: t+'_postup', type: 'textarea', value: eval('nvram.'+t+'_postup') },
+				{ title: 'Pre-Down Script', name: t+'_predown', type: 'textarea', value: eval('nvram.'+t+'_predown') },
+				{ title: 'Post-Down Script', name: t+'_postdown', type: 'textarea', value: eval('nvram.'+t+'_postdown') },
+			]);
+			W('</div>');
+			/* scripts tab stop */
 
 			/* status tab start */
 			W('<div id="'+t+'-status">');
