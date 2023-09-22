@@ -1090,7 +1090,8 @@ function clearPeerFields(unit) {
 	E('_f_wg'+unit+'_peer_ep').value = '';
 	E('_f_wg'+unit+'_peer_port').value = port;
 	E('_f_wg'+unit+'_peer_privkey').value = '';
-	E('_f_wg'+unit+'_peer_pubkey').value = '';
+	E('_f_wg'+unit+'_peer_privkey').disabled = false;
+	E('_f_wg'+unit+'_peer_pubkey').disabled = false;
 	E('_f_wg'+unit+'_peer_psk').value = '';
 	E('_f_wg'+unit+'_peer_ip').value = '';
 	E('_f_wg'+unit+'_peer_aip').value = '';
