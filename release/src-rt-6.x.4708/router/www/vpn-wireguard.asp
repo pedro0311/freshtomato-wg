@@ -1831,31 +1831,19 @@ function verifyFields(focused, quiet) {
 		/*** peer key checking stuff ***/
 		var peer_privkey = E('_f_wg'+i+'_peer_privkey');
 		var peer_pubkey = E('_f_wg'+i+'_peer_pubkey');
+		peer_privkey.disabled = false;
+		peer_pubkey.disabled = false;
 
-		/* if both private and public key fields are empty, make sure they're enabled */
-		if (! (window.wireguard.validateBase64Key(peer_privkey.value) || window.wireguard.validateBase64Key(peer_pubkey.value))) {
-			peer_privkey.disabled = false;
-			peer_pubkey.disabled = false;
-		}
-
-		/* if only private key is populated, generate the public key and lock it (only if privkey is valid) */
-		else if (peer_privkey.value && !peer_pubkey.value) {
+		/* if private key is populated (and valid), generate the public key and lock it */
+		if (peer_privkey.value) {
 			var pubkey_temp = window.wireguard.generatePublicKey(peer_privkey.value);
-			if(pubkey_temp == false) {
-				peer_pubkey.value = "";
-				peer_pubkey.disabled = false;
-			}
-			else {
-				peer_pubkey.value = pubkey_temp;
+			if (pubkey_temp) {
 				peer_pubkey.disabled = true;
+				peer_pubkey.value = pubkey_temp;
 			}
 		}
 
-		/* if only public key is populated with a valid key, lock the private key */
-		else if (!peer_privkey.value && window.wireguard.validateBase64Key(peer_pubkey.value)) {
-			peer_pubkey.disabled = false;
-			peer_privkey.disabled = true;
-		}
+
 
 	}
 
