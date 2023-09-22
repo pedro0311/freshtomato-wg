@@ -75,7 +75,7 @@ var serviceType = 'wireguard';
 var tabs =  [];
 for (i = 0; i < WG_INTERFACE_COUNT; ++i)
 	tabs.push(['wg'+i,'wg'+i]);
-var sections = [['config','Configuration'],['scripts','Scripts'],['peers','Peers'],['status','Status']];
+var sections = [['config','Config'],['peers','Peers'],['scripts','Scripts'],['status','Status']];
 
 window.addEventListener("beforeunload", function (e) {
 	if (changed) {
@@ -1090,7 +1090,9 @@ function clearPeerFields(unit) {
 	E('_f_wg'+unit+'_peer_ep').value = '';
 	E('_f_wg'+unit+'_peer_port').value = port;
 	E('_f_wg'+unit+'_peer_privkey').value = '';
+	E('_f_wg'+unit+'_peer_privkey').disabled = false;
 	E('_f_wg'+unit+'_peer_pubkey').value = '';
+	E('_f_wg'+unit+'_peer_pubkey').disabled = false;
 	E('_f_wg'+unit+'_peer_psk').value = '';
 	E('_f_wg'+unit+'_peer_ip').value = '';
 	E('_f_wg'+unit+'_peer_aip').value = '';
@@ -1829,31 +1831,19 @@ function verifyFields(focused, quiet) {
 		/*** peer key checking stuff ***/
 		var peer_privkey = E('_f_wg'+i+'_peer_privkey');
 		var peer_pubkey = E('_f_wg'+i+'_peer_pubkey');
+		peer_privkey.disabled = false;
+		peer_pubkey.disabled = false;
 
-		/* if both private and public key fields are empty, make sure they're enabled */
-		if (! (window.wireguard.validateBase64Key(peer_privkey.value) || window.wireguard.validateBase64Key(peer_pubkey.value))) {
-			peer_privkey.disabled = false;
-			peer_pubkey.disabled = false;
-		}
-
-		/* if only private key is populated, generate the public key and lock it (only if privkey is valid) */
-		else if (peer_privkey.value && !peer_pubkey.value) {
+		/* if private key is populated (and valid), generate the public key and lock it */
+		if (peer_privkey.value) {
 			var pubkey_temp = window.wireguard.generatePublicKey(peer_privkey.value);
-			if(pubkey_temp == false) {
-				peer_pubkey.value = "";
-				peer_pubkey.disabled = false;
-			}
-			else {
-				peer_pubkey.value = pubkey_temp;
+			if (pubkey_temp) {
 				peer_pubkey.disabled = true;
+				peer_pubkey.value = pubkey_temp;
 			}
 		}
 
-		/* if only public key is populated with a valid key, lock the private key */
-		else if (!peer_privkey.value && window.wireguard.validateBase64Key(peer_pubkey.value)) {
-			peer_pubkey.disabled = false;
-			peer_privkey.disabled = true;
-		}
+
 
 	}
 
@@ -2022,18 +2012,6 @@ function init() {
 			W('</div>');
 			/* config tab stop */
 
-			/* scripts tab start */
-			W('<div id="'+t+'-scripts">');
-			W('<div class="section-title">Custom Interface Scripts</div>');
-			createFieldTable('', [
-				{ title: 'Pre-Up Script', name: t+'_preup', type: 'textarea', value: eval('nvram.'+t+'_preup') },
-				{ title: 'Post-Up Script', name: t+'_postup', type: 'textarea', value: eval('nvram.'+t+'_postup') },
-				{ title: 'Pre-Down Script', name: t+'_predown', type: 'textarea', value: eval('nvram.'+t+'_predown') },
-				{ title: 'Post-Down Script', name: t+'_postdown', type: 'textarea', value: eval('nvram.'+t+'_postdown') },
-			]);
-			W('</div>');
-			/* scripts tab stop */
-
 			/* peers tab start */
 			W('<div id="'+t+'-peers">');
 			W('<div class="section-title">Peers</div>');
@@ -2080,6 +2058,17 @@ function init() {
 			W('</div>');
 			/* peers tab stop */
 
+			/* scripts tab start */
+			W('<div id="'+t+'-scripts">');
+			W('<div class="section-title">Custom Interface Scripts</div>');
+			createFieldTable('', [
+				{ title: 'Pre-Up Script', name: t+'_preup', type: 'textarea', value: eval('nvram.'+t+'_preup') },
+				{ title: 'Post-Up Script', name: t+'_postup', type: 'textarea', value: eval('nvram.'+t+'_postup') },
+				{ title: 'Pre-Down Script', name: t+'_predown', type: 'textarea', value: eval('nvram.'+t+'_predown') },
+				{ title: 'Post-Down Script', name: t+'_postdown', type: 'textarea', value: eval('nvram.'+t+'_postdown') },
+			]);
+			W('</div>');
+			/* scripts tab stop */
 
 			/* status tab start */
 			W('<div id="'+t+'-status">');
