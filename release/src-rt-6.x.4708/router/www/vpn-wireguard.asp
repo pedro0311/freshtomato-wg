@@ -386,7 +386,7 @@ function clearAllFields(unit) {
 	E('_wg'+unit+'_fwmark').value = '';
 	E('_wg'+unit+'_mtu').value = '';
 	E('_f_wg'+unit+'_adns').checked = 0;
-	E('_wg'+unit+'_ka').checked = 0;
+	E('_f_wg'+unit+'_ka').checked = 0;
 	E('_f_wg'+unit+'_endpoint').selectedIndex = 0;
 	E('_f_wg'+unit+'_custom_endpoint').value = '';
 	E('_wg'+unit+'_aip').value = '';
