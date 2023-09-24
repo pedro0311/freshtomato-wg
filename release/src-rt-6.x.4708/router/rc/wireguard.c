@@ -106,6 +106,13 @@ void start_wireguard(int unit)
 			rka = "0";
 		}
 
+		/* bring up interface */
+		wg_iface_pre_up(unit);
+		if (wg_set_iface_up(iface)) {
+			stop_wireguard(unit);
+			return;
+		}
+
 		/* add stored peers */
 		nvp = nv = strdup(getNVRAMVar("wg%d_peers", unit));
 		if (nv){
@@ -134,12 +141,7 @@ void start_wireguard(int unit)
 			}
 		}
 
-		/* bring up interface */
-		wg_iface_pre_up(unit);
-		if (wg_set_iface_up(iface)) {
-			stop_wireguard(unit);
-			return;
-		}
+		/* run post up scripts */
 		wg_iface_post_up(unit);
 
 	}
