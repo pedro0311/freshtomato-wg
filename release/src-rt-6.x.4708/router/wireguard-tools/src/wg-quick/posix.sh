@@ -446,36 +446,15 @@ add_addr() {
 }
 
 set_mtu_up() {
-  mtu=0
+  mtu=1500
   endpoint=''
   v6_addr=''
   if [ -n "${MTU}" ]; then
     cmd ip link set mtu "${MTU}" dev "${INTERFACE}"
     cmd ifconfig "${INTERFACE}" up
   else
-    wg show "${INTERFACE}" endpoints | {
-      while read -r _ endpoint; do
-        v6_addr="$(
-          printf %s "${endpoint}" |
-            sed -ne '
-              s%^\[\([a-z0-9:.]\+\)\]:[0-9]\+$%\1%
-              t P
-              s%^\([a-z0-9:.]\+\):[0-9]\+$%\1%
-              t P
-              b
-              : P
-              p
-            '
-        )"
-        [ -z "${v6_addr}" ] ||
-          mtu="$(get_mtu "$(ip route get "${v6_addr}" || :)" "${mtu}")"
-      done
-      [ "${mtu}" -gt 0 ] ||
-        mtu="$(get_mtu "$(ip route show default || :)" "${mtu}")"
-      [ "${mtu}" -gt 0 ] || mtu=1500
-      cmd ip link set mtu $((mtu - 80)) dev "${INTERFACE}"
-      cmd ifconfig "${INTERFACE}" up
-    }
+    cmd ip link set mtu $((mtu - 80)) dev "${INTERFACE}"
+    cmd ifconfig "${INTERFACE}" up
   fi
   unset mtu endpoint v6_addr
 }
