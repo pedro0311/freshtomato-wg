@@ -515,9 +515,6 @@ add_route() {
   esac
   if [ "${TABLE}" != off ]; then
     case "${TABLE}:${1}" in
-      :*)
-        :
-        ;;
       auto:*)
         cmd ip "${proto}" route add "${1}" dev "${INTERFACE}" table "${TABLE}"
         ;;
