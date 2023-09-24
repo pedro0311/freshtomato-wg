@@ -551,7 +551,7 @@ int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
 	int result = 0;
 
 	nv = strdup(allowed_ips);
-	while ((b = strsep(&nv, ">")) != NULL) {
+	while ((b = strsep(&nv, ",")) != NULL) {
 		if (eval("/usr/sbin/ip", "route", "add", b, "dev", iface)) {
 			logmsg(LOG_WARNING, "unable to add route of %s for wireguard interface %s!", b, iface);
 			result = -1;
