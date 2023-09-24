@@ -541,7 +541,26 @@ int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips)
 		logmsg(LOG_DEBUG, "peer %s for wireguard interface %s has had its allowed ips set to %s", pubkey, iface, allowed_ips);
 	}
 
-	return 0;
+	return wg_route_peer_allowed_ips(iface, allowed_ips);
+}
+
+// ip "${proto}" route add "${1}" dev "${INTERFACE}"
+int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
+{
+	char *nv, *b;
+	int result = 0;
+
+	nv = strdup(allowed_ips);
+	while ((b = strsep(&nv, ">")) != NULL) {
+		if (eval("/usr/sbin/ip", "route", "add", b, "dev", iface)) {
+			logmsg(LOG_WARNING, "unable to add route of %s for wireguard interface %s!", b, iface);
+			result = -1;
+		}
+		else {
+			logmsg(LOG_WARNING, "wireguard interface %s has had a route added to it for %s", iface, b);
+		}
+	}
+	return result;
 }
 
 int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey)
