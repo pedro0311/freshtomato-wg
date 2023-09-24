@@ -66,7 +66,7 @@
 <script>
 
 
-//	<% nvram("wan_ipaddr,wan_hostname,wan_domain,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_adns,wg0_enable,wg0_file,wg0_ip,wg0_fwmark,wg0_mtu,wg0_preup,wg0_postup,wg0_predown,wg0_postdown,wg0_aip,wg0_dns,wg0_peer_dns,wg0_ka,wg0_port,wg0_key,wg0_endpoint,wg0_lan,wg0_lan0,wg0_lan1,wg0_lan2,wg0_lan3,wg0_rgw,wg0_peers,wg1_enable,wg1_file,wg1_ip,wg1_fwmark,wg1_mtu,wg1_preup,wg1_postup,wg1_predown,wg1_postdown,wg1_aip,wg1_dns,wg1_peer_dns,wg1_ka,wg1_port,wg1_key,wg1_endpoint,wg1_lan,wg1_lan0,wg1_lan1,wg1_lan2,wg1_lan3,wg1_rgw,wg1_peers,wg2_enable,wg2_file,wg2_ip,wg2_fwmark,wg2_mtu,wg2_preup,wg2_postup,wg2_predown,wg2_postdown,wg2_aip,wg2_dns,wg2_peer_dns,wg2_ka,wg2_port,wg2_key,wg2_endpoint,wg2_lan,wg2_lan0,wg2_lan1,wg2_lan2,wg2_lan3,wg2_rgw,wg2_peers"); %>
+//	<% nvram("wan_ipaddr,wan_hostname,wan_domain,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_adns,wg0_enable,wg0_file,wg0_ip,wg0_fwmark,wg0_mtu,wg0_preup,wg0_postup,wg0_predown,wg0_postdown,wg0_aip,wg0_dns,wg0_peer_dns,wg0_ka,wg0_port,wg0_key,wg0_endpoint,wg0_lan,wg0_lan0,wg0_lan1,wg0_lan2,wg0_lan3,wg0_rgw,wg0_peers,wg0_route,wg1_enable,wg1_file,wg1_ip,wg1_fwmark,wg1_mtu,wg1_preup,wg1_postup,wg1_predown,wg1_postdown,wg1_aip,wg1_dns,wg1_peer_dns,wg1_ka,wg1_port,wg1_key,wg1_endpoint,wg1_lan,wg1_lan0,wg1_lan1,wg1_lan2,wg1_lan3,wg1_rgw,wg1_peers,wg1_route,wg2_enable,wg2_file,wg2_ip,wg2_fwmark,wg2_mtu,wg2_preup,wg2_postup,wg2_predown,wg2_postdown,wg2_aip,wg2_dns,wg2_peer_dns,wg2_ka,wg2_port,wg2_key,wg2_endpoint,wg2_lan,wg2_lan0,wg2_lan1,wg2_lan2,wg2_lan3,wg2_rgw,wg2_peers,wg2_route"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
@@ -1891,6 +1891,14 @@ function save(nomsg) {
 		eval('fom.wg'+i+'_endpoint.value = endpoint_output');
 		eval('nvram.wg'+i+'_endpoint = endpoint_output');
 
+		var route = E('_f_wg'+i+'_route');
+		var custom_table = E('_f_wg'+i+'_custom_table');
+		var route_output = route.value + '';
+		if (route.value == 2)
+			route_output += '|' + custom_table.value;
+		eval('fom.wg'+i+'_route.value = route_output');
+		eval('nvram.wg'+i+'_route = route_output');
+
 		var qrcode = E('wg'+i+'_qrcode');
 		if (qrcode.style.display != 'none') {
 			var row = qrcode.getAttribute('row_id');
@@ -1961,6 +1969,7 @@ function init() {
 			W('<input type="hidden" name="'+t+'_rgw">');
 			W('<input type="hidden" name="'+t+'_endpoint">');
 			W('<input type="hidden" name="'+t+'_peers">');
+			W('<input type="hidden" name="'+t+'_route">');
 
 			W('<ul class="tabs">');
 			for (j = 0; j < sections.length; j++) {
@@ -1989,6 +1998,7 @@ function init() {
 				{ title: 'FWMark', name: t+'_fwmark', type: 'text', maxlen: 8, size: 8, value: eval('nvram.'+t+'_fwmark') },
 				{ title: 'MTU', name: t+'_mtu', type: 'text', maxlen: 4, size: 4, value: eval('nvram.'+t+'_mtu') },
 				{ title: 'Respond to DNS', name: 'f_'+t+'_adns', type: 'checkbox', value: nvram.wg_adns.indexOf(''+i) >= 0 },
+				{ title: 'Routing Mode', name: 'f_'+t+'_route', type: 'select', options: [['0','Off'],['1','Auto'],['2','Custom Table']], value: eval('nvram.'+t+'_route')[0] || 1, suffix: '&nbsp;<input type="text" name="f_'+t+'_custom_table" value="'+(eval('nvram.'+t+'_route').split('|', 2)[1] || '')+'" onchange="verifyFields(this, 1)" id="_f_'+t+'_custom_table" maxlength="32" size="32">'},
 			]);
 			W('<br>');
 			W('<div class="section-title">Peer Parameters</div>');
