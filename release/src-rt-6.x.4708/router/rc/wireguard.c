@@ -33,6 +33,8 @@ void start_wireguard(int unit)
 	char *priv, *name, *key, *psk, *ip, *ka, *aip, *ep;
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
+	char port[5];
+	char fwmark[8];
 
 	/* set up directories for later use */
 	wg_setup_dirs();
@@ -61,15 +63,15 @@ void start_wireguard(int unit)
 
 		/* set interface port */
 		b = getNVRAMVar("wg%d_port", unit);
-		memset(buffer, 0, BUF_SIZE);
+		memset(port, 0, 5);
 		if (b[0] == '\0') {
-			snprintf(buffer, BUF_SIZE, "%d", 51820 + unit);
+			snprintf(port, BUF_SIZE, "%d", 51820 + unit);
 		}
 		else {
-			snprintf(buffer, BUF_SIZE, "%s", b);
+			snprintf(port, BUF_SIZE, "%s", b);
 		}
 
-		if (wg_set_iface_port(iface, buffer)) {
+		if (wg_set_iface_port(iface, port)) {
 			stop_wireguard(unit);
 			return;
 		}
@@ -81,7 +83,16 @@ void start_wireguard(int unit)
 		}
 
 		/* set interface fwmark */
-		if (wg_set_iface_fwmark(iface, getNVRAMVar("wg%d_fwmark", unit))) {
+		b = getNVRAMVar("wg%d_fwmark", unit);
+		memset(fwmark, 0, 8);
+		if (b[0] == '\0') {
+			snprintf(fwmark, BUF_SIZE, "%s", port);
+		}
+		else {
+			snprintf(fwmark, BUF_SIZE, "%s", b);
+		}
+
+		if (wg_set_iface_fwmark(iface, fwmark)) {
 			stop_wireguard(unit);
 			return;
 		}
