@@ -85,7 +85,7 @@ void start_wireguard(int unit)
 		/* set interface fwmark */
 		b = getNVRAMVar("wg%d_fwmark", unit);
 		memset(fwmark, 0, 8);
-		if (b[0] == '\0') {
+		if (b[0] == '\0' || b[0] == '0') {
 			snprintf(fwmark, BUF_SIZE, "%s", port);
 		}
 		else {
