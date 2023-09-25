@@ -778,7 +778,7 @@ PeerGrid.prototype.edit = function(cell) {
 	ip.value = data[5];
 	allowedips.value = data[6];
 	keepalive.checked = data[7] == "1" ? 1 : 0;
-	fwmark.value = 0;
+	fwmark.value = '';
 
 	var button = E(this.interface_name+'_peer_add');
 	button.value = 'Save to Peers';
@@ -1010,8 +1010,8 @@ function verifyPeerFields(unit, require_privkey) {
 	else
 		ferror.clear(allowedips);
 	
-	if (!verifyFWMark(fwmark.value)) {
-		ferror.set(fwmark, 'FWMark must be a hexadecimal number or 0', !result);
+	if (fwmark.value && !verifyFWMark(fwmark.value)) {
+		ferror.set(fwmark, 'FWMark must be a hexadecimal number', !result);
 		result = false;
 	}
 	else
@@ -1097,7 +1097,7 @@ function clearPeerFields(unit) {
 	E('_f_wg'+unit+'_peer_ip').value = '';
 	E('_f_wg'+unit+'_peer_aip').value = '';
 	E('_f_wg'+unit+'_peer_ka').checked = 0;
-	E('_f_wg'+unit+'_peer_fwmark').value = 0;
+	E('_f_wg'+unit+'_peer_fwmark').value = '';
 }
 
 function addPeer(unit, quiet) {
@@ -1162,7 +1162,7 @@ function verifyPeerGenFields(unit) {
 
 	/* verify peer fwmark*/
 	var fwmark = E('_f_wg'+unit+'_peer_fwmark').value;
-	if (!verifyFWMark(fwmark)) {
+	if (fwmark && !verifyFWMark(fwmark)) {
 		alert('The peer FWMark must be a hexadecimal string of 8 characters')
 		return false;
 	}
@@ -1285,7 +1285,7 @@ function genPeerGridConfig(unit, row) {
 	else
 		ferror.clear(port);
 
-	if (!verifyFWMark(fwmark.value)) {
+	if (fwmark.value && !verifyFWMark(fwmark.value)) {
 		ferror.set(fwmark, 'FWMark must be a hexadecimal number or 0', !result);
 		result = false;
 	}
@@ -1319,7 +1319,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark, keepalive,
 	if (dns != "")
 		content.push(`DNS = ${dns}\n`)
 
-	if (fwmark != "0")
+	if (fwmark && fwmark != "0")
 		content.push (`FwMark = 0x${fwmark}\n`);
 
 	/* build router peer */
@@ -1758,21 +1758,13 @@ function verifyFields(focused, quiet) {
 		else
 			ferror.clear(dns);
 
-		/* autopopulate fwmark if it's empty */
-		var fwmark = E('_wg'+i+'_fwmark');
-		if (fwmark.value == '') {
-			fwmark.value = '0';
+		/* verify interface fwmark */
+		if (fwmark.value && !verifyFWMark(fwmark.value)) {
+			ferror.set(fwmark, 'The interface FWMark must be a hexadecimal string of 8 characters', quiet || !ok);
+			ok = 0;
+		}
+		else
 			ferror.clear(fwmark);
-		}
-		/* otherwise verify interface fwmark */
-		else {
-			if (!verifyFWMark(fwmark.value)) {
-				ferror.set(fwmark, 'The interface FWMark must be a hexadecimal string of 8 characters', quiet || !ok);
-				ok = 0;
-			}
-			else
-				ferror.clear(fwmark);
-		}
 
 		/* autopopulate mtu if it's empty */
 		var mtu = E('_wg'+i+'_mtu');
@@ -2055,7 +2047,7 @@ function init() {
 			W('<div class="section-title">Config Generation</div>');
 			createFieldTable('', [
 				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port') == '' ? 51820+i : eval('nvram.'+t+'_port')},
-				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
+				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: ''},
 			]);
 			W('<br>');
 			W('<div class="section-title">Peer Generation</div>');
