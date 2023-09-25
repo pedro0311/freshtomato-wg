@@ -1803,7 +1803,7 @@ function verifyFields(focused, quiet) {
 		var custom_table = E('_f_wg'+i+'_custom_table');
 		if (route.value == 2) {
 			elem.display(custom_table, true);
-			if (custom_table.value && !custom_table.value.match(/^ *[-\+]?\d+ *$/))
+			if (!custom_table.value.match(/^ *[-\+]?\d+ *$/))
 				ferror.set(custom_table, 'The custom table must be an integer', quiet || !ok);
 			else
 				ferror.clear(custom_table);
