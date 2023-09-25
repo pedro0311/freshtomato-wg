@@ -1789,7 +1789,7 @@ static const nvset_t nvset_list[] = {
 	{ "wg2_lan2",			V_01				},
 	{ "wg2_lan3",			V_01				},
 	{ "wg2_rgw",			V_01				},
-	{ "wg0_route",			V_NONE				},
+	{ "wg2_route",			V_NONE				},
 	{ "wg2_peer_dns",		V_TEXT(0, 128)		},
 	{ "wg2_peers",			V_NONE				},
 #endif
