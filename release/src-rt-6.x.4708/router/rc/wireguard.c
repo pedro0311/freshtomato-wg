@@ -106,6 +106,13 @@ void start_wireguard(int unit)
 			rka = "0";
 		}
 
+		/* bring up interface */
+		wg_iface_pre_up(unit);
+		if (wg_set_iface_up(iface)) {
+			stop_wireguard(unit);
+			return;
+		}
+
 		/* add stored peers */
 		nvp = nv = strdup(getNVRAMVar("wg%d_peers", unit));
 		if (nv){
@@ -134,12 +141,7 @@ void start_wireguard(int unit)
 			}
 		}
 
-		/* bring up interface */
-		wg_iface_pre_up(unit);
-		if (wg_set_iface_up(iface)) {
-			stop_wireguard(unit);
-			return;
-		}
+		/* run post up scripts */
 		wg_iface_post_up(unit);
 
 	}
@@ -539,6 +541,65 @@ int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips)
 	}
 	else {
 		logmsg(LOG_DEBUG, "peer %s for wireguard interface %s has had its allowed ips set to %s", pubkey, iface, allowed_ips);
+	}
+
+	return wg_route_peer_allowed_ips(iface, allowed_ips);
+}
+
+int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
+{
+	char *aip, *b, *table, *rt, *tp;
+	int route_type = 1, result = 0;
+
+	/* check which routing type the user specified */
+	tp = b = strdup(getNVRAMVar("%s_route", iface));
+	if (tp) {
+		if(vstrsep(b, "|", &rt, &table) < 3) {
+			route_type = atoi(rt);
+		}
+	}
+	
+	/* check which routing type the user specified */
+	if (route_type >  0) {
+		aip = strdup(allowed_ips);
+		while ((b = strsep(&aip, ",")) != NULL) {
+			if (route_type == 1) {
+				if (wg_route_peer(iface, b)) {
+					result = -1;
+				}
+			}
+			else {
+				if (wg_route_peer_custom(iface, b, table)) {
+					result = -1;
+				}
+			}
+		}
+	}
+	
+	return result;
+}
+
+int wg_route_peer(char *iface, char *route)
+{
+	if (eval("/usr/sbin/ip", "route", "add", route, "dev", iface)) {
+		logmsg(LOG_WARNING, "unable to add route of %s for wireguard interface %s!", route, iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to it for %s", iface, route);
+	}
+	
+	return 0;
+}
+
+int wg_route_peer_custom(char *iface, char *route, char *table)
+{
+	if (eval("/usr/sbin/ip", "route", "add", route, "dev", iface, "table", table)) {
+		logmsg(LOG_WARNING, "unable to add route of %s to table %s for wireguard interface %s!", route, table, iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to table %s for %s", iface, table, route);
 	}
 
 	return 0;
