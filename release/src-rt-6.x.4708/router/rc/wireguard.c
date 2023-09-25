@@ -546,23 +546,63 @@ int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips)
 	return wg_route_peer_allowed_ips(iface, allowed_ips);
 }
 
-// ip "${proto}" route add "${1}" dev "${INTERFACE}"
 int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
 {
-	char *nv, *b;
-	int result = 0;
+	char *aip, *b, *table, *rt, *tp;
+	int route_type = 1, result = 0;
 
-	nv = strdup(allowed_ips);
-	while ((b = strsep(&nv, ",")) != NULL) {
-		if (eval("/usr/sbin/ip", "route", "add", b, "dev", iface)) {
-			logmsg(LOG_WARNING, "unable to add route of %s for wireguard interface %s!", b, iface);
-			result = -1;
-		}
-		else {
-			logmsg(LOG_WARNING, "wireguard interface %s has had a route added to it for %s", iface, b);
+	/* check which routing type the user specified */
+	tp = b = strdup(getNVRAMVar("%s_route", iface));
+	if (tp) {
+		if(vstrsep(b, "<", &rt, &table) < 3) {
+			route_type = atoi(rt);
 		}
 	}
+	
+	/* check which routing type the user specified */
+	if (route_type >  0) {
+		aip = strdup(allowed_ips);
+		while ((b = strsep(&aip, ",")) != NULL) {
+			if (route_type == 1) {
+				if (wg_route_peer(iface, b)) {
+					result = -1;
+				}
+			}
+			else {
+				if (wg_route_peer_custom(iface, b, table)) {
+					result = -1;
+				}
+			}
+		}
+	}
+	
 	return result;
+}
+
+int wg_route_peer(char *iface, char *route)
+{
+	if (eval("/usr/sbin/ip", "route", "add", route, "dev", iface)) {
+		logmsg(LOG_WARNING, "unable to add route of %s for wireguard interface %s!", route, iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to it for %s", iface, route);
+	}
+	
+	return 0;
+}
+
+int wg_route_peer_custom(char *iface, char *route, char *table)
+{
+	if (eval("/usr/sbin/ip", "route", "add", route, "dev", iface, "table", table)) {
+		logmsg(LOG_WARNING, "unable to add route of %s for wireguard interface %s!", route, iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to it for %s", iface, route);
+	}
+
+	return 0;
 }
 
 int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey)
