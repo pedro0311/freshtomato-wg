@@ -554,7 +554,7 @@ int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
 	/* check which routing type the user specified */
 	tp = b = strdup(getNVRAMVar("%s_route", iface));
 	if (tp) {
-		if(vstrsep(b, "<", &rt, &table) < 3) {
+		if(vstrsep(b, "|", &rt, &table) < 3) {
 			route_type = atoi(rt);
 		}
 	}
@@ -595,11 +595,11 @@ int wg_route_peer(char *iface, char *route)
 int wg_route_peer_custom(char *iface, char *route, char *table)
 {
 	if (eval("/usr/sbin/ip", "route", "add", route, "dev", iface, "table", table)) {
-		logmsg(LOG_WARNING, "unable to add route of %s for wireguard interface %s!", route, iface);
+		logmsg(LOG_WARNING, "unable to add route of %s to table %s for wireguard interface %s!", route, table, iface);
 		return -1;
 	}
 	else {
-		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to it for %s", iface, route);
+		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to table %s for %s", iface, table, route);
 	}
 
 	return 0;
