@@ -1741,6 +1741,7 @@ static const nvset_t nvset_list[] = {
 	{ "wg0_lan2",			V_01				},
 	{ "wg0_lan3",			V_01				},
 	{ "wg0_rgw",			V_01				},
+	{ "wg0_route",			V_NONE				},
 	{ "wg0_peer_dns",		V_TEXT(0, 128)		},
 	{ "wg0_peers",			V_NONE				},
 	{ "wg1_enable",			V_01				},
@@ -1764,6 +1765,7 @@ static const nvset_t nvset_list[] = {
 	{ "wg1_lan2",			V_01				},
 	{ "wg1_lan3",			V_01				},
 	{ "wg1_rgw",			V_01				},
+	{ "wg1_route",			V_NONE				},
 	{ "wg1_peer_dns",		V_TEXT(0, 128)		},
 	{ "wg1_peers",			V_NONE				},
 	{ "wg2_enable",			V_01				},
@@ -1787,8 +1789,9 @@ static const nvset_t nvset_list[] = {
 	{ "wg2_lan2",			V_01				},
 	{ "wg2_lan3",			V_01				},
 	{ "wg2_rgw",			V_01				},
-	{ "wg2_peer_dns",			V_TEXT(0, 128)		},
-	{ "wg2_peers",		V_NONE				},
+	{ "wg0_route",			V_NONE				},
+	{ "wg2_peer_dns",		V_TEXT(0, 128)		},
+	{ "wg2_peers",			V_NONE				},
 #endif
 
 	{ NULL }
