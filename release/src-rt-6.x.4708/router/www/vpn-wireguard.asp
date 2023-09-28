@@ -56,6 +56,15 @@
 	padding: 10px;
 }
 
+.import-section {
+	text-align: center;
+	width: 100%;
+}
+
+.import-file {
+	width: 42%;
+}
+
 </style>
 <script src="isup.jsz"></script>
 <script src="tomato.js"></script>
@@ -2030,8 +2039,10 @@ function init() {
 			]);
 			W('<br>');
 			W('<div class="section-title">Import Config from File</div>');
-			W('<input type="file" id="'+t+'_config_file" accept=".conf" name="Browse File">');
+			W('<div class="import-section">');
+			W('<input type="file" class="import-file" id="'+t+'_config_file" accept=".conf" name="Browse File">');
 			W('<input type="button" id="'+t+'_config_import" value="Import" onclick="loadConfig('+i+')" >');
+			W('</div>');
 			W('<br>');
 			W('</div>');
 			/* config tab stop */
