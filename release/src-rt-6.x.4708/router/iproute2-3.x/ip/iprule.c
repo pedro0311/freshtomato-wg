@@ -156,7 +156,7 @@ int print_rule(const struct sockaddr_nl *who, struct nlmsghdr *n, void *arg)
 	table = rtm_get_table(r, tb);
 	if (table) {
 		fprintf(fp, "lookup %s ", rtnl_rttable_n2a(table, b1, sizeof(b1)));
-
+		fprintf(stderr, "suppress_prefixlength = %s", tb[FRA_SUPPRESS_PREFIXLEN]);
 		if (tb[FRA_SUPPRESS_PREFIXLEN]) {
 			int pl = rta_getattr_u32(tb[FRA_SUPPRESS_PREFIXLEN]);
 			if (pl != -1) {
