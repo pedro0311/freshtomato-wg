@@ -319,6 +319,7 @@ int rtnl_talk(struct rtnl_handle *rtnl, struct nlmsghdr *n, pid_t peer,
 	};
 	char   buf[16384];
 
+	fprintf(stderr, "msg_iov = %s\n", msg.msg_iov);
 	memset(&nladdr, 0, sizeof(nladdr));
 	nladdr.nl_family = AF_NETLINK;
 	nladdr.nl_pid = peer;
