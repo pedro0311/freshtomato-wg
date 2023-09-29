@@ -586,7 +586,7 @@ int wg_route_peer(char *iface, char *route)
 		return -1;
 	}
 	else {
-		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to it for %s", iface, route);
+		logmsg(LOG_DEBUG, "wireguard interface %s has had a route added to it for %s", iface, route);
 	}
 	
 	return 0;
@@ -599,7 +599,7 @@ int wg_route_peer_custom(char *iface, char *route, char *table)
 		return -1;
 	}
 	else {
-		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to table %s for %s", iface, table, route);
+		logmsg(LOG_DEBUG, "wireguard interface %s has had a route added to table %s for %s", iface, table, route);
 	}
 
 	return 0;
