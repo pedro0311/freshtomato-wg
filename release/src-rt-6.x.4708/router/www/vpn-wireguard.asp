@@ -75,7 +75,7 @@
 <script>
 
 
-//	<% nvram("wan_ipaddr,wan_hostname,wan_domain,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_adns,wg0_enable,wg0_file,wg0_ip,wg0_fwmark,wg0_mtu,wg0_preup,wg0_postup,wg0_predown,wg0_postdown,wg0_aip,wg0_dns,wg0_peer_dns,wg0_ka,wg0_port,wg0_key,wg0_endpoint,wg0_lan,wg0_lan0,wg0_lan1,wg0_lan2,wg0_lan3,wg0_rgw,wg0_peers,wg0_route,wg1_enable,wg1_file,wg1_ip,wg1_fwmark,wg1_mtu,wg1_preup,wg1_postup,wg1_predown,wg1_postdown,wg1_aip,wg1_dns,wg1_peer_dns,wg1_ka,wg1_port,wg1_key,wg1_endpoint,wg1_lan,wg1_lan0,wg1_lan1,wg1_lan2,wg1_lan3,wg1_rgw,wg1_peers,wg1_route,wg2_enable,wg2_file,wg2_ip,wg2_fwmark,wg2_mtu,wg2_preup,wg2_postup,wg2_predown,wg2_postdown,wg2_aip,wg2_dns,wg2_peer_dns,wg2_ka,wg2_port,wg2_key,wg2_endpoint,wg2_lan,wg2_lan0,wg2_lan1,wg2_lan2,wg2_lan3,wg2_rgw,wg2_peers,wg2_route"); %>
+//	<% nvram("wan_ipaddr,wan_hostname,wan_domain,lan_ifname,lan_ipaddr,lan_netmask,lan1_ifname,lan1_ipaddr,lan1_netmask,lan2_ifname,lan2_ipaddr,lan2_netmask,lan3_ifname,lan3_ipaddr,lan3_netmask,wg_adns,wg0_enable,wg0_file,wg0_ip,wg0_fwmark,wg0_mtu,wg0_preup,wg0_postup,wg0_predown,wg0_postdown,wg0_aip,wg0_dns,wg0_peer_dns,wg0_ka,wg0_port,wg0_key,wg0_endpoint,wg0_com,wg0_lan0,wg0_lan1,wg0_lan2,wg0_lan3,wg0_rgw,wg0_peers,wg0_route,wg1_enable,wg1_file,wg1_ip,wg1_fwmark,wg1_mtu,wg1_preup,wg1_postup,wg1_predown,wg1_postdown,wg1_aip,wg1_dns,wg1_peer_dns,wg1_ka,wg1_port,wg1_key,wg1_endpoint,wg1_com,wg1_lan0,wg1_lan1,wg1_lan2,wg1_lan3,wg1_rgw,wg1_peers,wg1_route,wg2_enable,wg2_file,wg2_ip,wg2_fwmark,wg2_mtu,wg2_preup,wg2_postup,wg2_predown,wg2_postdown,wg2_aip,wg2_dns,wg2_peer_dns,wg2_ka,wg2_port,wg2_key,wg2_endpoint,wg2_com,wg2_lan0,wg2_lan1,wg2_lan2,wg2_lan3,wg2_rgw,wg2_peers,wg2_route"); %>
 
 var cprefix = 'vpn_wireguard';
 var changed = 0;
@@ -400,7 +400,6 @@ function clearAllFields(unit) {
 	E('_f_wg'+unit+'_custom_endpoint').value = '';
 	E('_wg'+unit+'_aip').value = '';
 	E('_wg'+unit+'_peer_dns').value = '';
-	E('_f_wg'+unit+'_lan').checked = 0;
 	for(let i = 0; i <= 3; i++){
 		E('_f_wg'+unit+'_lan'+i).checked = 0;
 	}
@@ -1363,7 +1362,7 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark, keepalive,
 	}
 	else {
 		var netmask;
-		if (eval('nvram.wg'+unit+'_lan') == "1") {
+		if (eval('nvram.wg'+unit+'_com') > 0) {
 			netmask = '/' + interface_nm;
 		}
 		else {
@@ -1417,14 +1416,14 @@ function generateWGConfig(unit, name, privkey, psk, ip, port, fwmark, keepalive,
 
 	/* add remaining peers to config */
 	var pubkey = window.wireguard.generatePublicKey(privkey);
-	if (eval('nvram.wg'+unit+'_lan') == "1") {
+	if (eval('nvram.wg'+unit+'_com') > 0) {
 		var interface_peers = peerTables[unit].getAllData();
 		
 		for (var i = 0; i < interface_peers.length; ++i) {
 
 			var peer = interface_peers[i];
 
-			if (endpoint == '' && peer[2] == '')
+			if (eval('nvram.wg'+unit+'_com') == 1 && endpoint == '' && peer[2] == '')
 				continue;
 
 			var peer_pubkey = peer[3];
@@ -1896,7 +1895,6 @@ function save(nomsg) {
 
 		eval('fom.wg'+i+'_ka.value = fom._f_wg'+i+'_ka.checked ? 1 : 0');
 		eval('fom.wg'+i+'_enable.value = fom._f_wg'+i+'_enable.checked ? 1 : 0');
-		eval('fom.wg'+i+'_lan.value = fom._f_wg'+i+'_lan.checked ? 1 : 0');
 		eval('fom.wg'+i+'_lan0.value = fom._f_wg'+i+'_lan0.checked ? 1 : 0');
 		eval('fom.wg'+i+'_lan1.value = fom._f_wg'+i+'_lan1.checked ? 1 : 0');
 		eval('fom.wg'+i+'_lan2.value = fom._f_wg'+i+'_lan2.checked ? 1 : 0');
@@ -1984,7 +1982,6 @@ function init() {
 			W('<div id="'+t+'-tab">');
 			W('<input type="hidden" name="'+t+'_enable">');
 			W('<input type="hidden" name="'+t+'_ka">');
-			W('<input type="hidden" name="'+t+'_lan">');
 			W('<input type="hidden" name="'+t+'_lan0">');
 			W('<input type="hidden" name="'+t+'_lan1">');
 			W('<input type="hidden" name="'+t+'_lan2">');
@@ -2030,7 +2027,7 @@ function init() {
 				{ title: 'Endpoint', name: 'f_'+t+'_endpoint', type: 'select', options: [['0','FQDN'],['1','WAN IP'],['2','Custom Endpoint']], value: eval('nvram.'+t+'_endpoint')[0] || 0, suffix: '&nbsp;<input type="text" name="f_'+t+'_custom_endpoint" value="'+(eval('nvram.'+t+'_endpoint').split('|', 2)[1] || '')+'" onchange="verifyFields(this, 1)" id="_f_'+t+'_custom_endpoint" maxlength="64" size="46">'},
 				{ title: 'Allowed IPs', name: t+'_aip', type: 'text', placeholder: "(CIDR format)", maxlen: 128, size: 64, suffix: '&nbsp;<small>comma separated<\/small>', value: eval('nvram.'+t+'_aip') },
 				{ title: 'DNS Servers for Peers', name: t+'_peer_dns', type: 'text', maxlen: 128, size: 64, value: eval('nvram.'+t+'_peer_dns') },
-				{ title: 'Peer Communication', name: 't+'_com', type: 'select', options: [['0','Hub and Spoke'],['1','Full Mesh (Endpoint Only)'],['2','Full Mesh']], value: eval('nvram.'+t+'_com') || 0},
+				{ title: 'Peer Communication', name: t+'_com', type: 'select', options: [['0','Hub and Spoke'],['1','Full Mesh (Endpoint Only)'],['2','Full Mesh']], value: eval('nvram.'+t+'_com') || 0},
 				{ title: 'Push LAN0 (br0) to peers', name: 'f_'+t+'_lan0', type: 'checkbox', value: eval('nvram.'+t+'_lan0') == '1' },
 				{ title: 'Push LAN1 (br1) to peers', name: 'f_'+t+'_lan1', type: 'checkbox', value: eval('nvram.'+t+'_lan1') == '1' },
 				{ title: 'Push LAN2 (br2) to peers', name: 'f_'+t+'_lan2', type: 'checkbox', value: eval('nvram.'+t+'_lan2') == '1' },
