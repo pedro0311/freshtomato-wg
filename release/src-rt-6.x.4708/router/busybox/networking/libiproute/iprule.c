@@ -218,7 +218,6 @@ static int iprule_modify(int cmd, char **argv)
 		char            buf[1024];
 	} req;
 	smalluint key;
-	struct nlmsghdr response;
 
 	memset(&req, 0, sizeof(req));
 
@@ -348,10 +347,7 @@ static int iprule_modify(int cmd, char **argv)
 
 	xrtnl_open(&rth);
 
-	key = rtnl_talk(&rth, &req.n, 0, 0, &response, NULL, NULL);
-	fprintf(stderr, "HOWDY: %08x | %08x | %08x | %d\n",
-			response.nlmsg_len, response.nlmsg_type, response.nlmsg_flags, key);
-	if (key < 0)
+	if (rtnl_talk(&rth, &req.n, 0, 0, NULL, NULL, NULL) < 0)
 		return 2;
 
 	return 0;

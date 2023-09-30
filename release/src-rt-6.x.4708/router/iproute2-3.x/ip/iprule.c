@@ -245,6 +245,7 @@ static int iprule_modify(int cmd, int argc, char **argv)
 		struct rtmsg		r;
 		char  			buf[1024];
 	} req;
+	struct nlmsghdr response;
 
 	memset(&req, 0, sizeof(req));
 
@@ -385,7 +386,11 @@ static int iprule_modify(int cmd, int argc, char **argv)
 	if (!table_ok && cmd == RTM_NEWRULE)
 		req.r.rtm_table = RT_TABLE_MAIN;
 
-	if (rtnl_talk(&rth, &req.n, 0, 0, NULL) < 0)
+	__u32 result = rtnl_talk(&rth, &req.n, 0, 0, &response, NULL, NULL);
+	fprintf(stderr, "HOWDY: %08x | %08x | %08x | %d\n",
+			response.nlmsg_len, response.nlmsg_type, response.nlmsg_flags, result);
+
+	if (result < 0)
 		return 2;
 
 	return 0;
