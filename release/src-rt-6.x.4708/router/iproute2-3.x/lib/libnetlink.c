@@ -319,7 +319,7 @@ int rtnl_talk(struct rtnl_handle *rtnl, struct nlmsghdr *n, pid_t peer,
 	};
 	char   buf[16384];
 
-	fprintf(stderr, "msg_iov = %s\n", msg.msg_iov);
+	fprintf(stderr, "msg_iov = %s\n", msg.msg_iov->iov_base);
 	memset(&nladdr, 0, sizeof(nladdr));
 	nladdr.nl_family = AF_NETLINK;
 	nladdr.nl_pid = peer;
@@ -344,6 +344,9 @@ int rtnl_talk(struct rtnl_handle *rtnl, struct nlmsghdr *n, pid_t peer,
 	while (1) {
 		iov.iov_len = sizeof(buf);
 		status = recvmsg(rtnl->fd, &msg, 0);
+
+		fprintf(stderr, "return message is  %s (%d)\n",
+				msg.msg_iov->iov_base, errno);
 
 		if (status < 0) {
 			if (errno == EINTR || errno == EAGAIN)
