@@ -2045,6 +2045,13 @@ function init() {
 
 			/* peers tab start */
 			W('<div id="'+t+'-peers">');
+			W('<div class="section-title">Config Generation</div>');
+			createFieldTable('', [
+				{ title: 'Peer Communication', name: t+'_com', type: 'select', options: [['0','Hub and Spoke'],['1','Full Mesh (Endpoint Only)'],['2','Full Mesh']], value: eval('nvram.'+t+'_com') || 0},
+				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port') == '' ? 51820+i : eval('nvram.'+t+'_port')},
+				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
+			]);
+			W('<br>');
 			W('<div class="section-title">Peers</div>');
 			W('<div class="tomato-grid" id="'+t+'-peers-grid"><\/div>');
 			peerTables[i].setup();
@@ -2059,13 +2066,6 @@ function init() {
 			W('</div>');
 			W('<br>');
 			W('</div>');
-			W('<div class="section-title">Config Generation</div>');
-			createFieldTable('', [
-				{ title: 'Peer Communication', name: t+'_com', type: 'select', options: [['0','Hub and Spoke'],['1','Full Mesh (Endpoint Only)'],['2','Full Mesh']], value: eval('nvram.'+t+'_com') || 0},
-				{ title: 'Port', name: 'f_'+t+'_peer_port', type: 'text', maxlen: 5, size: 10, value: eval('nvram.'+t+'_port') == '' ? 51820+i : eval('nvram.'+t+'_port')},
-				{ title: 'FWMark', name: 'f_'+t+'_peer_fwmark', type: 'text', maxlen: 8, size: 8, value: '0'},
-			]);
-			W('<br>');
 			W('<div class="section-title">Peer Generation</div>');
 			createFieldTable('', [
 				{ title: 'Generate PSK', name: 'f_'+t+'_peer_psk_gen', type: 'checkbox', value: true },
