@@ -363,6 +363,7 @@ function mapConfigToFields(event) {
 		var peer = config.peers[i];
 
 		var [ip, allowed_ips] = peer.allowed_ips.split(',', 2);
+
 		ip = ip.trim().split('/')[0] + '/32';
 
 		var data = [
@@ -1640,6 +1641,10 @@ function CIDRToNetmask(bitCount) {
     bitCount -= n;
   }
   return mask.join('.');
+}
+
+function isv6(ip) {
+	return ip.indexOf(':') < 0;
 }
 
 function verifyCIDR(cidr) {
