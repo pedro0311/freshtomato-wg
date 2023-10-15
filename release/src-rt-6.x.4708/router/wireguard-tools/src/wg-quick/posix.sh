@@ -537,7 +537,7 @@ get_fwmark() {
     [ -n "${fwmark}" ] &&
     [ "x${fwmark}" != 'xoff' ] ||
     return 1
-  eval "${1}=${table}"
+  eval "${1}=${fwmark}"
   unset fwmark
 }
 
