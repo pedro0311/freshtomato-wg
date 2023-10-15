@@ -436,6 +436,7 @@ del_if() {
     unset proto
   fi
   cmd ip link delete dev "${INTERFACE}"
+  unset fwmark
   unset table
 }
 
