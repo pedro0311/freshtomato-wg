@@ -407,7 +407,7 @@ del_if() {
   if [ -z "${TABLE}" ] ||
     [ "x${TABLE}" = 'xauto' ] &&
     get_fwmark table &&
-    expr match "$(wg show "${INTERFACE}" allowed-ips)" '.*/0\(.*\|'"${NL}"'.*\)\?$' >/dev/null; then
+    [[ "$(wg show "$INTERFACE" allowed-ips)" =~ "/0(\ |$'\n'|$)" ]]; then
     for proto in -4 -6; do
       while :; do
         case "$(ip "${proto}" rule show 2>/dev/null)" in
