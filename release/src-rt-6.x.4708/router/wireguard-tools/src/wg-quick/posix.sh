@@ -408,7 +408,9 @@ del_if() {
     [ "x${TABLE}" = 'xauto' ] &&
     get_fwmark table &&
     [[ "$(wg show "$INTERFACE" allowed-ips)" =~ "/0(\ |$'\n'|$)" ]]; then
+    table="$(printf "%d\n" $table)"
     for proto in -4 -6; do
+      echo table = $table
       while :; do
         case "$(ip "${proto}" rule show 2>/dev/null)" in
           *"lookup ${table}"*)
@@ -535,7 +537,6 @@ get_fwmark() {
     [ -n "${fwmark}" ] &&
     [ "x${fwmark}" != 'xoff' ] ||
     return 1
-  table="$(printf "%d\n" 0xca6c)"
   eval "${1}=${table}"
   unset fwmark
 }
