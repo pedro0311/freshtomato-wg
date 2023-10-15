@@ -401,6 +401,7 @@ add_if() {
 
 del_if() {
   table=''
+  fwmark=''
   [ "${HAVE_SET_DNS-0}" -eq 0 ] || unset_dns
   [ "${HAVE_SET_FIREWALL-0}" -eq 0 ] || remove_firewall
   #shellcheck disable=SC2003
@@ -408,13 +409,13 @@ del_if() {
     [ "x${TABLE}" = 'xauto' ] &&
     get_fwmark table &&
     [[ "$(wg show "$INTERFACE" allowed-ips)" =~ "/0(\ |$'\n'|$)" ]]; then
-    table="$(printf "%d\n" $table)"
+    fwmark=$table
+    table="$(printf "%d\n" $fwmark)"
     for proto in -4 -6; do
-      echo table = $table
       while :; do
         case "$(ip "${proto}" rule show 2>/dev/null)" in
-          *"lookup ${table}"*)
-            cmd ip "${proto}" rule delete table "${table}"
+          *"not from all fwmark ${fwmark} lookup ${table}"*)
+            cmd ip "${proto}" rule delete not from all fwmark "${fwmark}" lookup "${table}"
             ;;
           *)
             break
