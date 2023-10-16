@@ -559,7 +559,7 @@ int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips)
 
 int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
 {
-	char *aip, *b, *table, *rt, *tp;
+	char *aip, *b, *table, *rt, *tp, *ip, *nm;
 	int route_type = 1, result = 0;
 
 	/* check which routing type the user specified */
@@ -574,6 +574,11 @@ int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
 	if (route_type >  0) {
 		aip = strdup(allowed_ips);
 		while ((b = strsep(&aip, ",")) != NULL) {
+			if (vstrsep(b, "/", &ip, &nm) == 2) {
+				if (atoi(nm) == 0) {
+					wg_route_peer_default(iface, b);
+				}
+			}
 			if (route_type == 1) {
 				if (wg_route_peer(iface, b)) {
 					result = -1;
@@ -614,6 +619,11 @@ int wg_route_peer_custom(char *iface, char *route, char *table)
 	}
 
 	return 0;
+}
+
+int wg_route_peer_default(char *iface, char *route)
+{
+	
 }
 
 int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey)

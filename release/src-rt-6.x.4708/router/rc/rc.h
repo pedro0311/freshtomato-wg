@@ -599,6 +599,7 @@ extern int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, ch
 extern int wg_route_peer_allowed_ips(char *iface, char *allowed_ips);
 extern int wg_route_peer(char *iface, char *route);
 extern int wg_route_peer_custom(char *iface, char *route, char *table);
+extern int wg_route_peer_default(char *iface, char *route);
 extern int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey);
 extern int wg_set_peer_keepalive(char *iface, char *pubkey, char *keepalive);
 extern int wg_set_peer_endpoint(char *iface, char *pubkey, char *endpoint);
