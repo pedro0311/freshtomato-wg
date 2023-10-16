@@ -1759,6 +1759,7 @@ function verifyFields(focused, quiet) {
 			ferror.clear(dns);
 
 		/* verify interface fwmark */
+		var fwmark = E('_wg'+i+'_fwmark');
 		if (fwmark.value && !verifyFWMark(fwmark.value)) {
 			ferror.set(fwmark, 'The interface FWMark must be a hexadecimal string of 8 characters', quiet || !ok);
 			ok = 0;
