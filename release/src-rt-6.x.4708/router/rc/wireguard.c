@@ -143,10 +143,10 @@ void start_wireguard(int unit)
 
 				/* add peer to interface */
 				if (priv[0] == '1') {
-					wg_add_peer_privkey(iface, key, buffer, psk, rka, ep);
+					wg_add_peer_privkey(iface, key, buffer, psk, rka, ep, fwmark);
 				}
 				else {
-					wg_add_peer(iface, key, buffer, psk, rka, ep);
+					wg_add_peer(iface, key, buffer, psk, rka, ep, fwmark);
 				}
 
 			}
@@ -521,10 +521,10 @@ int wg_set_iface_up(char *iface)
 	return -1;
 }
 
-int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
+int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint, char *fwmark)
 {
 	/* set allowed ips / create peer */
-	wg_set_peer_allowed_ips(iface, pubkey, allowed_ips);
+	wg_set_peer_allowed_ips(iface, pubkey, allowed_ips, fwmark);
 
 	/* set peer psk */
 	if (presharedkey[0] != '\0') {
@@ -544,7 +544,7 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey
 	return 0;
 }
 
-int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips)
+int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips, char *fwmark)
 {
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
 		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
@@ -554,10 +554,10 @@ int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips)
 		logmsg(LOG_DEBUG, "peer %s for wireguard interface %s has had its allowed ips set to %s", pubkey, iface, allowed_ips);
 	}
 
-	return wg_route_peer_allowed_ips(iface, allowed_ips);
+	return wg_route_peer_allowed_ips(iface, allowed_ips, fwmark);
 }
 
-int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
+int wg_route_peer_allowed_ips(char *iface, char *allowed_ips, char *fwmark)
 {
 	char *aip, *b, *table, *rt, *tp, *ip, *nm;
 	int route_type = 1, result = 0;
@@ -576,7 +576,7 @@ int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
 		while ((b = strsep(&aip, ",")) != NULL) {
 			if (vstrsep(b, "/", &ip, &nm) == 2) {
 				if (atoi(nm) == 0) {
-					wg_route_peer_default(iface, b);
+					wg_route_peer_default(iface, b, fwmark);
 				}
 			}
 			if (route_type == 1) {
@@ -621,9 +621,44 @@ int wg_route_peer_custom(char *iface, char *route, char *table)
 	return 0;
 }
 
-int wg_route_peer_default(char *iface, char *route)
+int wg_route_peer_default(char *iface, char *route, char *fwmark)
 {
-	
+	int err = 0;
+	char iptables[24];
+	char proto[2];
+	char pf[3];
+
+	memset(iptables, 0, 24);
+	memset(proto, 0, 2);
+	memset(pf, 0, 3);
+	if (strchr(route, ':') != NULL) {
+		snprintf(iptables, 24, "/usr/sbin/ip6tables");
+		snprintf(proto, 2, "-6");
+		snprintf(pf, 3, "ip6");
+	}
+	else {
+		snprintf(iptables, 24, "/usr/sbin/iptables");
+		snprintf(proto, 2, "-4");
+		snprintf(pf, 3, "ip");
+	}
+
+	if (wg_route_peer_custom(iface, route, fwmark)){
+		logmsg(LOG_WARNING, "unable to add default route of %s to wireguard interface %s!", route, iface);
+		err = -1;
+	}
+
+	if (eval("ip", proto, "rule", "add", "not", "fwmark", fwmark, "table", fwmark)){
+		logmsg(LOG_WARNING, "unable to filter fwmark for default route of %s on wireguard interface %s!", route, iface);
+		err = -1;
+	}
+
+	if (eval("ip", proto, "rule", "add", "table", "main", "suppress_prefixlength", 0)){
+		logmsg(LOG_WARNING, "unable to suppress prefix length of 0 for default route of %s on wireguard interface %s!", route, iface);
+		err = -1;
+	}
+
+	return err;
+
 }
 
 int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey)
@@ -679,14 +714,14 @@ int wg_set_peer_endpoint(char *iface, char *pubkey, char *endpoint)
 	return 0;
 }
 
-int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
+int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint, char *fwmark)
 {
 	char pubkey[64];
 
 	memset(pubkey, 0, sizeof(pubkey));
 	wg_pubkey(privkey, pubkey);
 
-	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey, keepalive, endpoint);
+	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey, keepalive, endpoint, fwmark);
 }
 
 int wg_iface_script(int unit, char *script_name)
