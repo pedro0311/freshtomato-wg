@@ -284,6 +284,49 @@ void wg_setup_dirs() {
 		}
 	}
 
+	/* script to remove fw rules for dns servers */
+	if(!(f_exists(WG_DIR"/scripts/route-default.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/route-default.sh", "w"))) {
+			fprintf(fp, "interface=\"${1}\"\n"
+						"route=\"${2}\"\n"
+						"table=\"${3}\"\n"
+						"case \"${route}\" in\n"
+						"  *:*)\n"
+						"    proto='-6'\n"
+						"    iptables='ip6tables'\n"
+						"    pf='ip6'\n"
+						"    ;;\n"
+						"  *)\n"
+						"    proto='-4'\n"
+						"    iptables='iptables'\n"
+						"    pf='ip'\n"
+						"    ;;\n"
+						"esac\n"
+						"cmd ip \"${proto}\" route add \"${route}\" dev \"${interface}\" table \"${table}\"\n"
+						"cmd ip \"${proto}\" rule add not fwmark \"${table}\" table \"${table}\"\n"
+						"cmd ip \"${proto}\" rule add table main suppress_prefixlength 0\n"
+						"restore=\"*raw${NL}\"\n"
+						"ip -o \"${proto}\" addr show dev \"${interface}\" 2>/dev/null | {\n"
+						"  while read -r line; do\n"
+						"    match=\"$(\n"
+						"      printf %s \"${line}\" |\n"
+						"        sed -ne 's/^.*inet6\? \([0-9a-f:.]\+\)\/[0-9]\+.*$/\1/; t P; b; : P; p'\n"
+						"    )\"\n"
+						"    [ -n \"${match}\" ] ||\n"
+						"      continue\n"
+						"    restore=\"${restore:+${restore}${NL}}-I PREROUTING ! -i ${interface} -d ${match} -m addrtype ! --src-type LOCAL -j DROP\"\n"
+						"  done\n"
+						"  restore=\"${restore:+${restore}${NL}}COMMIT${NL}*mangle${NL}-I POSTROUTING -m mark --mark ${table} -p udp -j CONNMARK --save-mark${NL}-I PREROUTING -p udp -j CONNMARK --restore-mark${NL}COMMIT\"\n"
+						"  ! [ \"${proto}\" = '-4' ] ||\n"
+						"    echo 1 > /proc/sys/net/ipv4/conf/all/src_valid_mark\n"
+						"  printf '%s\n' \"${restore}\" |\n"
+						"    cmd \"${iptables}-restore\" -n\n"
+						"}\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/route-default.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
 }
 
 void wg_cleanup_dirs() {
@@ -623,42 +666,15 @@ int wg_route_peer_custom(char *iface, char *route, char *table)
 
 int wg_route_peer_default(char *iface, char *route, char *fwmark)
 {
-	int err = 0;
-	char iptables[24];
-	char proto[2];
-	char pf[3];
-
-	memset(iptables, 0, 24);
-	memset(proto, 0, 2);
-	memset(pf, 0, 3);
-	if (strchr(route, ':') != NULL) {
-		snprintf(iptables, 24, "/usr/sbin/ip6tables");
-		snprintf(proto, 2, "-6");
-		snprintf(pf, 3, "ip6");
+	if (eval("/bin/sh", WG_DIR"/scripts/route-default.sh", iface, route, fwmark)) {
+		logmsg(LOG_WARNING, "unable to add default route of %s to table %s for wireguard interface %s!", route, fwmark, iface);
+		return -1;
 	}
 	else {
-		snprintf(iptables, 24, "/usr/sbin/iptables");
-		snprintf(proto, 2, "-4");
-		snprintf(pf, 3, "ip");
+		logmsg(LOG_WARNING, "wireguard interface %s has had a default route added to table %s for %s", iface, fwmark, route);
 	}
-
-	if (wg_route_peer_custom(iface, route, fwmark)){
-		logmsg(LOG_WARNING, "unable to add default route of %s to wireguard interface %s!", route, iface);
-		err = -1;
-	}
-
-	if (eval("ip", proto, "rule", "add", "not", "fwmark", fwmark, "table", fwmark)){
-		logmsg(LOG_WARNING, "unable to filter fwmark for default route of %s on wireguard interface %s!", route, iface);
-		err = -1;
-	}
-
-	if (eval("ip", proto, "rule", "add", "table", "main", "suppress_prefixlength", 0)){
-		logmsg(LOG_WARNING, "unable to suppress prefix length of 0 for default route of %s on wireguard interface %s!", route, iface);
-		err = -1;
-	}
-
-	return err;
-
+	
+	return 0;
 }
 
 int wg_set_peer_psk(char *iface, char *pubkey, char *presharedkey)
