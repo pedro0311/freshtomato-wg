@@ -239,6 +239,7 @@ void wg_setup_dirs() {
 	}
 
 	/* script to remove iptable rules for wireguard device */
+	/* will probably need to add rules to clean up default route rules*/
 	if(!(f_exists(WG_DIR"/scripts/fw-del.sh"))){
 		if((fp = fopen(WG_DIR"/scripts/fw-del.sh", "w"))) {
 			fprintf(fp, "#!/bin/sh\n"
@@ -962,7 +963,6 @@ int wg_quick_iface_down(char *iface, char *file)
 
 void write_wg_dnsmasq_config(FILE* f)
 {
-	logmsg(LOG_INFO, "*** %s: got to wg dnsmasq", __FUNCTION__);
 	char buf[BUF_SIZE], device[24];
 	char *pos, *fn, ch;;
 	DIR *dir;
@@ -974,7 +974,7 @@ void write_wg_dnsmasq_config(FILE* f)
 	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
 		cur = atoi(pos);
 		if (cur || cur == 0) {
-			logmsg(LOG_INFO, "*** %s: adding server %d interface to Dnsmasq config", __FUNCTION__, cur);
+			logmsg(LOG_DEBUG, "*** %s: adding server %d interface to Dnsmasq config", __FUNCTION__, cur);
 			fprintf(f, "interface=wg%d\n", cur);
 		}
 	}
@@ -987,7 +987,7 @@ void write_wg_dnsmasq_config(FILE* f)
 				continue;
 
 			if (sscanf(fn, "%s.conf", device) == 1) {
-				logmsg(LOG_INFO, "*** %s: adding Dnsmasq config from %s", __FUNCTION__, fn);
+				logmsg(LOG_DEBUG, "*** %s: adding Dnsmasq config from %s", __FUNCTION__, fn);
 				memset(buf, 0, BUF_SIZE);
 				snprintf(buf, BUF_SIZE, WG_DNS_DIR"/%s", fn);
 				fappend(f, buf);
@@ -995,7 +995,6 @@ void write_wg_dnsmasq_config(FILE* f)
 		}
 		closedir(dir);
 	}
-	logmsg(LOG_INFO, "*** %s: got to end of wg dnsmasq", __FUNCTION__);
 }
 
 static inline void encode_base64(char dest[static 4], const uint8_t src[static 3])
