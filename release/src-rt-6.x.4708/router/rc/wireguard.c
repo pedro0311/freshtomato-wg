@@ -110,7 +110,7 @@ void start_wireguard(int unit)
 		}
 
 		/* check if keepalives are enabled from the router */
-		if (getNVRAMVar("wg%d_ip", unit)[0] == '1') {
+		if (getNVRAMVar("wg%d_ka", unit)[0] == '1') {
 			rka = "25";
 		}
 		else {
@@ -646,7 +646,7 @@ int wg_route_peer(char *iface, char *route)
 		return -1;
 	}
 	else {
-		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to it for %s", iface, route);
+		logmsg(LOG_DEBUG, "wireguard interface %s has had a route added to it for %s", iface, route);
 	}
 	
 	return 0;
@@ -659,7 +659,7 @@ int wg_route_peer_custom(char *iface, char *route, char *table)
 		return -1;
 	}
 	else {
-		logmsg(LOG_WARNING, "wireguard interface %s has had a route added to table %s for %s", iface, table, route);
+		logmsg(LOG_DEBUG, "wireguard interface %s has had a route added to table %s for %s", iface, table, route);
 	}
 
 	return 0;
