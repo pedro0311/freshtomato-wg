@@ -401,18 +401,21 @@ add_if() {
 
 del_if() {
   table=''
+  fwmark=''
   [ "${HAVE_SET_DNS-0}" -eq 0 ] || unset_dns
   [ "${HAVE_SET_FIREWALL-0}" -eq 0 ] || remove_firewall
   #shellcheck disable=SC2003
   if [ -z "${TABLE}" ] ||
     [ "x${TABLE}" = 'xauto' ] &&
     get_fwmark table &&
-    expr match "$(wg show "${INTERFACE}" allowed-ips)" '.*/0\(.*\|'"${NL}"'.*\)\?$' >/dev/null; then
+    [[ "$(wg show "$INTERFACE" allowed-ips)" =~ "/0(\ |$'\n'|$)" ]]; then
+    fwmark=$table
+    table="$(printf "%d\n" $fwmark)"
     for proto in -4 -6; do
       while :; do
         case "$(ip "${proto}" rule show 2>/dev/null)" in
-          *"lookup ${table}"*)
-            cmd ip "${proto}" rule delete table "${table}"
+          *"not from all fwmark ${fwmark} lookup ${table}"*)
+            cmd ip "${proto}" rule delete not from all fwmark "${fwmark}" lookup "${table}"
             ;;
           *)
             break
@@ -433,6 +436,7 @@ del_if() {
     unset proto
   fi
   cmd ip link delete dev "${INTERFACE}"
+  unset fwmark
   unset table
 }
 
@@ -458,13 +462,6 @@ set_mtu_up() {
   fi
   unset mtu endpoint v6_addr
 }
-
-# [x] set exclusive (use iptables)
-# [x] set nameservers
-# [ ] set search domains (dunno)
-# [x] add interface to dnsmasq
-# [ ] set metric 0 (dunno)
-# [x] restart dnsmasq
 
 #shellcheck disable=SC2120
 set_dns() {
@@ -602,7 +599,6 @@ add_default() {
   proto=''
   iptables=''
   pf=''
-  marker=''
   restore=''
   nftable=''
   nftcmd=''
@@ -630,7 +626,6 @@ add_default() {
   cmd ip "${proto}" rule add not fwmark "${table}" table "${table}"
   cmd ip "${proto}" rule add table main suppress_prefixlength 0
 
-  marker="-m comment --comment \"wg-quick(8) rule for ${INTERFACE}\""
   restore="*raw${NL}"
   nftable="wg-quick-${INTERFACE}"
   nftcmd="${nftcmd:+${nftcmd}${NL}}add table ${pf} ${nftable}"
@@ -642,18 +637,18 @@ add_default() {
     while read -r line; do
       match="$(
         printf %s "${line}" |
-          sed -ne 's/^.*inet6\? \([0-9a-f:.]\+\)/[0-9]\+.*$/\1/; t P; b; : P; p'
+          sed -ne 's/^.*inet6\? \([0-9a-f:.]\+\)\/[0-9]\+.*$/\1/; t P; b; : P; p'
       )"
       [ -n "${match}" ] ||
         continue
-      restore="${restore:+${restore}${NL}}-I PREROUTING ! -i ${INTERFACE} -d ${match} -m addrtype ! --src-type LOCAL -j DROP ${marker}"
+      restore="${restore:+${restore}${NL}}-I PREROUTING ! -i ${INTERFACE} -d ${match} -m addrtype ! --src-type LOCAL -j DROP"
       nftcmd="${nftcmd:+${nftcmd}${NL}}add rule ${pf} ${nftable} preraw iifname != \"${INTERFACE}\" ${pf} daddr ${match} fib saddr type != local drop"
     done
-    restore="${restore:+${restore}${NL}}COMMIT${NL}*mangle${NL}-I POSTROUTING -m mark --mark ${table} -p udp -j CONNMARK --save-mark ${marker}${NL}-I PREROUTING -p udp -j CONNMARK --restore-mark ${marker}${NL}COMMIT"
+    restore="${restore:+${restore}${NL}}COMMIT${NL}*mangle${NL}-I POSTROUTING -m mark --mark ${table} -p udp -j CONNMARK --save-mark${NL}-I PREROUTING -p udp -j CONNMARK --restore-mark${NL}COMMIT"
     nftcmd="${nftcmd:+${nftcmd}${NL}}add rule ${pf} ${nftable} postmangle meta l4proto udp mark ${table} ct mark set mark"
     nftcmd="${nftcmd:+${nftcmd}${NL}}add rule ${pf} ${nftable} premangle meta l4proto udp meta mark set ct mark"
     ! [ "${proto}" = '-4' ] ||
-      cmd sysctl -q net.ipv4.conf.all.src_valid_mark=1
+      echo 1 > /proc/sys/net/ipv4/conf/all/src_valid_mark
     if type_p nft >/dev/null; then
       printf '%s\n' "${nftcmd}" |
         cmd nft -f
@@ -664,7 +659,7 @@ add_default() {
     unset match
   }
   HAVE_SET_FIREWALL=1
-  unset table line proto iptables pf marker restore nftable nftcmd
+  unset table line proto iptables pf restore nftable nftcmd
 }
 
 set_config() {

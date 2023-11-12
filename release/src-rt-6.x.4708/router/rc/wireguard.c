@@ -33,6 +33,8 @@ void start_wireguard(int unit)
 	char *priv, *name, *key, *psk, *ip, *ka, *aip, *ep;
     char iface[IF_SIZE];
     char buffer[BUF_SIZE];
+	char port[5];
+	char fwmark[8];
 
 	/* set up directories for later use */
 	wg_setup_dirs();
@@ -61,15 +63,15 @@ void start_wireguard(int unit)
 
 		/* set interface port */
 		b = getNVRAMVar("wg%d_port", unit);
-		memset(buffer, 0, BUF_SIZE);
+		memset(port, 0, 5);
 		if (b[0] == '\0') {
-			snprintf(buffer, BUF_SIZE, "%d", 51820 + unit);
+			snprintf(port, BUF_SIZE, "%d", 51820 + unit);
 		}
 		else {
-			snprintf(buffer, BUF_SIZE, "%s", b);
+			snprintf(port, BUF_SIZE, "%s", b);
 		}
 
-		if (wg_set_iface_port(iface, buffer)) {
+		if (wg_set_iface_port(iface, port)) {
 			stop_wireguard(unit);
 			return;
 		}
@@ -81,7 +83,16 @@ void start_wireguard(int unit)
 		}
 
 		/* set interface fwmark */
-		if (wg_set_iface_fwmark(iface, getNVRAMVar("wg%d_fwmark", unit))) {
+		b = getNVRAMVar("wg%d_fwmark", unit);
+		memset(fwmark, 0, 8);
+		if (b[0] == '\0' || b[0] == '0') {
+			snprintf(fwmark, BUF_SIZE, "%s", port);
+		}
+		else {
+			snprintf(fwmark, BUF_SIZE, "%s", b);
+		}
+
+		if (wg_set_iface_fwmark(iface, fwmark)) {
 			stop_wireguard(unit);
 			return;
 		}
@@ -132,10 +143,10 @@ void start_wireguard(int unit)
 
 				/* add peer to interface */
 				if (priv[0] == '1') {
-					wg_add_peer_privkey(iface, key, buffer, psk, rka, ep);
+					wg_add_peer_privkey(iface, key, buffer, psk, rka, ep, fwmark);
 				}
 				else {
-					wg_add_peer(iface, key, buffer, psk, rka, ep);
+					wg_add_peer(iface, key, buffer, psk, rka, ep, fwmark);
 				}
 
 			}
@@ -228,6 +239,7 @@ void wg_setup_dirs() {
 	}
 
 	/* script to remove iptable rules for wireguard device */
+	/* will probably need to add rules to clean up default route rules*/
 	if(!(f_exists(WG_DIR"/scripts/fw-del.sh"))){
 		if((fp = fopen(WG_DIR"/scripts/fw-del.sh", "w"))) {
 			fprintf(fp, "#!/bin/sh\n"
@@ -270,6 +282,49 @@ void wg_setup_dirs() {
 						"iptables -X \"${DNS_CHAIN}\" || $(exit 0)\n");
 			fclose(fp);
 			chmod(WG_DIR"/scripts/fw-dns-unset.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
+		}
+	}
+
+	/* script to remove fw rules for dns servers */
+	if(!(f_exists(WG_DIR"/scripts/route-default.sh"))){
+		if((fp = fopen(WG_DIR"/scripts/route-default.sh", "w"))) {
+			fprintf(fp, "interface=\"${1}\"\n"
+						"route=\"${2}\"\n"
+						"table=\"${3}\"\n"
+						"case \"${route}\" in\n"
+						"  *:*)\n"
+						"    proto='-6'\n"
+						"    iptables='ip6tables'\n"
+						"    pf='ip6'\n"
+						"    ;;\n"
+						"  *)\n"
+						"    proto='-4'\n"
+						"    iptables='iptables'\n"
+						"    pf='ip'\n"
+						"    ;;\n"
+						"esac\n"
+						"cmd ip \"${proto}\" route add \"${route}\" dev \"${interface}\" table \"${table}\"\n"
+						"cmd ip \"${proto}\" rule add not fwmark \"${table}\" table \"${table}\"\n"
+						"cmd ip \"${proto}\" rule add table main suppress_prefixlength 0\n"
+						"restore=\"*raw${NL}\"\n"
+						"ip -o \"${proto}\" addr show dev \"${interface}\" 2>/dev/null | {\n"
+						"  while read -r line; do\n"
+						"    match=\"$(\n"
+						"      printf %s \"${line}\" |\n"
+						"        sed -ne 's/^.*inet6\? \([0-9a-f:.]\+\)\/[0-9]\+.*$/\1/; t P; b; : P; p'\n"
+						"    )\"\n"
+						"    [ -n \"${match}\" ] ||\n"
+						"      continue\n"
+						"    restore=\"${restore:+${restore}${NL}}-I PREROUTING ! -i ${interface} -d ${match} -m addrtype ! --src-type LOCAL -j DROP\"\n"
+						"  done\n"
+						"  restore=\"${restore:+${restore}${NL}}COMMIT${NL}*mangle${NL}-I POSTROUTING -m mark --mark ${table} -p udp -j CONNMARK --save-mark${NL}-I PREROUTING -p udp -j CONNMARK --restore-mark${NL}COMMIT\"\n"
+						"  ! [ \"${proto}\" = '-4' ] ||\n"
+						"    echo 1 > /proc/sys/net/ipv4/conf/all/src_valid_mark\n"
+						"  printf '%s\n' \"${restore}\" |\n"
+						"    cmd \"${iptables}-restore\" -n\n"
+						"}\n");
+			fclose(fp);
+			chmod(WG_DIR"/scripts/route-default.sh", (S_IRUSR | S_IWUSR | S_IXUSR));
 		}
 	}
 
@@ -510,10 +565,10 @@ int wg_set_iface_up(char *iface)
 	return -1;
 }
 
-int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
+int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint, char *fwmark)
 {
 	/* set allowed ips / create peer */
-	wg_set_peer_allowed_ips(iface, pubkey, allowed_ips);
+	wg_set_peer_allowed_ips(iface, pubkey, allowed_ips, fwmark);
 
 	/* set peer psk */
 	if (presharedkey[0] != '\0') {
@@ -533,7 +588,7 @@ int wg_add_peer(char *iface, char *pubkey, char *allowed_ips, char *presharedkey
 	return 0;
 }
 
-int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips)
+int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips, char *fwmark)
 {
 	if (eval("/usr/sbin/wg", "set", iface, "peer", pubkey, "allowed-ips", allowed_ips)){
 		logmsg(LOG_WARNING, "unable to add peer %s to wireguard interface %s!", pubkey, iface);
@@ -543,12 +598,12 @@ int wg_set_peer_allowed_ips(char *iface, char *pubkey, char *allowed_ips)
 		logmsg(LOG_DEBUG, "peer %s for wireguard interface %s has had its allowed ips set to %s", pubkey, iface, allowed_ips);
 	}
 
-	return wg_route_peer_allowed_ips(iface, allowed_ips);
+	return wg_route_peer_allowed_ips(iface, allowed_ips, fwmark);
 }
 
-int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
+int wg_route_peer_allowed_ips(char *iface, char *allowed_ips, char *fwmark)
 {
-	char *aip, *b, *table, *rt, *tp;
+	char *aip, *b, *table, *rt, *tp, *ip, *nm;
 	int route_type = 1, result = 0;
 
 	/* check which routing type the user specified */
@@ -563,6 +618,11 @@ int wg_route_peer_allowed_ips(char *iface, char *allowed_ips)
 	if (route_type >  0) {
 		aip = strdup(allowed_ips);
 		while ((b = strsep(&aip, ",")) != NULL) {
+			if (vstrsep(b, "/", &ip, &nm) == 2) {
+				if (atoi(nm) == 0) {
+					wg_route_peer_default(iface, b, fwmark);
+				}
+			}
 			if (route_type == 1) {
 				if (wg_route_peer(iface, b)) {
 					result = -1;
@@ -602,6 +662,19 @@ int wg_route_peer_custom(char *iface, char *route, char *table)
 		logmsg(LOG_DEBUG, "wireguard interface %s has had a route added to table %s for %s", iface, table, route);
 	}
 
+	return 0;
+}
+
+int wg_route_peer_default(char *iface, char *route, char *fwmark)
+{
+	if (eval("/bin/sh", WG_DIR"/scripts/route-default.sh", iface, route, fwmark)) {
+		logmsg(LOG_WARNING, "unable to add default route of %s to table %s for wireguard interface %s!", route, fwmark, iface);
+		return -1;
+	}
+	else {
+		logmsg(LOG_WARNING, "wireguard interface %s has had a default route added to table %s for %s", iface, fwmark, route);
+	}
+	
 	return 0;
 }
 
@@ -658,14 +731,14 @@ int wg_set_peer_endpoint(char *iface, char *pubkey, char *endpoint)
 	return 0;
 }
 
-int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint)
+int wg_add_peer_privkey(char *iface, char *privkey, char *allowed_ips, char *presharedkey, char *keepalive, char *endpoint, char *fwmark)
 {
 	char pubkey[64];
 
 	memset(pubkey, 0, sizeof(pubkey));
 	wg_pubkey(privkey, pubkey);
 
-	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey, keepalive, endpoint);
+	return wg_add_peer(iface, pubkey, allowed_ips, presharedkey, keepalive, endpoint, fwmark);
 }
 
 int wg_iface_script(int unit, char *script_name)
@@ -890,7 +963,6 @@ int wg_quick_iface_down(char *iface, char *file)
 
 void write_wg_dnsmasq_config(FILE* f)
 {
-	logmsg(LOG_INFO, "*** %s: got to wg dnsmasq", __FUNCTION__);
 	char buf[BUF_SIZE], device[24];
 	char *pos, *fn, ch;;
 	DIR *dir;
@@ -902,7 +974,7 @@ void write_wg_dnsmasq_config(FILE* f)
 	for (pos = strtok(buf, ","); pos != NULL; pos = strtok(NULL, ",")) {
 		cur = atoi(pos);
 		if (cur || cur == 0) {
-			logmsg(LOG_INFO, "*** %s: adding server %d interface to Dnsmasq config", __FUNCTION__, cur);
+			logmsg(LOG_DEBUG, "*** %s: adding server %d interface to Dnsmasq config", __FUNCTION__, cur);
 			fprintf(f, "interface=wg%d\n", cur);
 		}
 	}
@@ -915,7 +987,7 @@ void write_wg_dnsmasq_config(FILE* f)
 				continue;
 
 			if (sscanf(fn, "%s.conf", device) == 1) {
-				logmsg(LOG_INFO, "*** %s: adding Dnsmasq config from %s", __FUNCTION__, fn);
+				logmsg(LOG_DEBUG, "*** %s: adding Dnsmasq config from %s", __FUNCTION__, fn);
 				memset(buf, 0, BUF_SIZE);
 				snprintf(buf, BUF_SIZE, WG_DNS_DIR"/%s", fn);
 				fappend(f, buf);
@@ -923,7 +995,6 @@ void write_wg_dnsmasq_config(FILE* f)
 		}
 		closedir(dir);
 	}
-	logmsg(LOG_INFO, "*** %s: got to end of wg dnsmasq", __FUNCTION__);
 }
 
 static inline void encode_base64(char dest[static 4], const uint8_t src[static 3])
