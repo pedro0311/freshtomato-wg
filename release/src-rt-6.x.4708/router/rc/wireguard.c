@@ -239,7 +239,7 @@ void wg_setup_dirs() {
 	}
 
 	/* script to remove iptable rules for wireguard device */
-	/* will probably need to add rules to clean up default route rules*/
+	/* will probably need to add rules to clean up default route rules either in this script or another */
 	if(!(f_exists(WG_DIR"/scripts/fw-del.sh"))){
 		if((fp = fopen(WG_DIR"/scripts/fw-del.sh", "w"))) {
 			fprintf(fp, "#!/bin/sh\n"
@@ -285,7 +285,7 @@ void wg_setup_dirs() {
 		}
 	}
 
-	/* script to remove fw rules for dns servers */
+	/* script excerpt from wg-quick to route default */
 	if(!(f_exists(WG_DIR"/scripts/route-default.sh"))){
 		if((fp = fopen(WG_DIR"/scripts/route-default.sh", "w"))) {
 			fprintf(fp, "interface=\"${1}\"\n"
@@ -620,7 +620,8 @@ int wg_route_peer_allowed_ips(char *iface, char *allowed_ips, char *fwmark)
 		while ((b = strsep(&aip, ",")) != NULL) {
 			if (vstrsep(b, "/", &ip, &nm) == 2) {
 				if (atoi(nm) == 0) {
-					wg_route_peer_default(iface, b, fwmark);
+					// uncomment to add default routing
+					//wg_route_peer_default(iface, b, fwmark);
 				}
 			}
 			if (route_type == 1) {
