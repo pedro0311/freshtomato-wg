@@ -742,6 +742,9 @@ endif
 ifneq ($(TCONFIG_L7),y)
 	rm -f $(TARGETDIR)/usr/lib/*tables/libipt_layer7.so
 endif
+ifeq ($(TCONFIG_TUXERA),y)
+	cd $(TARGETDIR)/usr/sbin && ln -sf ntfsck fsck.ntfs
+endif
 
 # uClibc
 	install $(LIBDIR)/ld-uClibc.so.0 $(TARGETDIR)/lib/
@@ -1484,8 +1487,8 @@ iptables-1.8.x-clean:
 rp-pppoe/src/stamp-h1: rp-pppoe/src/Makefile.in
 	$(call patch_files,rp-pppoe)
 	cd rp-pppoe/src && \
-		CFLAGS="$(if $(TCONFIG_OPTIMIZE_SIZE),-Os,-O3) -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
-		CPPFLAGS="-Os -ffunction-sections -fdata-sections" \
+		CFLAGS="$(if $(TCONFIG_OPTIMIZE_SIZE),-Os,-O2) -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+		CPPFLAGS="$(if $(TCONFIG_OPTIMIZE_SIZE),-Os,-O2) -ffunction-sections -fdata-sections" \
 		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		$(CONFIGURE) --prefix=/usr --enable-plugin=$(TOP)/pppd --disable-debugging \
 			ac_cv_linux_kernel_pppoe=yes rpppoe_cv_pack_bitfields=rev ac_cv_path_PPPD=$(TOP)/pppd
@@ -1724,7 +1727,7 @@ pppd/Makefile: pppd/linux/Makefile.top
 	$(call patch_files,pppd)
 	cd pppd && \
 		LDFLAGS="-Wl,--gc-sections" \
-		$(CONFIGURE) --prefix=/usr --sysconfdir=/tmp --cc=$(CC) --cflags="$(if $(TCONFIG_OPTIMIZE_SIZE),-Os,-O3) -Wall -ffunction-sections -fdata-sections"
+		$(CONFIGURE) --prefix=/usr --sysconfdir=/tmp --cc=$(CC) --cflags="$(if $(TCONFIG_OPTIMIZE_SIZE),-Os,-O2) -Wall -ffunction-sections -fdata-sections"
 
 pppd: pppd/Makefile
 	@$(SEP)
@@ -2739,7 +2742,7 @@ lzo-clean:
 
 libcap-ng/stamp-h1:
 	cd libcap-ng && autoreconf -fsi && \
-		CFLAGS="-O3 -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC" \
+		CFLAGS="-O2 -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC" \
 		LDFLAGS="-Wl,--gc-sections -fPIC" \
 		$(CONFIGURE) --prefix=/usr --enable-shared --bindir=/usr/sbin --libdir=/usr/lib
 	@touch $@
@@ -2768,7 +2771,7 @@ openvpn-2.4/Makefile:
 	cd openvpn-2.4 && autoreconf -fsi && \
 		OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
 		OPENSSL_LIBS="-L$(TOP)/$(OPENSSLDIR) -lcrypto -lssl" \
-		CFLAGS="$(if $(TCONFIG_BCMARM),-O3,$(CFLAG_OPTIMIZE)) -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+		CFLAGS="$(if $(TCONFIG_BCMARM),-O2,$(CFLAG_OPTIMIZE)) -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
 		LDFLAGS="-L$(TOP)/$(OPENSSLDIR) -lpthread -ldl -L$(TOP)/lzo/src/.libs -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		CPPFLAGS="-I$(TOP)/lzo/include -I$(TOP)/$(OPENSSLDIR)/include" \
 		PLUGINDIR="/lib" IPROUTE="/usr/sbin/ip" \
@@ -2796,7 +2799,7 @@ openvpn-2.5/Makefile:
 	cd openvpn-2.5 && autoreconf -fsi && \
 		OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/staged/usr/include" \
 		OPENSSL_LIBS="-L$(TOP)/$(OPENSSLDIR)/staged/usr/lib -lcrypto -lssl" \
-		CFLAGS="$(if $(TCONFIG_BCMARM),-O3,$(CFLAG_OPTIMIZE)) -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+		CFLAGS="$(if $(TCONFIG_BCMARM),-O2,$(CFLAG_OPTIMIZE)) -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
 		LDFLAGS="-L$(TOP)/$(OPENSSLDIR)/staged/usr/lib -lpthread -ldl -L$(TOP)/lzo/src/.libs -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 		CPPFLAGS="-I$(TOP)/lzo/include -I$(TOP)/$(OPENSSLDIR)/staged/usr/include" \
 		PLUGINDIR="/lib" IPROUTE="/usr/sbin/ip" \
@@ -2830,7 +2833,7 @@ openvpn/Makefile:
 		LZO_LIBS="-L$(TOP)/lzo/src/.libs -llzo2" \
 		LZ4_CFLAGS="-I$(TOP)/lz4/lib" \
 		LZ4_LIBS="-L$(TOP)/lz4/lib -llz4" \
-		CFLAGS="$(if $(TCONFIG_BCMARM),-O3,$(CFLAG_OPTIMIZE)) -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections $(if $(TCONFIG_BCMARM),-I$(TOP)/libcap-ng/src,)" \
+		CFLAGS="$(if $(TCONFIG_BCMARM),-O2,$(CFLAG_OPTIMIZE)) -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections $(if $(TCONFIG_BCMARM),-I$(TOP)/libcap-ng/src,)" \
 		LDFLAGS="-L$(TOP)/$(OPENSSLDIR)/staged/usr/lib -lpthread -ldl -L$(TOP)/lzo/src/.libs -Wl,--gc-sections" \
 		CPPFLAGS="-I$(TOP)/lzo/include -I$(TOP)/$(OPENSSLDIR)/staged/usr/include" \
 		PLUGINDIR="/lib" IPROUTE="/usr/sbin/ip" \
@@ -2879,20 +2882,20 @@ nano-clean:
 libcurl/stamp-h1:
 	$(call patch_files,libcurl)
 	cd libcurl && autoreconf -fsi && \
-		CFLAGS="-Os -Wall -pipe -ffunction-sections -fdata-sections -fPIC \
+		CFLAGS="-Os -Wall -pipe -ffunction-sections -fdata-sections -std=gnu99 -fPIC \
 			$(if $(TCONFIG_BCMARM),-fno-strict-aliasing -fno-delete-null-pointer-checks -marm -march=armv7-a -mtune=cortex-a9,-funit-at-a-time -Wno-pointer-sign \
 				$(if $(TCONFIG_MIPSR2),-march=mips32r2 -mips32r2 -mtune=mips32r2,-march=mips32 -mips32 -mtune=mips32))" \
 		CPPFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -fPIC -I$(TOP)/$(OPENSSLDIR)/staged/usr/include" \
 		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections -fPIC -L$(TOP)/$(OPENSSLDIR)/staged/usr/lib" \
 		LIBS="-lpthread" \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
-			--enable-shared --enable-static --enable-cookies --enable-crypto-auth \
+			--enable-shared --enable-static --enable-cookies \
 			--enable-file --enable-ftp --enable-http --enable-tftp \
 			$(if $(TCONFIG_IPV6),--enable-ipv6,) \
 			--with-random="/dev/urandom" --with-ssl="$(TOP)/$(OPENSSLDIR)/staged/usr" --with-zlib="$(TOP)/zlib/staged/usr" \
-			--disable-dict --disable-debug --disable-gopher --disable-threaded-resolver \
-			--disable-ldap --disable-manual --disable-telnet --disable-verbose \
-			--without-gnutls --without-libidn2 --without-libpsl $(if $(TCONFIG_BCMARM),,--disable-tls-srp) \
+			--disable-dict --disable-debug --disable-gopher --disable-pthreads --disable-threaded-resolver --disable-progress-meter --disable-http-auth --disable-dateparse --disable-dnsshuffle \
+			--disable-ldap --disable-manual --disable-telnet --disable-verbose --disable-doh --disable-mime --disable-netrc --disable-socketpair --disable-headers-api \
+			--without-gnutls --without-libidn2 --without-libpsl $(if $(TCONFIG_BCMARM),,--disable-tls-srp) --without-ngtcp2 --without-nghttp3 --without-quiche --without-msh3 --disable-websockets \
 			$(CACERT)
 	@touch $@
 
@@ -3347,7 +3350,7 @@ getdns/build/Makefile:
 		cmake -DCMAKE_TOOLCHAIN_FILE=crosscompiled.cmake \
 			-DCMAKE_INSTALL_PREFIX=/usr \
 			-DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_SKIP_RPATH=TRUE \
-			-DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -std=c99 $(EXTRACFLAGS)" \
+			-DCMAKE_C_FLAGS="-ffunction-sections -fdata-sections -std=gnu99 $(EXTRACFLAGS)" \
 			-DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections $(if $(TCONFIG_OPENSSL11),-lpthread,)" \
 			-DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE -DENABLE_GOST=FALSE \
 			-DBUILD_GETDNS_QUERY=FALSE \
@@ -3795,6 +3798,7 @@ zfs-install:
 	install -D zfs/cmd/zpool/zpool $(INSTALLDIR)/zfs/usr/sbin/zpool
 	$(STRIP) $(INSTALLDIR)/zfs/usr/sbin/zfs
 	$(STRIP) $(INSTALLDIR)/zfs/usr/sbin/zpool
+	cd $(INSTALLDIR)/zfs/usr/sbin/ && ln -sf zpool fsck.zpool
 
 zfs-clean:
 	-@$(MAKE) -C zfs clean
