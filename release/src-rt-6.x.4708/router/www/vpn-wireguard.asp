@@ -267,7 +267,7 @@ function tabSelect(name) {
 	for (var i = 0; i < tabs.length; ++i)
 		if (name == tabs[i][0]) {
 			elem.display(tabs[i][0]+'-tab', true);
-			for (var j = 0; j < sections.length; ++i) {
+			for (var j = 0; j < sections.length; ++j) {
 				if (E(tabs[i][0]+'-'+sections[j][0]+'-tab').classList.contains("active"))
 					elem.display('notes-'+sections[j][0], true);
 				else
