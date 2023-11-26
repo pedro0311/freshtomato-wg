@@ -265,7 +265,19 @@ function tabSelect(name) {
 	tabHigh(name);
 
 	for (var i = 0; i < tabs.length; ++i)
-		elem.display(tabs[i][0]+'-tab', (name == tabs[i][0]));
+		if (name == tabs[i][0]) {
+			elem.display(tabs[i][0]+'-tab', true);
+			for (var j = 0; j < sections.length; ++i) {
+				if (E(tabs[i][0]+'-'+sections[j][0]+'-tab').classList.contains("active"))
+					elem.display('notes-'+sections[j][0], true);
+				else
+					elem.display('notes-'+sections[j][0], false);
+			}
+		}
+		else {
+			elem.display(tabs[i][0]+'-tab', false);
+		}
+	
 
 	cookie.set('wg_tab', name);
 }
