@@ -277,10 +277,12 @@ function sectSelect(tab, section) {
 		if (section == sections[i][0]) {
 			elem.addClass(tabs[tab][0]+'-'+sections[i][0]+'-tab', 'active');
 			elem.display(tabs[tab][0]+'-'+sections[i][0], true);
+			elem.display('notes-'+sections[i][0], true);
 		}
 		else {
 			elem.removeClass(tabs[tab][0]+'-'+sections[i][0]+'-tab', 'active');
 			elem.display(tabs[tab][0]+'-'+sections[i][0], false);
+			elem.display('notes-'+sections[i][0], false);
 		}
 	}
 
@@ -2128,7 +2130,7 @@ function init() {
 <div class="section" id="sesdiv_notes" style="display:none">
 
 	/* config notes start */
-	<div class="section" id="config-notes" style="display:none">
+	<div class="section" id="notes-config" style="display:none">
 		<ul>
 			<li><b>Interface:</b></li>
 			<li><b>Enable on Start</b> - Enabling this will start the wireguard device when the router starts up.</li>
@@ -2145,9 +2147,9 @@ function init() {
 		</ul>
 		<ul>
 			<li><b>Peer Parameters:</b></li>
-			<li><b>Router behind NAT</b> - Enabling this will start the wireguard device when the router starts up.</li>
-			<li><b>Endpoint</b> - File path to wg-quick compatible configuration file. If this is specified all other settings will be ignored.</li>
-			<li><b>Port</b> - Port to use for the wireguard interface.</li>
+			<li><b>Router behind NAT</b> - </li>
+			<li><b>Endpoint</b> - </li>
+			<li><b>Port</b> - </li>
 			<li><b>Allowed IPs</b> - </li>
 			<li><b>DNS Servers for Peers</b> - </li>
 			<li><b>Allow peers to communicate</b> - </li>
@@ -2164,16 +2166,64 @@ function init() {
 	/* config notes stop */
 
 	/* peers notes start */
+	<div class="section" id="notes-peers" style="display:none">
+		<ul>
+			<li><b>Peers:</b></li>
+			<li><b>QR</b> - </li>
+			<li><b>Cfg</b> - </li>
+			<li><b>Alias</b> - </li>
+			<li><b>Endpoint</b> - </li>
+			<li><b>Public Key</b> - </li>
+			<li><b>Interface IP</b> - </li>
+			<li><b>Download All Configs</b> - </li>
+		</ul>
+		<ul>
+			<li><b>Config Generation:</b></li>
+			<li><b>Port</b> - </li>
+			<li><b>FWMark</b> - </li>
+		</ul>
+		<ul>
+			<li><b>Peer Generation</b></li>
+			<li><b>Generate PSK</b> - </li>
+			<li><b>Generate Peer</b> - </li>
+		</ul>
+		<ul>
+			<li><b>Peer's Parameters</b></li>
+			<li><b>Alias</b> - </li>
+			<li><b>Endpoint</b> - </li>
+			<li><b>Private Key</b> - </li>
+			<li><b>Public Key</b> - </li>
+			<li><b>Preshared Key</b> - </li>
+			<li><b>Interface IP</b> - </li>
+			<li><b>Allowed IPs</b> - </li>
+			<li><b>Peer behind NAT</b> - </li>
+			<li><b>Add to Peers</b> - </li>
+		</ul>
+	</div>
 	/* peers notes stop */
 
-	/* script notes start */
-	/* script notes stop */
+	/* scripts notes start */
+	<div class="section" id="notes-scripts" style="display:none">
+		<ul>
+			<li><b>Custom Interface Scripts:</b></li>
+			<li><b>Pre-Up Script</b> - </li>
+			<li><b>Post-Up Script</b> - </li>
+			<li><b>Pre-Down Script</b> - </li>
+			<li><b>Post-Down Script</b> - </li>
+		</ul>
+	</div>
+	/* scripts notes stop */
 
 	/* status notes start */
+	<div class="section" id="notes-status" style="display:none">
+		<ul>
+		</ul>
+	</div>
 	/* status notes stop */
 
-/* end notes sections */
 </div>
+/* end notes sections */
+
 
 
 <!-- / / / -->
