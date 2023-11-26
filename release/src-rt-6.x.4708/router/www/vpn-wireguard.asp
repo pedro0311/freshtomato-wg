@@ -1949,11 +1949,10 @@ function save(nomsg) {
 function earlyInit() {
 	show();
 	var tab = cookie.get('wg_tab') || tabs[0][0];
-	tabSelect(tab);
 	for (var i = 0; i < tabs.length; ++i) {
 		sectSelect(i, cookie.get('wg'+i+'_section') || sections[0][0]);
 	}
-	sectSelect(tab[2], cookie.get('wg'+tab[2]+'_section') || sections[0][0]);
+	tabSelect(tab);
 	verifyFields(null, 1);
 }
 
