@@ -2113,8 +2113,9 @@ function init() {
 			W('</div>');
 			/* status tab end */
 
-
+			/* start/stop button */
 			W('<div class="vpn-start-stop"><input type="button" value="" onclick="" id="_wireguard'+i+'_button">&nbsp; <img src="spin.gif" alt="" id="spin'+i+'"></div>');
+			
 			W('</div>');
 		}
 		
@@ -2122,25 +2123,58 @@ function init() {
 </div>
 
 <!-- / / / -->
-
+/* start notes sections */
 <div class="section-title">Notes <small><i><a href='javascript:toggleVisibility(cprefix,"notes");'><span id="sesdiv_notes_showhide">(Show)</span></a></i></small></div>
 <div class="section" id="sesdiv_notes" style="display:none">
-	<ul>
-		<li><b>Enable on Start</b> - Enabling this will start the wireguard device when the router starts up.</li>
-		<li><b>Local IP Address</b> - Address to be used for the local wireguard device.</li>
-		<li><b>Subnet/Netmask</b> - Remote IP addresses to be used on the tunnelled PPP links (max 6).</li>
-	</ul>
-	<br>
-	<ul>
-		<li><b>Other relevant notes/hints:</b></li>
-		<li style="list-style:none">
-			<ul>
-				<li>Try to avoid any conflicts and/or overlaps between the address ranges configured/available for DHCP and VPN clients on your local networks.</li>
-				<li>You can add your own ip-up/ip-down scripts which are executed after those built by GUI - relevant NVRAM variables are "pptpd_ipup_script" / "pptpd_ipdown_script".</li>
-			</ul>
-		</li>
-	</ul>
+
+	/* config notes start */
+	<div class="section" id="config-notes" style="display:none">
+		<ul>
+			<li><b>Interface:</b></li>
+			<li><b>Enable on Start</b> - Enabling this will start the wireguard device when the router starts up.</li>
+			<li><b>Config file</b> - File path to wg-quick compatible configuration file. If this is specified all other settings will be ignored.</li>
+			<li><b>Port</b> - Port to use for the wireguard interface.</li>
+			<li><b>Private Key</b> - </li>
+			<li><b>Public Key</b> - </li>
+			<li><b>Interface IP</b> - </li>
+			<li><b>DNS Servers</b> - </li>
+			<li><b>FWMark</b> - </li>
+			<li><b>MTU</b> - </li>
+			<li><b>Respond to DNS</b> - </li>
+			<li><b>Routing Mode</b> - </li>
+		</ul>
+		<ul>
+			<li><b>Peer Parameters:</b></li>
+			<li><b>Router behind NAT</b> - Enabling this will start the wireguard device when the router starts up.</li>
+			<li><b>Endpoint</b> - File path to wg-quick compatible configuration file. If this is specified all other settings will be ignored.</li>
+			<li><b>Port</b> - Port to use for the wireguard interface.</li>
+			<li><b>Allowed IPs</b> - </li>
+			<li><b>DNS Servers for Peers</b> - </li>
+			<li><b>Allow peers to communicate</b> - </li>
+			<li><b>Push LAN0 (br0) to peers</b> - </li>
+			<li><b>Push LAN1 (br1) to peers</b> - </li>
+			<li><b>Push LAN2 (br2) to peers</b> - </li>
+			<li><b>Push LAN3 (br3) to peers</b> - </li>
+			<li><b>Forward all peer traffic</b> - </li>
+		</ul>
+		<ul>
+			<li><b>Import Config from File</b> - This section can be used to parse fields from a wg-quick compatible configuration file and automatically populate the relevant fields. Using this will wipe your existing settings.</li>
+		</ul>
+	</div>
+	/* config notes stop */
+
+	/* peers notes start */
+	/* peers notes stop */
+
+	/* script notes start */
+	/* script notes stop */
+
+	/* status notes start */
+	/* status notes stop */
+
+/* end notes sections */
 </div>
+
 
 <!-- / / / -->
 
